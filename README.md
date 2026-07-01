@@ -361,8 +361,8 @@ http://localhost:8080/swagger-ui.html
 # Contributors
 
 * **Yuvaraj M**
-* **Theanmalar **
-* **Subhendu Ghosh M**
+* **Theanmalar**
+* **Subhendu Ghosh**
 
 * Infosys Virtual Internship 7.0
 
