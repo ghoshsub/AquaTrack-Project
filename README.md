@@ -1,373 +1,61 @@
-# Web-Based Water Consumption and Billing Management Platform
+# AquaTrack Frontend — File Placement
 
-A full-stack web application that enables apartment communities to monitor household water consumption, automate billing, distribute shared water costs fairly, and promote water conservation through intelligent alerts and analytics.
+This zip mirrors your `frontend/src/` folder exactly. To install:
 
----
+1. Copy everything inside `src/` here into your existing `frontend/src/` folder,
+   **overwriting** `App.jsx` and `main.jsx` if prompted.
+2. From your `frontend/` folder, install the one extra dependency this uses:
+   ```bash
+   npm install lucide-react
+   ```
+3. Run the dev server:
+   ```bash
+   npm run dev
+   ```
+4. Open http://localhost:5173
 
-## Overview
-
-Water scarcity and inefficient consumption management are growing challenges in urban residential communities. Most apartment complexes rely on manual meter readings, spreadsheets, and inconsistent billing methods, resulting in inaccurate cost allocation and delayed leak detection.
-
-This project provides a centralized digital platform that helps apartment administrators and residents manage water consumption transparently.
-
-The platform allows administrators to configure apartments, register households, upload water meter readings, define tariff plans, generate bills, and monitor abnormal usage. Residents can track their daily and monthly water consumption, view invoices, compare usage trends, and receive personalized conservation tips.
-
----
-
-## Features
-
-### Authentication & User Management
-
-* JWT-based authentication
-* Role-based authorization
-
-  * Apartment Administrator
-  * Resident
-* User registration and login
-* Profile management
-* Secure password encryption
-
-### Apartment Management
-
-* Apartment onboarding
-* Household registration
-* Resident assignment
-* Water meter configuration
-* Flat area and occupancy management
-
-### Water Usage Logging
-
-* Daily meter reading entry
-* Bulk CSV upload
-* Duplicate reading detection
-* Input validation
-* Usage history tracking
-
-### Billing Engine
-
-* Configurable tiered tariff calculation
-* Consumption-based billing
-* Shared-area cost allocation
-* Billing cycle management
-* Invoice generation
-
-### Water Purchase Management
-
-* Bulk water purchase tracking
-* Municipal supply records
-* Tanker delivery management
-* Procurement cost calculation
-
-### Alert System
-
-* Email notifications
-* In-app alerts
-* Over-consumption detection
-* Leak anomaly detection
-* Billing completion notifications
-
-### Resident Dashboard
-
-* Daily consumption charts
-* Monthly usage analytics
-* Billing preview
-* Invoice history
-* Water-saving recommendations
-* Apartment usage comparison
-
-### Administrator Dashboard
-
-* Apartment-wide consumption analytics
-* Billing controls
-* Tariff management
-* Meter reading upload
-* Household management
-* Bulk water purchase management
-
-### Reports
-
-* Downloadable PDF invoices
-* Billing summaries
-* Consumption reports
-* Usage comparison reports
-
----
-
-# Technology Stack
-
-## Backend
-
-* Java 21
-* Spring Boot
-* Spring Security 6
-* Spring Data JPA
-* Hibernate
-* PostgreSQL
-* Flyway
-* JWT Authentication
-* JavaMail / SendGrid
-* Apache PDFBox / iText
-* Swagger (springdoc-openapi)
-* Maven
-
----
-
-## Frontend
-
-* React.js
-* React Router
-* Axios
-* Recharts
-* Material UI / Bootstrap
-* HTML5
-* CSS3
-
----
-
-## Testing
-
-* JUnit 5
-* Mockito
-* Spring Boot Test
-* MockMvc
-* Apache JMeter / k6
-
----
-
-## Deployment
-
-* Docker
-* Docker Compose
-
----
-
-# System Architecture
+## Folder structure
 
 ```
-                 React.js Frontend
-                        │
-                        │ REST API
-                        ▼
-          Spring Boot Application
-     ┌────────────────────────────────┐
-     │ Authentication (JWT)           │
-     │ Apartment Management           │
-     │ Water Usage Module             │
-     │ Billing Engine                 │
-     │ Alert Engine                   │
-     │ Invoice Generation             │
-     └────────────────────────────────┘
-                        │
-                 Spring Data JPA
-                        │
-                        ▼
-                  PostgreSQL Database
+src/
+  main.jsx              entry point (unchanged from Vite default)
+  App.jsx                page routing + auth state, ties everything together
+  styles/
+    theme.css            all design tokens (colors, fonts) + shared CSS classes
+  api/
+    authApi.js           fetch wrapper for /api/auth/login and /api/auth/register
+  hooks/
+    useCountUp.js         animation hook used by the stat band
+  components/
+    NavBar.jsx
+    Footer.jsx
+    Hero.jsx
+    GaugeDial.jsx         the animated meter-dial signature graphic
+    StatBand.jsx
+    Features.jsx
+    HowItWorks.jsx
+    CTA.jsx
+    FormShell.jsx         shared wrapper used by Login/Register
+  pages/
+    HomePage.jsx
+    LoginPage.jsx          calls api/authApi.js -> login()
+    RegisterPage.jsx       calls api/authApi.js -> register()
+    AboutPage.jsx
+    ContactPage.jsx
+    DashboardPage.jsx      basic placeholder, full version comes in Phase 2
 ```
 
----
+## Backend connection
 
-# Database Modules
+`src/api/authApi.js` points at `http://localhost:8080`. Your Spring Boot backend
+needs CORS enabled for requests from `http://localhost:5173` (Vite's dev server)
+or the browser will block these calls — ask for the CORS config if you haven't
+added it yet.
 
-* Users
-* Apartments
-* Households
-* Water Usage Logs
-* Tariff Plans
-* Billing Cycles
-* Bulk Water Purchases
-* Invoices
-* Notifications
+## Next steps when you're ready
 
----
-
-# Project Structure
-
-```
-water-billing-platform/
-
-├── backend/
-│   ├── controller/
-│   ├── service/
-│   ├── repository/
-│   ├── entity/
-│   ├── dto/
-│   ├── config/
-│   ├── security/
-│   ├── scheduler/
-│   ├── util/
-│   └── resources/
-│
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   ├── services/
-│   ├── hooks/
-│   ├── context/
-│   ├── layouts/
-│   └── assets/
-│
-├── docker/
-├── docs/
-└── README.md
-```
-
----
-
-# REST API Modules
-
-### Authentication
-
-* Register
-* Login
-* Refresh Token
-* User Profile
-
-### Apartment
-
-* Create Apartment
-* Update Apartment
-* Delete Apartment
-* Get Apartment Details
-
-### Household
-
-* Register Household
-* Assign Resident
-* Configure Meter
-
-### Water Usage
-
-* Add Meter Reading
-* Upload CSV
-* View Usage
-* Monthly Statistics
-
-### Billing
-
-* Generate Bill
-* View Bills
-* Finalize Billing Cycle
-* Download Invoice
-
-### Water Purchase
-
-* Add Purchase
-* View Purchase History
-
-### Alerts
-
-* View Notifications
-* Configure Thresholds
-
----
-
-# Billing Workflow
-
-```
-Meter Reading
-        │
-        ▼
-Water Usage Logs
-        │
-        ▼
-Tariff Calculation
-        │
-        ▼
-Shared Cost Distribution
-        │
-        ▼
-Invoice Generation
-        │
-        ▼
-Email Notification
-```
-
----
-
-# Security
-
-* JWT Authentication
-* BCrypt Password Encryption
-* Role-Based Access Control
-* Input Validation
-* Exception Handling
-* SQL Injection Protection
-* CORS Configuration
-
----
-
-# Testing
-
-The project includes
-
-* Unit Testing
-* Integration Testing
-* API Testing
-* Load Testing
-* UI Testing
-* End-to-End Testing
-
----
-
-# Future Enhancements
-
-* IoT Smart Water Meter Integration
-* Mobile Application
-* Online Payment Gateway
-* AI-Based Water Consumption Prediction
-* SMS Notifications
-* QR Code Bill Payment
-* Multi-Apartment Management
-* Real-Time Water Monitoring Dashboard
-
----
-
-# Installation
-
-## Clone Repository
-
-```bash
-git clone https://github.com/your-username/water-billing-platform.git
-```
-
-## Backend
-
-```bash
-cd backend
-mvn clean install
-mvn spring-boot:run
-```
-
-## Frontend
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
----
-
-# API Documentation
-
-Swagger UI will be available at:
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
----
-
-# Contributors
-
-* **Yuvaraj M**
-* **Theanmalar**
-* **Subhendu Ghosh**
-
-* Infosys Virtual Internship 7.0
-
----
-
-# License
-
-This project is developed for educational purposes as part of the **Infosys Virtual Internship 7.0**.
+- Swap the `page` state in `App.jsx` for real routes with `react-router-dom`.
+- Move `API_BASE` in `authApi.js` into a Vite env variable (`VITE_API_BASE`)
+  so it's easy to point at a different backend URL per environment.
+- Replace the in-memory `auth` state with whatever persistence strategy your
+  team settles on (e.g. an auth context), now that it's isolated in one place.
