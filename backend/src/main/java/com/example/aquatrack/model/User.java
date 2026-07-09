@@ -21,6 +21,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "display_name", length = 150)
+    private String displayName;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "household_id")
     @JsonIgnore
@@ -30,9 +33,16 @@ public class User {
     @Column(name = "username", nullable = false, unique = true, length = 100)
     private String username;
 
-    @NotBlank
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password_hash", length = 255)
     private String passwordHash;
+
+    @Column(name = "google_id", unique = true, length = 255)
+    private String googleId;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider", nullable = false)
+    private AuthProvider authProvider = AuthProvider.LOCAL;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -45,5 +55,10 @@ public class User {
     public enum Role {
         ADMIN,
         RESIDENT
+    }
+
+    public enum AuthProvider {
+        LOCAL,
+        GOOGLE
     }
 }

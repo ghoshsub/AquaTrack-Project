@@ -1,13 +1,16 @@
 package com.example.aquatrack.controller;
 
 import com.example.aquatrack.dto.AuthResponse;
+import com.example.aquatrack.dto.GoogleAuthRequest;
 import com.example.aquatrack.dto.LoginRequest;
 import com.example.aquatrack.dto.RegisterRequest;
 import com.example.aquatrack.model.Household;
 import com.example.aquatrack.model.User;
 import com.example.aquatrack.repository.HouseholdRepository;
 import com.example.aquatrack.repository.UserRepository;
+import com.example.aquatrack.security.GoogleTokenVerifier;
 import com.example.aquatrack.security.JwtUtil;
+
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,17 +27,39 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final GoogleTokenVerifier googleTokenVerifier;
 
     public AuthController(UserRepository userRepository,
                           HouseholdRepository householdRepository,
                           PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,
+                          GoogleTokenVerifier googleTokenVerifier) {
         this.userRepository = userRepository;
         this.householdRepository = householdRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.googleTokenVerifier = googleTokenVerifier;
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleAuthRequest request) {
+
+        GoogleTokenVerifier.GoogleUser googleUser = googleTokenVerifier.verify(request.getIdToken());
+        User user = userRepository.findByGoogleId(googleUser.googleId())
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setUsername(googleUser.email());
+                    newUser.setDisplayName(googleUser.name());
+                    newUser.setGoogleId(googleUser.googleId());
+                    newUser.setAuthProvider(User.AuthProvider.GOOGLE);
+                    newUser.setRole(User.Role.RESIDENT);
+                    return userRepository.save(newUser);
+                });
+
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        return ResponseEntity.ok(new AuthResponse(token, user.getDisplayName() != null ? user.getDisplayName() : user.getUsername(), user.getRole().name()));
     }
 
     @PostMapping("/register")

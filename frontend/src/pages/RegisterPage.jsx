@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import FormShell from "../components/FormShell.jsx";
 import { register } from "../api/authApi.js";
+import GoogleSignInButton from "../components/GoogleSignInButton.jsx";
 
 export default function RegisterPage({ setPage, onAuthed }) {
   const [username, setUsername] = useState("");
@@ -82,6 +83,16 @@ export default function RegisterPage({ setPage, onAuthed }) {
           {loading ? "Creating account…" : "Create account"}
         </button>
       </form>
+      <div style={{ margin: "20px 0", textAlign: "center", fontSize: "13px", color: "rgba(20,43,46,0.5)" }}>
+        or
+      </div>
+      <GoogleSignInButton
+        onAuthed={(data) => {
+          onAuthed(data);
+          setPage("dashboard");
+        }}
+        onError={(msg) => setError(msg)}
+      />
       <p style={{ fontSize: "13px", marginTop: "18px", color: "rgba(20,43,46,0.65)" }}>
         Already have an account?{" "}
         <button onClick={() => setPage("login")} className="at-link-btn at-focus">

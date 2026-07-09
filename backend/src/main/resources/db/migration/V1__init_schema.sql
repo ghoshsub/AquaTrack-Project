@@ -44,7 +44,10 @@ CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     household_id BIGINT NULL,
     username VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    display_name VARCHAR(150) NULL,
+    password_hash VARCHAR(255) NULL,
+    google_id VARCHAR(255) NULL UNIQUE,
+    auth_provider ENUM('LOCAL', 'GOOGLE') NOT NULL DEFAULT 'LOCAL',
     role ENUM('ADMIN', 'RESIDENT') NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user_household FOREIGN KEY (household_id)
