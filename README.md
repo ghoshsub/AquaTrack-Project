@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AquaTrack Frontend — File Placement
 
 This zip mirrors your `frontend/src/` folder exactly. To install:
@@ -59,3 +60,6 @@ added it yet.
   so it's easy to point at a different backend URL per environment.
 - Replace the in-memory `auth` state with whatever persistence strategy your
   team settles on (e.g. an auth context), now that it's isolated in one place.
+=======
+# Web-Based-Water-Consumption-and-Billing-Management-Platform
+>>>>>>> f19678a6379a7c2fae22b85ff38d5ad8e386e97c
