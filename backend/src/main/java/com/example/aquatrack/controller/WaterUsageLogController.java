@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.example.aquatrack.dto.BulkUploadResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,5 +39,12 @@ public class WaterUsageLogController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
         return ResponseEntity.ok(usageLogService.getRange(householdId, start, end));
+    }
+
+    @PostMapping("/bulk-upload")
+    public ResponseEntity<BulkUploadResponse> uploadBulkCsv(
+            @RequestParam("apartmentId") Long apartmentId,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(usageLogService.uploadBulkCsv(apartmentId, file));
     }
 }

@@ -4,12 +4,25 @@
 export const API_BASE = "http://localhost:8080";
 
 async function handleResponse(res) {
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const message = (data && (data.message || data.error)) || "Request failed.";
-    throw new Error(message);
+  const contentType = res.headers.get("content-type");
+  let data = null;
+  let message = "Request failed.";
+
+  if (contentType && contentType.includes("application/json")) {
+    data = await res.json().catch(() => null);
+    if (!res.ok) {
+      message = (data && (data.message || data.error)) || message;
+      throw new Error(message);
+    }
+    return data;
+  } else {
+    const text = await res.text().catch(() => "");
+    if (!res.ok) {
+      message = text || message;
+      throw new Error(message);
+    }
+    return text;
   }
-  return data;
 }
 
 /**
@@ -27,13 +40,41 @@ export async function login(username, password) {
 
 /**
  * Calls POST /api/auth/register
- * @param {{username: string, password: string, role: "ADMIN"|"RESIDENT", householdId?: number}} payload
+ * @param {{username: string, email?: string, password: string, role: "ADMIN"|"RESIDENT"}} payload
  * @returns {Promise<{token: string, username: string, role: string}>}
  */
 export async function register(payload) {
   const res = await fetch(`${API_BASE}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
+/**
+ * Calls GET /api/users/profile
+ * @param {string} token
+ */
+export async function getProfile(token) {
+  const res = await fetch(`${API_BASE}/api/users/profile`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+}
+
+/**
+ * Calls PUT /api/users/profile
+ * @param {string} token
+ * @param {{username: string, email?: string, displayName?: string, password?: string}} payload
+ */
+export async function updateProfile(token, payload) {
+  const res = await fetch(`${API_BASE}/api/users/profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(payload),
   });
   return handleResponse(res);

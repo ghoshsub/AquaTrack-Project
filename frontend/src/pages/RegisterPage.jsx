@@ -5,20 +5,18 @@ import GoogleSignInButton from "../components/GoogleSignInButton.jsx";
 
 export default function RegisterPage({ setPage, onAuthed }) {
   const [username, setUsername] = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("ADMIN");
-  const [householdId, setHouseholdId] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [role, setRole]         = useState("ADMIN");
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const payload = { username, password, role };
-      if (role === "RESIDENT" && householdId) payload.householdId = Number(householdId);
-
+      const payload = { username, email, password, role };
       const data = await register(payload);
       onAuthed(data);
       setPage("dashboard");
@@ -39,6 +37,18 @@ export default function RegisterPage({ setPage, onAuthed }) {
             style={{ marginTop: "5px" }}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: "13px", fontWeight: 500 }}>Email</label>
+          <input
+            type="email"
+            className="at-input at-focus"
+            style={{ marginTop: "5px" }}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
             required
           />
         </div>
@@ -65,21 +75,13 @@ export default function RegisterPage({ setPage, onAuthed }) {
             <option value="RESIDENT">Resident</option>
           </select>
         </div>
-        {role === "RESIDENT" && (
-          <div>
-            <label style={{ fontSize: "13px", fontWeight: 500 }}>Household ID</label>
-            <input
-              className="at-input at-focus"
-              style={{ marginTop: "5px" }}
-              value={householdId}
-              onChange={(e) => setHouseholdId(e.target.value)}
-              placeholder="e.g. 1"
-              required
-            />
-          </div>
-        )}
         {error && <p className="at-error">{error}</p>}
-        <button type="submit" disabled={loading} className="at-btn-brass at-focus" style={{ marginTop: "6px", width: "100%" }}>
+        <button
+          type="submit"
+          disabled={loading}
+          className="at-btn-brass at-focus"
+          style={{ marginTop: "6px", width: "100%" }}
+        >
           {loading ? "Creating account…" : "Create account"}
         </button>
       </form>

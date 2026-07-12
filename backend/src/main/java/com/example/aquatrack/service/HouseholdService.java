@@ -32,10 +32,37 @@ public class HouseholdService {
         household.setFlatNumber(request.getFlatNumber());
         household.setFlatSize(request.getFlatSize());
         household.setOccupancy(request.getOccupancy());
+        household.setResidentEmail(request.getResidentEmail());
+        return householdRepository.save(household);
+    }
+
+    public Household update(Long id, HouseholdRequest request) {
+        Household household = householdRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Household not found: " + id));
+
+        // If flat number is changing, verify no conflict in the same apartment
+        if (!household.getFlatNumber().equals(request.getFlatNumber())) {
+            if (householdRepository.existsByApartmentIdAndFlatNumber(household.getApartment().getId(), request.getFlatNumber())) {
+                throw new IllegalArgumentException(
+                        "Flat number " + request.getFlatNumber() + " already exists in this apartment");
+            }
+        }
+
+        household.setFlatNumber(request.getFlatNumber());
+        household.setFlatSize(request.getFlatSize());
+        household.setOccupancy(request.getOccupancy());
+        household.setResidentEmail(request.getResidentEmail());
         return householdRepository.save(household);
     }
 
     public List<Household> findByApartment(Long apartmentId) {
         return householdRepository.findByApartmentId(apartmentId);
+    }
+
+    public void deleteById(Long id) {
+        if (!householdRepository.existsById(id)) {
+            throw new IllegalArgumentException("Household not found: " + id);
+        }
+        householdRepository.deleteById(id);
     }
 }

@@ -13,4 +13,7 @@ public class ApartmentRequest {
 
     @NotBlank
     private String address;
+
+    private String ownerEmail;
+    private String ownerPhone;
 }

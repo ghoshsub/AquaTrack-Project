@@ -44,6 +44,9 @@ public class Household {
     @Column(name = "occupancy", nullable = false)
     private Integer occupancy = 1;
 
+    @Column(name = "resident_email", length = 255)
+    private String residentEmail;
+
     @OneToMany(mappedBy = "household", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<WaterUsageLog> usageLogs = new ArrayList<>();

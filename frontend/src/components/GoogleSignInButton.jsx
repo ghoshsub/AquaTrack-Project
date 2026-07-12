@@ -22,10 +22,11 @@ export default function GoogleSignInButton({ onAuthed, onError }) {
         },
       });
 
+      const containerWidth = buttonRef.current.parentElement?.clientWidth || 372;
       window.google.accounts.id.renderButton(buttonRef.current, {
         theme: "outline",
         size: "large",
-        width: 320,
+        width: containerWidth,
         text: "continue_with",
       });
     }
@@ -43,5 +44,18 @@ export default function GoogleSignInButton({ onAuthed, onError }) {
     }
   }, [onAuthed, onError]);
 
-  return <div ref={buttonRef} />;
+  return (
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "stretch",
+      }}
+    >
+      <div
+        ref={buttonRef}
+        style={{ width: "100%" }}
+      />
+    </div>
+  );
 }

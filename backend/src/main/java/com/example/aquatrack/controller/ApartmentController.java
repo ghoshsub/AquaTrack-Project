@@ -26,8 +26,19 @@ public class ApartmentController {
         return ResponseEntity.ok(apartmentService.create(request));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Apartment> update(@PathVariable Long id, @Valid @RequestBody ApartmentRequest request) {
+        return ResponseEntity.ok(apartmentService.update(id, request));
+    }
+
     @GetMapping
     public ResponseEntity<List<Apartment>> findAll() {
         return ResponseEntity.ok(apartmentService.findAll());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        apartmentService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, LogIn, UserPlus, Info, Mail, Droplets, LogOut } from "lucide-react";
+import { Home, LogIn, UserPlus, Info, Mail, Droplets, LogOut, User } from "lucide-react";
 
 const NAV_ITEMS = [
   { key: "home", label: "Home", icon: Home },
@@ -43,10 +43,19 @@ export default function NavBar({ page, setPage, isAuthed }) {
         )}
 
         {isAuthed && (
-          <button onClick={() => setPage("logout")} className="at-navlink at-focus">
-            <LogOut size={15} />
-            Log out
-          </button>
+          <div className="at-flex at-items-center at-gap-3">
+            <button
+              onClick={() => setPage("profile")}
+              className={`at-navlink at-focus ${page === "profile" ? "active" : ""}`}
+            >
+              <User size={15} />
+              Profile
+            </button>
+            <button onClick={() => setPage("logout")} className="at-navlink at-focus">
+              <LogOut size={15} />
+              Log out
+            </button>
+          </div>
         )}
       </nav>
     </header>

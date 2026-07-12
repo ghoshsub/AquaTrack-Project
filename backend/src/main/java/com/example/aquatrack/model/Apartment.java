@@ -30,6 +30,12 @@ public class Apartment {
     @Column(name = "address", nullable = false, length = 255)
     private String address;
 
+    @Column(name = "owner_email", length = 255)
+    private String ownerEmail;
+
+    @Column(name = "owner_phone", length = 50)
+    private String ownerPhone;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tariff_plan_id")
     private TariffPlan tariffPlan;

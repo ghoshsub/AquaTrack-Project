@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Home } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
-import { createHousehold, listHouseholdsByApartment } from "../api/householdApi.js";
+import { createHousehold, listHouseholdsByApartment, deleteHousehold, updateHousehold } from "../api/householdApi.js";
 
 export default function AdminHouseholdsPage({ auth, setPage }) {
   const [apartments, setApartments] = useState([]);
@@ -16,8 +16,10 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
   const [flatNumber, setFlatNumber] = useState("");
   const [flatSize, setFlatSize] = useState("");
   const [occupancy, setOccupancy] = useState("");
+  const [residentEmail, setResidentEmail] = useState("");
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [editingHouseholdId, setEditingHouseholdId] = useState(null);
 
   useEffect(() => {
     async function loadApartments() {
@@ -57,20 +59,54 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
     setFormError("");
     setSubmitting(true);
     try {
-      await createHousehold(auth.token, {
+      const payload = {
         apartmentId: Number(selectedApartmentId),
         flatNumber,
         flatSize: Number(flatSize),
         occupancy: Number(occupancy),
-      });
+        residentEmail,
+      };
+      if (editingHouseholdId) {
+        await updateHousehold(auth.token, editingHouseholdId, payload);
+        setEditingHouseholdId(null);
+      } else {
+        await createHousehold(auth.token, payload);
+      }
       setFlatNumber("");
       setFlatSize("");
       setOccupancy("");
+      setResidentEmail("");
       await loadHouseholds(selectedApartmentId);
     } catch (err) {
-      setFormError(err.message || "Could not create household.");
+      setFormError(err.message || `Could not ${editingHouseholdId ? "update" : "create"} household.`);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  function handleEdit(h) {
+    setEditingHouseholdId(h.id);
+    setFlatNumber(h.flatNumber);
+    setFlatSize(String(h.flatSize));
+    setOccupancy(String(h.occupancy));
+    setResidentEmail(h.residentEmail || "");
+  }
+
+  function handleCancelEdit() {
+    setEditingHouseholdId(null);
+    setFlatNumber("");
+    setFlatSize("");
+    setOccupancy("");
+    setResidentEmail("");
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm("Are you sure you want to delete this household?")) return;
+    try {
+      await deleteHousehold(auth.token, id);
+      await loadHouseholds(selectedApartmentId);
+    } catch (err) {
+      alert(err.message || "Could not delete household.");
     }
   }
 
@@ -102,10 +138,12 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
       {apartments.length > 0 && (
         <>
           <div className="at-card" style={{ padding: "24px", marginTop: "24px" }}>
-            <h2 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "16px" }}>Add a household</h2>
+            <h2 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "16px" }}>
+              {editingHouseholdId ? "Edit household" : "Add a household"}
+            </h2>
             <form
               onSubmit={handleSubmit}
-              style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr auto", gap: "12px", alignItems: "end" }}
+              style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto", gap: "12px", alignItems: "end" }}
             >
               <div>
                 <label style={{ fontSize: "13px", fontWeight: 500 }}>Apartment</label>
@@ -114,6 +152,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                   style={{ marginTop: "5px" }}
                   value={selectedApartmentId}
                   onChange={(e) => setSelectedApartmentId(e.target.value)}
+                  disabled={!!editingHouseholdId}
                 >
                   {apartments.map((a) => (
                     <option key={a.id} value={a.id}>
@@ -134,7 +173,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                 />
               </div>
               <div>
-                <label style={{ fontSize: "13px", fontWeight: 500 }}>Flat size</label>
+                <label style={{ fontSize: "13px", fontWeight: 500 }}>Flat size (sq ft)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -158,9 +197,32 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                   required
                 />
               </div>
-              <button type="submit" disabled={submitting} className="at-btn-brass at-focus">
-                {submitting ? "Adding…" : "Add"}
-              </button>
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: 500 }}>Resident Email</label>
+                <input
+                  type="email"
+                  className="at-input at-focus"
+                  style={{ marginTop: "5px" }}
+                  value={residentEmail}
+                  onChange={(e) => setResidentEmail(e.target.value)}
+                  placeholder="resident@example.com"
+                />
+              </div>
+              <div className="at-flex at-items-center at-gap-2">
+                <button type="submit" disabled={submitting} className="at-btn-brass at-focus" style={{ padding: "10px 16px" }}>
+                  {submitting ? (editingHouseholdId ? "Saving…" : "Adding…") : (editingHouseholdId ? "Save" : "Add")}
+                </button>
+                {editingHouseholdId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="at-btn-outline at-focus"
+                    style={{ padding: "10px 16px" }}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
             {formError && <p className="at-error" style={{ marginTop: "10px" }}>{formError}</p>}
           </div>
@@ -174,14 +236,16 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                   <tr>
                     <th>ID</th>
                     <th>Flat number</th>
-                    <th>Flat size</th>
+                    <th>Flat size (sq ft)</th>
                     <th>Occupancy</th>
+                    <th>Resident Email</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {households.length === 0 && (
                     <tr>
-                      <td colSpan={4} style={{ color: "rgba(20,43,46,0.5)" }}>
+                      <td colSpan={6} style={{ color: "rgba(20,43,46,0.5)" }}>
                         No households yet for this apartment — add one above.
                       </td>
                     </tr>
@@ -190,8 +254,19 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                     <tr key={h.id}>
                       <td><span className="at-badge">#{h.id}</span></td>
                       <td>{h.flatNumber}</td>
-                      <td>{h.flatSize}</td>
+                      <td>{h.flatSize} sq ft</td>
                       <td>{h.occupancy}</td>
+                      <td>{h.residentEmail || "-"}</td>
+                      <td>
+                        <div className="at-flex at-items-center at-gap-2">
+                          <button onClick={() => handleEdit(h)} className="at-link-btn at-focus">
+                            Edit
+                          </button>
+                          <button onClick={() => handleDelete(h.id)} className="at-link-btn at-focus" style={{ color: "var(--at-error)" }}>
+                            Delete
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

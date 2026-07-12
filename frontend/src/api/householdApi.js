@@ -37,3 +37,34 @@ export async function listHouseholdsByApartment(token, apartmentId) {
   });
   return handleResponse(res);
 }
+
+/**
+ * Calls DELETE /api/admin/households/{id}
+ * @param {string} token
+ * @param {number|string} id
+ */
+export async function deleteHousehold(token, id) {
+  const res = await fetch(`${API_BASE}/api/admin/households/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+}
+
+/**
+ * Calls PUT /api/admin/households/{id}
+ * @param {string} token
+ * @param {number|string} id
+ * @param {{apartmentId: number, flatNumber: string, flatSize: number, occupancy: number, residentEmail?: string}} payload
+ */
+export async function updateHousehold(token, id, payload) {
+  const res = await fetch(`${API_BASE}/api/admin/households/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}

@@ -9,6 +9,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.math.BigDecimal;
+import com.example.aquatrack.dto.BulkUploadResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class WaterUsageLogService {
@@ -48,5 +54,67 @@ public class WaterUsageLogService {
 
     public List<WaterUsageLog> getRange(Long householdId, LocalDate start, LocalDate end) {
         return usageLogRepository.findByHouseholdIdAndReadingDateBetween(householdId, start, end);
+    }
+
+    public BulkUploadResponse uploadBulkCsv(Long apartmentId, MultipartFile file) {
+        BulkUploadResponse response = new BulkUploadResponse();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            boolean isFirstLine = true;
+            int lineNumber = 0;
+            
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                if (line.trim().isEmpty()) continue;
+                
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    // Skip header if it looks like one (e.g., contains alphabets)
+                    if (line.matches(".*[a-zA-Z]+.*")) {
+                        continue;
+                    }
+                }
+                
+                String[] parts = line.split(",");
+                if (parts.length < 3) {
+                    response.getErrors().add("Line " + lineNumber + ": Invalid format. Expected flatNumber,date,value");
+                    continue;
+                }
+                
+                String flatNumber = parts[0].trim();
+                String dateStr = parts[1].trim();
+                String valueStr = parts[2].trim();
+                
+                try {
+                    LocalDate date = LocalDate.parse(dateStr);
+                    BigDecimal value = new BigDecimal(valueStr);
+                    
+                    Household household = householdRepository.findByApartmentIdAndFlatNumber(apartmentId, flatNumber).orElse(null);
+                    if (household == null) {
+                        response.getErrors().add("Line " + lineNumber + ": Flat " + flatNumber + " not found in apartment.");
+                        continue;
+                    }
+                    
+                    if (usageLogRepository.existsByHouseholdIdAndReadingDate(household.getId(), date)) {
+                        response.setSkippedDuplicates(response.getSkippedDuplicates() + 1);
+                        continue;
+                    }
+                    
+                    WaterUsageLog log = new WaterUsageLog();
+                    log.setHousehold(household);
+                    log.setReadingDate(date);
+                    log.setReadingValue(value);
+                    log.setSource(WaterUsageLog.Source.BULK_CSV);
+                    usageLogRepository.save(log);
+                    
+                    response.setSuccessful(response.getSuccessful() + 1);
+                } catch (Exception e) {
+                    response.getErrors().add("Line " + lineNumber + ": Failed to parse date or value. " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            response.getErrors().add("Failed to read file: " + e.getMessage());
+        }
+        return response;
     }
 }

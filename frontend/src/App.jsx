@@ -12,6 +12,8 @@ import ContactPage from "./pages/ContactPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import AdminApartmentsPage from "./pages/AdminApartmentsPage.jsx";
 import AdminHouseholdsPage from "./pages/AdminHouseholdsPage.jsx";
+import AdminWaterUsagePage from "./pages/AdminWaterUsagePage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 
 /**
  * Page switching lives here as simple state for now. When you're ready,
@@ -44,9 +46,14 @@ export default function App() {
 
   // Guard: admin-only pages require an authenticated ADMIN. Anyone else
   // (not logged in, or a RESIDENT) gets bounced back to the dashboard/home.
-  const isAdminPage = activePage === "admin-apartments" || activePage === "admin-households";
+  const isAdminPage = activePage === "admin-apartments" || activePage === "admin-households" || activePage === "admin-water-usage";
   if (isAdminPage && (!auth || auth.role !== "ADMIN")) {
     activePage = auth ? "dashboard" : "home";
+  }
+
+  // Guard: profile page requires login
+  if (activePage === "profile" && !auth) {
+    activePage = "home";
   }
 
   return (
@@ -62,6 +69,8 @@ export default function App() {
         {activePage === "dashboard" && <DashboardPage auth={auth} setPage={handlePageChange} />}
         {activePage === "admin-apartments" && <AdminApartmentsPage auth={auth} setPage={handlePageChange} />}
         {activePage === "admin-households" && <AdminHouseholdsPage auth={auth} setPage={handlePageChange} />}
+        {activePage === "admin-water-usage" && <AdminWaterUsagePage auth={auth} setPage={handlePageChange} />}
+        {activePage === "profile" && <ProfilePage auth={auth} onAuthed={handleAuthed} setPage={handlePageChange} />}
       </main>
 
       <Footer />
