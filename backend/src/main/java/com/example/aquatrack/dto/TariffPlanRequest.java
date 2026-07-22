@@ -1,6 +1,5 @@
 package com.example.aquatrack.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
@@ -10,18 +9,11 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class ApartmentRequest {
+public class TariffPlanRequest {
 
-    @NotBlank
-    private String name;
+    @NotNull
+    private Long apartmentId;
 
-    @NotBlank
-    private String address;
-
-    private String ownerEmail;
-    private String ownerPhone;
-
-    // Tariff plan fields — required when creating, optional when updating
     @NotNull
     @Positive
     private BigDecimal baseRate;

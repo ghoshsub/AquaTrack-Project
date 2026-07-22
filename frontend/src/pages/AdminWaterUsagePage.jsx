@@ -127,14 +127,14 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
           Water Usage Logs
         </h1>
       </div>
-      <p style={{ fontSize: "14px", color: "rgba(20,43,46,0.65)", marginTop: "4px" }}>
+      <p style={{ fontSize: "14px", color: "var(--at-text-body)", marginTop: "4px" }}>
         Enter water usage readings manually or upload in bulk via CSV.
       </p>
 
       {apartmentsError && <p className="at-error" style={{ marginTop: "16px" }}>{apartmentsError}</p>}
 
       {!apartmentsError && apartments.length === 0 && (
-        <div className="at-card" style={{ padding: "20px", marginTop: "24px", fontSize: "14px", color: "rgba(20,43,46,0.65)" }}>
+        <div className="at-card" style={{ padding: "20px", marginTop: "24px", fontSize: "14px", color: "var(--at-text-muted)" }}>
           You need at least one apartment to log usage.
         </div>
       )}
@@ -159,14 +159,14 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
             </select>
           </div>
 
-          <div style={{ display: "flex", gap: "12px", marginTop: "24px", borderBottom: "1px solid rgba(20,43,46,0.1)" }}>
+          <div style={{ display: "flex", gap: "12px", marginTop: "24px", borderBottom: "1px solid var(--at-border-light)" }}>
             <button
               onClick={() => setActiveTab("manual")}
               style={{
                 padding: "12px 16px",
                 fontWeight: 600,
                 fontSize: "14px",
-                color: activeTab === "manual" ? "var(--at-verdigris-deep)" : "rgba(20,43,46,0.5)",
+                color: activeTab === "manual" ? "var(--at-verdigris-deep)" : "var(--at-text-muted)",
                 borderBottom: activeTab === "manual" ? "2px solid var(--at-verdigris-deep)" : "2px solid transparent",
                 cursor: "pointer",
                 background: "transparent",
@@ -182,7 +182,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
                 padding: "12px 16px",
                 fontWeight: 600,
                 fontSize: "14px",
-                color: activeTab === "bulk" ? "var(--at-verdigris-deep)" : "rgba(20,43,46,0.5)",
+                color: activeTab === "bulk" ? "var(--at-verdigris-deep)" : "var(--at-text-muted)",
                 borderBottom: activeTab === "bulk" ? "2px solid var(--at-verdigris-deep)" : "2px solid transparent",
                 cursor: "pointer",
                 background: "transparent",
@@ -198,9 +198,9 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
             <div className="at-card" style={{ padding: "24px", marginTop: "24px" }}>
               <h2 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "16px" }}>Log a single reading</h2>
               {loadingHouseholds ? (
-                <p style={{ fontSize: "14px", color: "rgba(20,43,46,0.6)" }}>Loading flats...</p>
+                <p style={{ fontSize: "14px", color: "var(--at-text-muted)" }}>Loading flats...</p>
               ) : households.length === 0 ? (
-                <p style={{ fontSize: "14px", color: "rgba(20,43,46,0.6)" }}>No flats found in this apartment.</p>
+                <p style={{ fontSize: "14px", color: "var(--at-text-muted)" }}>No flats found in this apartment.</p>
               ) : (
                 <form onSubmit={handleManualSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "12px", alignItems: "end" }}>
                   <div>
@@ -256,7 +256,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
           {activeTab === "bulk" && (
             <div className="at-card" style={{ padding: "24px", marginTop: "24px" }}>
               <h2 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "8px" }}>Upload bulk readings</h2>
-              <p style={{ fontSize: "13px", color: "rgba(20,43,46,0.65)", marginBottom: "16px" }}>
+              <p style={{ fontSize: "13px", color: "var(--at-text-body)", marginBottom: "16px" }}>
                 CSV Format expected: <strong>flatNumber, readingDate (YYYY-MM-DD), readingValue</strong><br/>
                 Duplicate readings for the same flat on the same day will be safely skipped.
               </p>
@@ -278,7 +278,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
               {bulkError && <p className="at-error" style={{ marginTop: "12px" }}>{bulkError}</p>}
 
               {bulkResult && (
-                <div style={{ marginTop: "20px", padding: "16px", borderRadius: "8px", background: "rgba(20,43,46,0.02)", border: "1px solid rgba(20,43,46,0.08)" }}>
+                <div style={{ marginTop: "20px", padding: "16px", borderRadius: "8px", background: "var(--at-bg-hover)", border: "1px solid var(--at-border-light)" }}>
                   <h3 style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>Upload Results</h3>
                   <div style={{ display: "flex", gap: "24px", marginBottom: "12px", fontSize: "14px" }}>
                     <div style={{ color: "var(--at-verdigris-deep)", fontWeight: 500 }}>✓ {bulkResult.successful} Successful</div>
@@ -287,7 +287,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
                   </div>
                   
                   {bulkResult.errors && bulkResult.errors.length > 0 && (
-                    <div style={{ maxHeight: "150px", overflowY: "auto", fontSize: "12px", background: "#fff", padding: "8px", border: "1px solid rgba(20,43,46,0.1)", borderRadius: "4px" }}>
+                    <div style={{ maxHeight: "150px", overflowY: "auto", fontSize: "12px", background: "var(--at-white)", padding: "8px", border: "1px solid var(--at-border-light)", borderRadius: "4px" }}>
                       {bulkResult.errors.map((err, i) => (
                         <div key={i} style={{ color: "var(--at-error)", marginBottom: "4px" }}>{err}</div>
                       ))}

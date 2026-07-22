@@ -1,5 +1,7 @@
 package com.example.aquatrack.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class TariffPlan {
 
     @Id
@@ -23,6 +26,7 @@ public class TariffPlan {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "apartment_id", nullable = false)
+    @JsonIgnore
     private Apartment apartment;
 
     @NotNull

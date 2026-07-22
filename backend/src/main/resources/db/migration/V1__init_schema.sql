@@ -1,13 +1,17 @@
 -- =========================================================
 -- V1__init_schema.sql
--- AquaTrack core schema: apartments, households, users,
--- water usage logs, tariff plans, billing cycles, invoices
+-- AquaTrack complete schema: apartments, tariff_plans,
+-- households, users, water usage logs, billing cycles,
+-- invoices, water procurements, alerts
 -- =========================================================
 
 CREATE TABLE apartments (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     address VARCHAR(255) NOT NULL,
+    owner_email VARCHAR(255),
+    owner_phone VARCHAR(50),
+    tariff_plan_id BIGINT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -22,9 +26,8 @@ CREATE TABLE tariff_plans (
         REFERENCES apartments(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- Now that tariff_plans exists, link apartments -> tariff_plan_id
+-- Link apartments -> tariff_plan_id
 ALTER TABLE apartments
-    ADD COLUMN tariff_plan_id BIGINT NULL,
     ADD CONSTRAINT fk_apartment_tariff FOREIGN KEY (tariff_plan_id)
         REFERENCES tariff_plans(id) ON DELETE SET NULL;
 
@@ -34,6 +37,9 @@ CREATE TABLE households (
     flat_number VARCHAR(20) NOT NULL,
     flat_size DECIMAL(10,2) NOT NULL,
     occupancy INT NOT NULL DEFAULT 1,
+    resident_email VARCHAR(255),
+    has_working_meter BOOLEAN NOT NULL DEFAULT TRUE,
+    daily_usage_threshold DECIMAL(10,2) NOT NULL DEFAULT 500.00,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_household_apartment FOREIGN KEY (apartment_id)
         REFERENCES apartments(id) ON DELETE CASCADE,
@@ -49,6 +55,7 @@ CREATE TABLE users (
     google_id VARCHAR(255) NULL UNIQUE,
     auth_provider ENUM('LOCAL', 'GOOGLE') NOT NULL DEFAULT 'LOCAL',
     role ENUM('ADMIN', 'RESIDENT') NOT NULL,
+    email VARCHAR(255) NULL UNIQUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user_household FOREIGN KEY (household_id)
         REFERENCES households(id) ON DELETE SET NULL
@@ -93,4 +100,33 @@ CREATE TABLE invoices (
     CONSTRAINT fk_invoice_household FOREIGN KEY (household_id)
         REFERENCES households(id) ON DELETE CASCADE,
     CONSTRAINT uq_cycle_household UNIQUE (billing_cycle_id, household_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE water_procurements (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    apartment_id BIGINT NOT NULL,
+    billing_cycle_id BIGINT NULL,
+    type ENUM('TANKER', 'MUNICIPAL') NOT NULL,
+    procurement_date DATE NOT NULL,
+    volume DECIMAL(12,3) NOT NULL,
+    cost DECIMAL(10,2) NOT NULL,
+    notes VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_procurement_apartment FOREIGN KEY (apartment_id)
+        REFERENCES apartments(id) ON DELETE CASCADE,
+    CONSTRAINT fk_procurement_cycle FOREIGN KEY (billing_cycle_id)
+        REFERENCES billing_cycles(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE alerts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    household_id BIGINT NOT NULL,
+    alert_type ENUM('THRESHOLD_VIOLATION', 'LEAK_SUSPECTED') NOT NULL,
+    message VARCHAR(500) NOT NULL,
+    reading_date DATE NOT NULL,
+    reading_value DECIMAL(10,3) NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_alert_household FOREIGN KEY (household_id)
+        REFERENCES households(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;

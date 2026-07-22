@@ -13,7 +13,7 @@ export default function StatBand() {
   ];
 
   return (
-    <section style={{ background: "var(--at-ink)" }} className="py-10">
+    <section style={{ background: "var(--at-stat-bg)" }} className="py-10">
       <div
         className="at-container"
         style={{
@@ -36,7 +36,7 @@ export default function StatBand() {
               {s.value}
               {s.suffix}
             </div>
-            <div style={{ color: "rgba(237,232,222,0.6)", fontSize: "13px", marginTop: "4px" }}>{s.label}</div>
+            <div style={{ color: "var(--at-stat-text)", fontSize: "13px", marginTop: "4px" }}>{s.label}</div>
           </div>
         ))}
       </div>

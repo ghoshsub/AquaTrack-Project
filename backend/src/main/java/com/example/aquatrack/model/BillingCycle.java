@@ -1,5 +1,6 @@
 package com.example.aquatrack.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -18,6 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class BillingCycle {
 
     @Id
@@ -26,6 +28,7 @@ public class BillingCycle {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "apartment_id", nullable = false)
+    @JsonIgnoreProperties({"households", "tariffPlan"})
     private Apartment apartment;
 
     @NotNull
@@ -53,6 +56,8 @@ public class BillingCycle {
 
     @OneToMany(mappedBy = "billingCycle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Invoice> invoices = new ArrayList<>();
+
+
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;

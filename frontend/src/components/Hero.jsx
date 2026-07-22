@@ -1,6 +1,6 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
-import GaugeDial from "./GaugeDial.jsx";
+import WaterAnimation from "./WaterAnimation.jsx";
 
 export default function Hero({ setPage }) {
   return (
@@ -36,7 +36,7 @@ export default function Hero({ setPage }) {
             <br />
             accounted for.
           </h1>
-          <p style={{ marginTop: "18px", fontSize: "16px", lineHeight: 1.65, color: "rgba(20,43,46,0.75)", maxWidth: "440px" }}>
+          <p style={{ marginTop: "18px", fontSize: "16px", lineHeight: 1.65, color: "var(--at-hero-desc, rgba(20,43,46,0.75))", maxWidth: "440px" }}>
             AquaTrack reads every meter, applies your tariff rules automatically, and shows each
             household exactly what they used and why they're billed for it.
           </p>
@@ -53,7 +53,7 @@ export default function Hero({ setPage }) {
           </div>
         </div>
         <div className="at-flex" style={{ justifyContent: "center" }}>
-          <GaugeDial />
+          <WaterAnimation />
         </div>
       </div>
     </section>

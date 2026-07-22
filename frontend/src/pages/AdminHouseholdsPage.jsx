@@ -17,6 +17,8 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
   const [flatSize, setFlatSize] = useState("");
   const [occupancy, setOccupancy] = useState("");
   const [residentEmail, setResidentEmail] = useState("");
+  const [hasWorkingMeter, setHasWorkingMeter] = useState(true);
+  const [dailyUsageThreshold, setDailyUsageThreshold] = useState("500.00");
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingHouseholdId, setEditingHouseholdId] = useState(null);
@@ -65,6 +67,8 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
         flatSize: Number(flatSize),
         occupancy: Number(occupancy),
         residentEmail,
+        hasWorkingMeter,
+        dailyUsageThreshold: Number(dailyUsageThreshold),
       };
       if (editingHouseholdId) {
         await updateHousehold(auth.token, editingHouseholdId, payload);
@@ -76,6 +80,8 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
       setFlatSize("");
       setOccupancy("");
       setResidentEmail("");
+      setHasWorkingMeter(true);
+      setDailyUsageThreshold("500.00");
       await loadHouseholds(selectedApartmentId);
     } catch (err) {
       setFormError(err.message || `Could not ${editingHouseholdId ? "update" : "create"} household.`);
@@ -90,6 +96,8 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
     setFlatSize(String(h.flatSize));
     setOccupancy(String(h.occupancy));
     setResidentEmail(h.residentEmail || "");
+    setHasWorkingMeter(h.hasWorkingMeter !== false);
+    setDailyUsageThreshold(String(h.dailyUsageThreshold ?? "500.00"));
   }
 
   function handleCancelEdit() {
@@ -98,6 +106,8 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
     setFlatSize("");
     setOccupancy("");
     setResidentEmail("");
+    setHasWorkingMeter(true);
+    setDailyUsageThreshold("500.00");
   }
 
   async function handleDelete(id) {
@@ -120,14 +130,14 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
           Households
         </h1>
       </div>
-      <p style={{ fontSize: "14px", color: "rgba(20,43,46,0.65)", marginTop: "4px" }}>
+      <p style={{ fontSize: "14px", color: "var(--at-text-body)", marginTop: "4px" }}>
         Add flats to an apartment, or review the ones already onboarded.
       </p>
 
       {apartmentsError && <p className="at-error" style={{ marginTop: "16px" }}>{apartmentsError}</p>}
 
       {!apartmentsError && apartments.length === 0 && (
-        <div className="at-card" style={{ padding: "20px", marginTop: "24px", fontSize: "14px", color: "rgba(20,43,46,0.65)" }}>
+        <div className="at-card" style={{ padding: "20px", marginTop: "24px", fontSize: "14px", color: "var(--at-text-muted)" }}>
           You need at least one apartment before adding households.{" "}
           <button onClick={() => setPage("admin-apartments")} className="at-link-btn at-focus">
             Add an apartment first
@@ -143,7 +153,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
             </h2>
             <form
               onSubmit={handleSubmit}
-              style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto", gap: "12px", alignItems: "end" }}
+              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "16px", alignItems: "end" }}
             >
               <div>
                 <label style={{ fontSize: "13px", fontWeight: 500 }}>Apartment</label>
@@ -208,6 +218,31 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                   placeholder="resident@example.com"
                 />
               </div>
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: 500 }}>Working Meter?</label>
+                <select
+                  className="at-input at-focus"
+                  style={{ marginTop: "5px" }}
+                  value={hasWorkingMeter ? "true" : "false"}
+                  onChange={(e) => setHasWorkingMeter(e.target.value === "true")}
+                >
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: "13px", fontWeight: 500 }}>Daily Limit (units)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="at-input at-focus"
+                  style={{ marginTop: "5px" }}
+                  value={dailyUsageThreshold}
+                  onChange={(e) => setDailyUsageThreshold(e.target.value)}
+                  placeholder="500.00"
+                  required
+                />
+              </div>
               <div className="at-flex at-items-center at-gap-2">
                 <button type="submit" disabled={submitting} className="at-btn-brass at-focus" style={{ padding: "10px 16px" }}>
                   {submitting ? (editingHouseholdId ? "Saving…" : "Adding…") : (editingHouseholdId ? "Save" : "Add")}
@@ -228,7 +263,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
           </div>
 
           <div className="at-card" style={{ marginTop: "24px", overflow: "hidden" }}>
-            {loadingHouseholds && <p style={{ padding: "20px", fontSize: "14px", color: "rgba(20,43,46,0.6)" }}>Loading households…</p>}
+            {loadingHouseholds && <p style={{ padding: "20px", fontSize: "14px", color: "var(--at-text-muted)" }}>Loading households…</p>}
             {listError && <p className="at-error" style={{ padding: "20px" }}>{listError}</p>}
             {!loadingHouseholds && !listError && (
               <table className="at-table">
@@ -236,16 +271,18 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                   <tr>
                     <th>ID</th>
                     <th>Flat number</th>
-                    <th>Flat size (sq ft)</th>
+                    <th>Flat size</th>
                     <th>Occupancy</th>
-                    <th>Resident Email</th>
+                    <th>Email</th>
+                    <th>Meter Status</th>
+                    <th>Daily Limit</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {households.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ color: "rgba(20,43,46,0.5)" }}>
+                      <td colSpan={8} style={{ color: "var(--at-text-muted)" }}>
                         No households yet for this apartment — add one above.
                       </td>
                     </tr>
@@ -258,11 +295,19 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                       <td>{h.occupancy}</td>
                       <td>{h.residentEmail || "-"}</td>
                       <td>
+                        {h.hasWorkingMeter !== false ? (
+                          <span style={{ color: "var(--at-verdigris-deep)", fontWeight: 555 }}>Active</span>
+                        ) : (
+                          <span style={{ color: "var(--at-error)", fontWeight: 555 }}>Broken</span>
+                        )}
+                      </td>
+                      <td>{h.dailyUsageThreshold ?? "500.00"} units</td>
+                      <td>
                         <div className="at-flex at-items-center at-gap-2">
-                          <button onClick={() => handleEdit(h)} className="at-link-btn at-focus">
+                          <button onClick={() => handleEdit(h)} className="btn-edit at-focus">
                             Edit
                           </button>
-                          <button onClick={() => handleDelete(h.id)} className="at-link-btn at-focus" style={{ color: "var(--at-error)" }}>
+                          <button onClick={() => handleDelete(h.id)} className="btn-delete at-focus">
                             Delete
                           </button>
                         </div>

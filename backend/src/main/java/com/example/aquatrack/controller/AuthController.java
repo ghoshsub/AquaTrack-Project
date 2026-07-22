@@ -8,6 +8,7 @@ import com.example.aquatrack.model.User;
 import com.example.aquatrack.repository.UserRepository;
 import com.example.aquatrack.security.GoogleTokenVerifier;
 import com.example.aquatrack.security.JwtUtil;
+import com.example.aquatrack.service.EmailService;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -25,17 +26,20 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final GoogleTokenVerifier googleTokenVerifier;
+    private final EmailService emailService;
 
     public AuthController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager,
                           JwtUtil jwtUtil,
-                          GoogleTokenVerifier googleTokenVerifier) {
+                          GoogleTokenVerifier googleTokenVerifier,
+                          EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.googleTokenVerifier = googleTokenVerifier;
+        this.emailService = emailService;
     }
 
     @PostMapping("/google")
@@ -46,11 +50,16 @@ public class AuthController {
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setUsername(googleUser.email());
+                    newUser.setEmail(googleUser.email());
                     newUser.setDisplayName(googleUser.name());
                     newUser.setGoogleId(googleUser.googleId());
                     newUser.setAuthProvider(User.AuthProvider.GOOGLE);
                     newUser.setRole(User.Role.RESIDENT);
-                    return userRepository.save(newUser);
+                    User saved = userRepository.save(newUser);
+                    
+                    // Send welcome email asynchronously/in separate flow
+                    emailService.sendWelcomeEmail(saved);
+                    return saved;
                 });
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
@@ -75,6 +84,9 @@ public class AuthController {
         user.setRole(request.getRole());
 
         userRepository.save(user);
+
+        // Send welcome email
+        emailService.sendWelcomeEmail(user);
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
         return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole().name()));

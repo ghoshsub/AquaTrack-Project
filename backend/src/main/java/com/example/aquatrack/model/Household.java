@@ -19,6 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Household {
 
     @Id
@@ -46,6 +47,15 @@ public class Household {
 
     @Column(name = "resident_email", length = 255)
     private String residentEmail;
+
+    @NotNull
+    @Column(name = "has_working_meter", nullable = false)
+    private Boolean hasWorkingMeter = true;
+
+    @NotNull
+    @Positive
+    @Column(name = "daily_usage_threshold", nullable = false, precision = 10, scale = 2)
+    private BigDecimal dailyUsageThreshold = new BigDecimal("500.00");
 
     @OneToMany(mappedBy = "household", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

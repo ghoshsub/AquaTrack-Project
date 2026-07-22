@@ -27,4 +27,9 @@ public class HouseholdRequest {
     private Integer occupancy;
 
     private String residentEmail;
+
+    private Boolean hasWorkingMeter = true;
+
+    @Positive
+    private BigDecimal dailyUsageThreshold = new BigDecimal("500.00");
 }

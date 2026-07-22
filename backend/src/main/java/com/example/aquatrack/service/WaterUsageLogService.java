@@ -21,11 +21,14 @@ public class WaterUsageLogService {
 
     private final WaterUsageLogRepository usageLogRepository;
     private final HouseholdRepository householdRepository;
+    private final AlertService alertService;
 
     public WaterUsageLogService(WaterUsageLogRepository usageLogRepository,
-                                HouseholdRepository householdRepository) {
+                                HouseholdRepository householdRepository,
+                                AlertService alertService) {
         this.usageLogRepository = usageLogRepository;
         this.householdRepository = householdRepository;
+        this.alertService = alertService;
     }
 
     public WaterUsageLog logManualReading(UsageLogRequest request) {
@@ -45,7 +48,9 @@ public class WaterUsageLogService {
         log.setReadingValue(request.getReadingValue());
         log.setSource(WaterUsageLog.Source.MANUAL);
 
-        return usageLogRepository.save(log);
+        WaterUsageLog saved = usageLogRepository.save(log);
+        alertService.scanHouseholdForAlerts(household, saved.getReadingDate());
+        return saved;
     }
 
     public List<WaterUsageLog> getHistory(Long householdId) {
@@ -105,7 +110,8 @@ public class WaterUsageLogService {
                     log.setReadingDate(date);
                     log.setReadingValue(value);
                     log.setSource(WaterUsageLog.Source.BULK_CSV);
-                    usageLogRepository.save(log);
+                    WaterUsageLog saved = usageLogRepository.save(log);
+                    alertService.scanHouseholdForAlerts(household, saved.getReadingDate());
                     
                     response.setSuccessful(response.getSuccessful() + 1);
                 } catch (Exception e) {

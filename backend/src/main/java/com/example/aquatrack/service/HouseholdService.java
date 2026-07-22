@@ -33,6 +33,12 @@ public class HouseholdService {
         household.setFlatSize(request.getFlatSize());
         household.setOccupancy(request.getOccupancy());
         household.setResidentEmail(request.getResidentEmail());
+        if (request.getHasWorkingMeter() != null) {
+            household.setHasWorkingMeter(request.getHasWorkingMeter());
+        }
+        if (request.getDailyUsageThreshold() != null) {
+            household.setDailyUsageThreshold(request.getDailyUsageThreshold());
+        }
         return householdRepository.save(household);
     }
 
@@ -52,6 +58,12 @@ public class HouseholdService {
         household.setFlatSize(request.getFlatSize());
         household.setOccupancy(request.getOccupancy());
         household.setResidentEmail(request.getResidentEmail());
+        if (request.getHasWorkingMeter() != null) {
+            household.setHasWorkingMeter(request.getHasWorkingMeter());
+        }
+        if (request.getDailyUsageThreshold() != null) {
+            household.setDailyUsageThreshold(request.getDailyUsageThreshold());
+        }
         return householdRepository.save(household);
     }
 
