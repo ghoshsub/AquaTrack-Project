@@ -6,7 +6,11 @@ import com.example.aquatrack.dto.InvoiceGenerationRequest;
 import com.example.aquatrack.model.BillingCycle;
 import com.example.aquatrack.model.Invoice;
 import com.example.aquatrack.service.BillingService;
+import com.example.aquatrack.service.PdfService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +24,11 @@ import java.util.List;
 public class AdminBillingController {
 
     private final BillingService billingService;
+    private final PdfService pdfService;
 
-    public AdminBillingController(BillingService billingService) {
+    public AdminBillingController(BillingService billingService, PdfService pdfService) {
         this.billingService = billingService;
+        this.pdfService = pdfService;
     }
 
     @PostMapping("/cycles")
@@ -67,6 +73,16 @@ public class AdminBillingController {
     @GetMapping("/cycles/{id}/invoices")
     public ResponseEntity<List<Invoice>> getInvoicesByCycle(@PathVariable Long id) {
         return ResponseEntity.ok(billingService.getInvoicesByCycle(id));
+    }
+
+    @GetMapping("/invoices/{id}/receipt")
+    public ResponseEntity<byte[]> downloadInvoiceReceipt(@PathVariable Long id) {
+        Invoice invoice = billingService.getInvoiceById(id);
+        byte[] pdfBytes = pdfService.generateInvoicePdf(invoice);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "receipt-" + id + ".pdf");
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
 }
 

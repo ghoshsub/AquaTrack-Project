@@ -63,4 +63,17 @@ public class Invoice {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    // ── Payment metadata ──────────────────────────────────────────────────────
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
+
+    @Column(name = "transaction_id", length = 100)
+    private String transactionId;
+
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
+
+    @Column(name = "receipt_number", length = 100, unique = true)
+    private String receiptNumber;
 }

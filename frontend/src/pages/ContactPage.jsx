@@ -1,129 +1,95 @@
 import React, { useState } from "react";
-import { Mail, MessageSquare, Send, CheckCircle } from "lucide-react";
+import { Mail, MessageSquare, Send, CheckCircle2 } from "lucide-react";
+import BackToDashboard from "../components/BackToDashboard.jsx";
 
-export default function ContactPage() {
+const fieldStyle = { display: "flex", flexDirection: "column", gap: "6px" };
+const labelStyle = { fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#64748B" };
+const inputBase = {
+  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.1)",
+  color: "#FFFFFF", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+  fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+  transition: "border-color 0.18s ease, box-shadow 0.18s ease",
+};
+
+export default function ContactPage({ setPage }) {
   const [feedback, setFeedback] = useState("");
-  const [name, setName]         = useState("");
-  const [sent, setSent]         = useState(false);
-  const [sending, setSending]   = useState(false);
+  const [name, setName] = useState("");
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
 
   async function handleSend(e) {
     e.preventDefault();
     if (!feedback.trim()) return;
     setSending(true);
-    // Simulate a send – replace with a real API call when ready
-    await new Promise((r) => setTimeout(r, 900));
+    await new Promise((r) => setTimeout(r, 800));
     setSending(false);
     setSent(true);
     setFeedback("");
     setName("");
   }
 
-  return (
-    <section
-      className="at-container"
-      style={{ maxWidth: "520px", paddingTop: "80px", paddingBottom: "80px" }}
-    >
-      <h1
-        className="at-display"
-        style={{ fontSize: "30px", fontWeight: 600, color: "var(--at-ink-deep)" }}
-      >
-        Contact &amp; Feedback
-      </h1>
-      <p style={{ marginTop: "10px", fontSize: "14px", color: "rgba(20,43,46,0.7)" }}>
-        Questions about onboarding your building, or just want to share thoughts? Reach out below.
-      </p>
+  const cardStyle = { background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", backdropFilter: "blur(16px)" };
 
-      {/* Email card */}
-      <div className="at-card" style={{ padding: "20px 24px", marginTop: "32px" }}>
-        <div className="at-flex at-items-center at-gap-3">
-          <Mail size={16} color="var(--at-verdigris-deep)" />
-          <span style={{ fontSize: "14px" }}>support@aquatrack.example</span>
+  return (
+    <div style={{ maxWidth: "550px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px", padding: "40px" }}>
+      <div>
+        {setPage && <BackToDashboard setPage={setPage} />}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "16px" }}>
+          <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "linear-gradient(135deg, rgba(56,189,248,0.2) 0%, rgba(16,185,129,0.2) 100%)", border: "1px solid rgba(56,189,248,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <MessageSquare size={22} color="#38BDF8" />
+          </div>
+          <div>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Contact & Feedback</h1>
+            <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>Reach out for building onboarding assistance or share feature suggestions</p>
+          </div>
         </div>
       </div>
 
-      {/* Feedback form */}
-      <div className="at-card" style={{ padding: "28px 24px", marginTop: "20px" }}>
-        <div className="at-flex at-items-center at-gap-2" style={{ marginBottom: "20px" }}>
-          <MessageSquare size={16} color="var(--at-verdigris-deep)" />
-          <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--at-ink-deep)" }}>
-            Send us feedback
-          </span>
+      {/* Direct Contact Card */}
+      <div style={{ ...cardStyle, padding: "18px 24px", display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(56,189,248,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Mail size={18} color="#38BDF8" />
         </div>
+        <div>
+          <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Support Email</span>
+          <p style={{ fontSize: "14px", fontWeight: 600, color: "#FFFFFF", margin: "2px 0 0" }}>support@aquatrack.com</p>
+        </div>
+      </div>
 
+      {/* Feedback Form Card */}
+      <div style={{ ...cardStyle, padding: "28px" }}>
         {sent ? (
-          <div
-            className="at-flex at-flex-col at-items-center"
-            style={{ padding: "24px 0", gap: "12px", textAlign: "center" }}
-          >
-            <CheckCircle size={36} color="var(--at-verdigris-deep)" />
-            <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--at-ink-deep)" }}>
-              Thanks for your feedback!
-            </p>
-            <p style={{ fontSize: "13px", color: "rgba(20,43,46,0.65)" }}>
-              We'll get back to you as soon as we can.
-            </p>
-            <button
-              className="at-link-btn at-focus"
-              style={{ marginTop: "8px", fontSize: "13px" }}
-              onClick={() => setSent(false)}
-            >
+          <div style={{ textAlign: "center", padding: "24px 0" }}>
+            <CheckCircle2 size={44} color="#34D399" style={{ display: "block", margin: "0 auto 14px" }} />
+            <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>Thank you for your feedback!</h3>
+            <p style={{ fontSize: "13px", color: "#94A3B8", marginTop: "6px" }}>Our team will review your message promptly.</p>
+            <button onClick={() => setSent(false)} style={{ background: "none", border: "none", color: "#38BDF8", fontWeight: 600, cursor: "pointer", fontSize: "13px", fontFamily: "inherit", marginTop: "16px" }}>
               Send another message
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSend} className="at-flex-col at-gap-4">
-            <div>
-              <label style={{ fontSize: "13px", fontWeight: 500 }}>Your name (optional)</label>
-              <input
-                className="at-input at-focus"
-                style={{ marginTop: "5px" }}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Ravi Kumar"
+          <form onSubmit={handleSend} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Your Name (Optional)</label>
+              <input style={inputBase} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Ravi Kumar"
+                onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
+                onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
-            <div>
-              <label style={{ fontSize: "13px", fontWeight: 500 }}>Message</label>
-              <textarea
-                className="at-input at-focus"
-                style={{
-                  marginTop: "5px",
-                  resize: "vertical",
-                  minHeight: "120px",
-                  fontFamily: "Inter, sans-serif",
-                  lineHeight: "1.55",
-                }}
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                placeholder="Share your thoughts, questions or suggestions…"
-                required
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Message *</label>
+              <textarea style={{ ...inputBase, minHeight: "120px", resize: "vertical", lineHeight: 1.5 }} value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Share your questions or feature requests…" required
+                onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
+                onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
-            <button
-              type="submit"
-              disabled={sending || !feedback.trim()}
-              className="at-btn-brass at-focus"
-              style={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-              }}
-            >
-              {sending ? (
-                "Sending…"
-              ) : (
-                <>
-                  <Send size={15} />
-                  Send feedback
-                </>
-              )}
+            <button type="submit" disabled={sending || !feedback.trim()}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)", border: "none", color: "#0F172A", fontWeight: 700, fontSize: "14px", padding: "12px", borderRadius: "10px", cursor: sending || !feedback.trim() ? "not-allowed" : "pointer", opacity: sending || !feedback.trim() ? 0.6 : 1, fontFamily: "inherit", boxShadow: "0 4px 14px rgba(56,189,248,0.3)" }}>
+              {sending ? "Sending…" : <><Send size={15} /> Send Feedback</>}
             </button>
           </form>
         )}
       </div>
-    </section>
+    </div>
   );
 }

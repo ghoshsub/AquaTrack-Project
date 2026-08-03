@@ -13,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class BillingService {
@@ -234,6 +236,33 @@ public class BillingService {
 
     public List<Invoice> getInvoicesByHousehold(Long householdId) {
         return invoiceRepository.findByHouseholdId(householdId);
+    }
+
+    public Invoice getInvoiceById(Long invoiceId) {
+        return invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new IllegalArgumentException("Invoice not found: " + invoiceId));
+    }
+
+    @Transactional
+    public Invoice markInvoiceAsPaid(Long invoiceId, String paymentMethod) {
+        Invoice invoice = getInvoiceById(invoiceId);
+
+        // Duplicate-payment guard
+        if (invoice.getStatus() == Invoice.Status.PAID) {
+            throw new IllegalStateException("Invoice #" + invoiceId + " has already been paid. Receipt: " + invoice.getReceiptNumber());
+        }
+
+        // Generate payment metadata
+        String txnId = "TXN-" + UUID.randomUUID().toString().toUpperCase().replace("-", "").substring(0, 12);
+        String receiptNum = "RCP-" + String.format("%06d", invoiceId) + "-" + System.currentTimeMillis() % 100000;
+
+        invoice.setStatus(Invoice.Status.PAID);
+        invoice.setPaymentDate(LocalDateTime.now());
+        invoice.setTransactionId(txnId);
+        invoice.setPaymentMethod(paymentMethod != null && !paymentMethod.isBlank() ? paymentMethod : "UPI");
+        invoice.setReceiptNumber(receiptNum);
+
+        return invoiceRepository.save(invoice);
     }
 
     @Transactional(readOnly = true)

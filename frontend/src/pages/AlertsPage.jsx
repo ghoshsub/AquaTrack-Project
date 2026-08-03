@@ -1,8 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { AlertTriangle, Bell, CheckCircle, RefreshCw, Filter, Receipt } from "lucide-react";
+import { AlertTriangle, Bell, CheckCircle, RefreshCw, Filter, Receipt, Building2, CheckCircle2 } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
 import { listAlerts, markAlertAsRead, triggerAlertScan } from "../api/alertApi.js";
+
+const inputBase = {
+  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.1)",
+  color: "#FFFFFF", padding: "9px 12px", borderRadius: "10px", fontSize: "13px",
+  fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+  transition: "border-color 0.18s ease, box-shadow 0.18s ease",
+};
+
+function SaasInput({ type = "text", ...props }) {
+  return (
+    <input type={type} style={inputBase} {...props}
+      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
+      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
+    />
+  );
+}
+
+function SaasSelect({ children, ...props }) {
+  return (
+    <select style={inputBase} {...props}
+      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
+      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
+    >
+      {children}
+    </select>
+  );
+}
 
 export default function AlertsPage({ auth, setPage }) {
   const isAdmin = auth?.role === "ADMIN";
@@ -14,11 +41,8 @@ export default function AlertsPage({ auth, setPage }) {
   const [alerts, setAlerts] = useState([]);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
   const [alertsError, setAlertsError] = useState("");
+  const [filterRead, setFilterRead] = useState("UNREAD_ONLY");
 
-  // Filters
-  const [filterRead, setFilterRead] = useState("UNREAD_ONLY"); // "ALL", "UNREAD_ONLY"
-
-  // Testing Scan Opener (Admin Only)
   const [scanDate, setScanDate] = useState("");
   const [scanning, setScanning] = useState(false);
   const [scanSuccess, setScanSuccess] = useState("");
@@ -43,11 +67,7 @@ export default function AlertsPage({ auth, setPage }) {
     setLoadingAlerts(true);
     setAlertsError("");
     try {
-      // If resident, don't pass apartmentId (backend resolves by token's household)
-      const data = await listAlerts(
-        auth.token,
-        isAdmin ? selectedApartmentId : null
-      );
+      const data = await listAlerts(auth.token, isAdmin ? selectedApartmentId : null);
       setAlerts(data);
     } catch (err) {
       setAlertsError(err.message || "Could not load alerts.");
@@ -57,10 +77,7 @@ export default function AlertsPage({ auth, setPage }) {
   }
 
   useEffect(() => {
-    // For resident, trigger immediately. For admin, wait for selectedApartmentId
-    if (!isAdmin || selectedApartmentId) {
-      loadAlerts();
-    }
+    if (!isAdmin || selectedApartmentId) { loadAlerts(); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedApartmentId, isAdmin]);
 
@@ -75,12 +92,10 @@ export default function AlertsPage({ auth, setPage }) {
 
   async function handleTriggerScan(e) {
     e.preventDefault();
-    setScanError("");
-    setScanSuccess("");
-    setScanning(true);
+    setScanError(""); setScanSuccess(""); setScanning(true);
     try {
       await triggerAlertScan(auth.token, scanDate);
-      setScanSuccess(`Scan successfully triggered and completed for ${scanDate}.`);
+      setScanSuccess(`Scan completed for ${scanDate}.`);
       setScanDate("");
       await loadAlerts();
     } catch (err) {
@@ -90,188 +105,126 @@ export default function AlertsPage({ auth, setPage }) {
     }
   }
 
-  const filteredAlerts = alerts.filter((a) => {
-    if (filterRead === "UNREAD_ONLY") return !a.isRead;
-    return true;
-  });
+  const filteredAlerts = alerts.filter(a => (filterRead === "UNREAD_ONLY" ? !a.isRead : true));
+  const cardStyle = { background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", backdropFilter: "blur(16px)" };
 
   return (
-    <section className="at-container" style={{ maxWidth: "800px", paddingTop: "56px", paddingBottom: "80px" }}>
-      <BackToDashboard setPage={setPage} />
-
-      <div className="at-flex at-items-center at-gap-3">
-        <Bell size={22} color="var(--at-verdigris-deep)" />
-        <h1 className="at-display" style={{ fontSize: "26px", fontWeight: 600, color: "var(--at-ink-deep)" }}>
-          Notifications & Alerts
-        </h1>
+    <div style={{ maxWidth: "1050px", margin: "40px auto 80px", padding: "0 24px", display: "flex", flexDirection: "column", gap: "24px" }}>
+      {/* Header */}
+      <div>
+        <BackToDashboard setPage={setPage} />
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "16px" }}>
+          <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "linear-gradient(135deg, rgba(244,63,94,0.2) 0%, rgba(245,158,11,0.2) 100%)", border: "1px solid rgba(244,63,94,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Bell size={22} color="#F43F5E" />
+          </div>
+          <div>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Notifications & Leak Alerts</h1>
+            <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>
+              {isAdmin ? "Monitor potential water leaks, threshold spikes, and daily limit violations across all flats" : "Stay informed about water leaks and daily threshold alerts for your flat"}
+            </p>
+          </div>
+        </div>
       </div>
-      <p style={{ fontSize: "14px", color: "rgba(20,43,46,0.65)", marginTop: "4px" }}>
-        {isAdmin
-          ? "Monitor potential leaks, abnormal consumption spikes, and daily limit violations across all flats."
-          : "Stay informed about your flat's potential water leaks and limit threshold notifications."}
-      </p>
 
-      {/* Admin specific scanning & selector controls */}
+      {/* Admin Controls */}
       {isAdmin && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "24px" }}>
-          {/* Selector */}
-          <div className="at-card" style={{ padding: "20px" }}>
-            <label style={{ fontSize: "13px", fontWeight: 550, display: "block", marginBottom: "6px" }}>Select Apartment</label>
-            <select
-              className="at-input at-focus"
-              value={selectedApartmentId}
-              onChange={(e) => setSelectedApartmentId(e.target.value)}
-            >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
+          {/* Apartment Selector */}
+          <div style={{ ...cardStyle, padding: "20px" }}>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748B", marginBottom: "8px" }}>Apartment</label>
+            <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)}>
               {apartments.length === 0 && <option value="">No apartments available</option>}
-              {apartments.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
-            {apartmentsError && <p className="at-error" style={{ marginTop: "6px" }}>{apartmentsError}</p>}
+              {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </SaasSelect>
+            {apartmentsError && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "6px" }}>{apartmentsError}</p>}
           </div>
 
-          {/* Trigger Scan Form */}
-          <div className="at-card" style={{ padding: "20px" }}>
-            <h2 style={{ fontSize: "14px", fontWeight: 600, marginBottom: "8px" }} className="at-flex at-items-center at-gap-1">
-              <RefreshCw size={14} />
-              Manual Usage Scan
-            </h2>
-            <form onSubmit={handleTriggerScan} style={{ display: "flex", gap: "10px", alignItems: "end" }}>
+          {/* Manual Scan */}
+          <div style={{ ...cardStyle, padding: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+              <RefreshCw size={14} color="#38BDF8" />
+              <h2 style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>Manual Usage Scan</h2>
+            </div>
+            <form onSubmit={handleTriggerScan} style={{ display: "flex", gap: "10px", alignItems: "flex-end" }}>
               <div style={{ flex: 1 }}>
-                <label style={{ fontSize: "11px", color: "rgba(20,43,46,0.6)", display: "block", marginBottom: "4px" }}>Target Date</label>
-                <input
-                  type="date"
-                  required
-                  className="at-input at-focus"
-                  style={{ padding: "8px 12px" }}
-                  value={scanDate}
-                  onChange={(e) => setScanDate(e.target.value)}
-                />
+                <SaasInput type="date" required value={scanDate} onChange={e => setScanDate(e.target.value)} />
               </div>
-              <button type="submit" disabled={scanning} className="at-btn-brass at-focus" style={{ padding: "9px 16px" }}>
-                {scanning ? "Running..." : "Scan"}
+              <button type="submit" disabled={scanning}
+                style={{ background: "linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)", border: "none", color: "#0F172A", fontWeight: 700, fontSize: "13px", padding: "10px 16px", borderRadius: "10px", cursor: scanning ? "not-allowed" : "pointer", opacity: scanning ? 0.7 : 1, fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                {scanning ? "Scanning…" : "Run Scan"}
               </button>
             </form>
-            {scanSuccess && <p style={{ fontSize: "12px", color: "var(--at-verdigris-deep)", marginTop: "6px" }}>{scanSuccess}</p>}
-            {scanError && <p className="at-error" style={{ fontSize: "12px", marginTop: "6px" }}>{scanError}</p>}
+            {scanSuccess && <p style={{ fontSize: "12px", color: "#34D399", marginTop: "8px" }}>{scanSuccess}</p>}
+            {scanError && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "8px" }}>{scanError}</p>}
           </div>
         </div>
       )}
 
-      {/* Main Alerts Feed */}
-      <div className="at-card" style={{ marginTop: "28px", padding: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid rgba(20,43,46,0.1)", paddingBottom: "12px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 600 }}>Alert Feed</h2>
-          
-          <div className="at-flex at-items-center at-gap-2">
-            <Filter size={14} color="rgba(20,43,46,0.5)" />
-            <select
-              className="at-input at-focus"
-              style={{ fontSize: "12px", padding: "4px 8px", width: "130px" }}
-              value={filterRead}
-              onChange={(e) => setFilterRead(e.target.value)}
-            >
-              <option value="UNREAD_ONLY">Unread alerts</option>
+      {/* Alert Feed */}
+      <div style={{ ...cardStyle, padding: "24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: "14px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "15px", fontWeight: 700, color: "#FFFFFF" }}>Alert Feed</span>
+            <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", background: "rgba(244,63,94,0.15)", color: "#F43F5E" }}>{filteredAlerts.length}</span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Filter size={13} color="#64748B" />
+            <SaasSelect value={filterRead} onChange={e => setFilterRead(e.target.value)} style={{ width: "130px", padding: "6px 10px", fontSize: "12px" }}>
+              <option value="UNREAD_ONLY">Unread only</option>
               <option value="ALL">All alerts</option>
-            </select>
+            </SaasSelect>
           </div>
         </div>
 
-        {loadingAlerts && <p style={{ fontSize: "14px", color: "rgba(20,43,46,0.6)" }}>Fetching alerts...</p>}
-        {alertsError && <p className="at-error">{alertsError}</p>}
+        {loadingAlerts && <p style={{ color: "#64748B", fontSize: "14px", textAlign: "center", padding: "30px 0" }}>Fetching alerts…</p>}
+        {alertsError && <p style={{ color: "#F87171", fontSize: "13px" }}>{alertsError}</p>}
 
         {!loadingAlerts && !alertsError && filteredAlerts.length === 0 && (
-          <div style={{ padding: "40px", textAlign: "center", color: "rgba(20,43,46,0.5)" }}>
-            No new alerts in this filter. Everything looks clear!
+          <div style={{ padding: "48px 20px", textAlign: "center", color: "#475569" }}>
+            <CheckCircle2 size={40} color="#10B981" style={{ display: "block", margin: "0 auto 12px" }} />
+            <p style={{ fontSize: "14px", color: "#94A3B8", margin: 0 }}>No alerts found in this view. Everything looks clear!</p>
           </div>
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {filteredAlerts.map((a) => {
+          {filteredAlerts.map(a => {
             const isLeak = a.alertType === "LEAK_SUSPECTED";
             const isBill = a.alertType === "BILL_GENERATED";
-            const cardBg = isLeak
-              ? "rgba(239, 68, 68, 0.04)"
-              : isBill
-              ? "rgba(35, 117, 107, 0.04)"
-              : "rgba(245, 158, 11, 0.04)";
-            const borderCol = isLeak
-              ? "rgba(239, 68, 68, 0.2)"
-              : isBill
-              ? "rgba(35, 117, 107, 0.2)"
-              : "rgba(245, 158, 11, 0.2)";
-            const iconCol = isLeak
-              ? "var(--at-error)"
-              : isBill
-              ? "var(--at-verdigris-deep)"
-              : "#d97706";
+            const cardBg = isLeak ? "rgba(244,63,94,0.06)" : isBill ? "rgba(56,189,248,0.06)" : "rgba(245,158,11,0.06)";
+            const borderCol = isLeak ? "rgba(244,63,94,0.25)" : isBill ? "rgba(56,189,248,0.25)" : "rgba(245,158,11,0.25)";
+            const iconCol = isLeak ? "#F43F5E" : isBill ? "#38BDF8" : "#F59E0B";
             const AlertIcon = isBill ? Receipt : AlertTriangle;
 
             return (
-              <div
-                key={a.id}
-                style={{
-                  display: "flex",
-                  gap: "16px",
-                  padding: "16px",
-                  borderRadius: "10px",
-                  background: cardBg,
-                  border: `1px solid ${borderCol}`,
-                  opacity: a.isRead ? 0.65 : 1,
-                  transition: "all 0.15s ease"
-                }}
-              >
-                <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#fff", border: `1px solid ${borderCol}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div key={a.id} style={{ display: "flex", gap: "16px", padding: "16px", borderRadius: "12px", background: cardBg, border: `1px solid ${borderCol}`, opacity: a.isRead ? 0.6 : 1, transition: "all 0.15s ease" }}>
+                <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "rgba(0,0,0,0.3)", border: `1px solid ${borderCol}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <AlertIcon size={18} color={iconCol} />
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                    <h3 style={{ fontSize: "14px", fontWeight: 600, color: "var(--at-ink-deep)" }}>
-                      {isBill ? "Monthly Bill" : isLeak ? "Leak Warning" : "Threshold Spiked"}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
+                    <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>
+                      {isBill ? "Monthly Bill Generated" : isLeak ? "Possible Water Leak" : "Threshold Exceeded"}
                       {isAdmin && a.household && (
-                        <span style={{ fontSize: "11px", color: "rgba(20,43,46,0.6)", fontWeight: 400, marginLeft: "8px" }}>
+                        <span style={{ fontSize: "12px", color: "#38BDF8", fontWeight: 500, marginLeft: "8px" }}>
                           (Flat {a.household.flatNumber})
                         </span>
                       )}
                     </h3>
-                    <span style={{ fontSize: "11px", color: "rgba(20,43,46,0.5)" }}>{a.readingDate}</span>
+                    <span style={{ fontSize: "11px", color: "#64748B" }}>{a.readingDate}</span>
                   </div>
-                  <p style={{ fontSize: "13px", color: "rgba(20,43,46,0.85)", marginTop: "6px", lineHeight: "1.4" }}>
-                    {a.message}
-                  </p>
+                  <p style={{ fontSize: "13px", color: "#94A3B8", marginTop: "6px", lineHeight: 1.5, margin: "6px 0 0" }}>{a.message}</p>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", borderTop: "1px dashed rgba(20,43,46,0.08)", paddingTop: "8px" }}>
-                    <span style={{ fontSize: "11px", color: "rgba(20,43,46,0.5)" }}>
-                      {isBill ? (
-                        <>
-                          Bill Amount: <strong>INR {a.readingValue}</strong>
-                        </>
-                      ) : (
-                        <>
-                          Logged reading: <strong>{a.readingValue} units</strong>
-                        </>
-                      )}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", borderTop: "1px dashed rgba(255,255,255,0.08)", paddingTop: "10px" }}>
+                    <span style={{ fontSize: "12px", color: "#64748B" }}>
+                      {isBill ? <>Amount: <strong style={{ color: "#FFFFFF" }}>₹{a.readingValue}</strong></> : <>Reading: <strong style={{ color: "#FFFFFF" }}>{a.readingValue} L</strong></>}
                     </span>
 
                     {!a.isRead && (
-                      <button
-                        onClick={() => handleMarkAsRead(a.id)}
-                        className="at-focus"
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: 600,
-                          color: "var(--at-verdigris-deep)",
-                          background: "transparent",
-                          border: "none",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px"
-                        }}
-                      >
-                        <CheckCircle size={12} />
-                        Dismiss
+                      <button onClick={() => handleMarkAsRead(a.id)}
+                        style={{ fontSize: "12px", fontWeight: 600, color: "#34D399", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "6px", padding: "4px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", fontFamily: "inherit" }}>
+                        <CheckCircle size={12} /> Dismiss
                       </button>
                     )}
                   </div>
@@ -281,6 +234,6 @@ export default function AlertsPage({ auth, setPage }) {
           })}
         </div>
       </div>
-    </section>
+    </div>
   );
 }

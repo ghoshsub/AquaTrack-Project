@@ -1,18 +1,53 @@
 import React, { useEffect, useState } from "react";
-import { Home } from "lucide-react";
+import { Home, Users, Plus, Edit2, Trash2, AlertCircle, X, Mail, Gauge, CheckCircle2, XCircle, Building2, Search } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
 import { createHousehold, listHouseholdsByApartment, deleteHousehold, updateHousehold } from "../api/householdApi.js";
+
+const fieldStyle = { display: "flex", flexDirection: "column", gap: "6px" };
+const labelStyle = { fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#94A3B8" };
+const inputBase = {
+  width: "100%",
+  background: "rgba(13, 22, 36, 0.9)",
+  border: "1px solid rgba(255, 255, 255, 0.14)",
+  color: "#FFFFFF",
+  padding: "10px 14px",
+  borderRadius: "10px",
+  fontSize: "14px",
+  fontFamily: "inherit",
+  outline: "none",
+  boxSizing: "border-box",
+  transition: "all 0.2s ease",
+};
+
+function SaasInput({ type = "text", ...props }) {
+  return (
+    <input type={type} style={inputBase} {...props}
+      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
+      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+    />
+  );
+}
+
+function SaasSelect({ children, ...props }) {
+  return (
+    <select style={inputBase} {...props}
+      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
+      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+    >
+      {children}
+    </select>
+  );
+}
 
 export default function AdminHouseholdsPage({ auth, setPage }) {
   const [apartments, setApartments] = useState([]);
   const [selectedApartmentId, setSelectedApartmentId] = useState("");
   const [apartmentsError, setApartmentsError] = useState("");
-
   const [households, setHouseholds] = useState([]);
   const [loadingHouseholds, setLoadingHouseholds] = useState(false);
   const [listError, setListError] = useState("");
-
+  const [searchTerm, setSearchTerm] = useState("");
   const [flatNumber, setFlatNumber] = useState("");
   const [flatSize, setFlatSize] = useState("");
   const [occupancy, setOccupancy] = useState("");
@@ -22,6 +57,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingHouseholdId, setEditingHouseholdId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     async function loadApartments() {
@@ -56,6 +92,13 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedApartmentId]);
 
+  function resetForm() {
+    setEditingHouseholdId(null);
+    setFlatNumber(""); setFlatSize(""); setOccupancy(""); setResidentEmail("");
+    setHasWorkingMeter(true); setDailyUsageThreshold("500.00");
+    setShowForm(false); setFormError("");
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setFormError("");
@@ -63,25 +106,15 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
     try {
       const payload = {
         apartmentId: Number(selectedApartmentId),
-        flatNumber,
-        flatSize: Number(flatSize),
-        occupancy: Number(occupancy),
-        residentEmail,
-        hasWorkingMeter,
-        dailyUsageThreshold: Number(dailyUsageThreshold),
+        flatNumber, flatSize: Number(flatSize), occupancy: Number(occupancy),
+        residentEmail, hasWorkingMeter, dailyUsageThreshold: Number(dailyUsageThreshold),
       };
       if (editingHouseholdId) {
         await updateHousehold(auth.token, editingHouseholdId, payload);
-        setEditingHouseholdId(null);
       } else {
         await createHousehold(auth.token, payload);
       }
-      setFlatNumber("");
-      setFlatSize("");
-      setOccupancy("");
-      setResidentEmail("");
-      setHasWorkingMeter(true);
-      setDailyUsageThreshold("500.00");
+      resetForm();
       await loadHouseholds(selectedApartmentId);
     } catch (err) {
       setFormError(err.message || `Could not ${editingHouseholdId ? "update" : "create"} household.`);
@@ -92,26 +125,15 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
 
   function handleEdit(h) {
     setEditingHouseholdId(h.id);
-    setFlatNumber(h.flatNumber);
-    setFlatSize(String(h.flatSize));
-    setOccupancy(String(h.occupancy));
-    setResidentEmail(h.residentEmail || "");
-    setHasWorkingMeter(h.hasWorkingMeter !== false);
+    setFlatNumber(h.flatNumber); setFlatSize(String(h.flatSize)); setOccupancy(String(h.occupancy));
+    setResidentEmail(h.residentEmail || ""); setHasWorkingMeter(h.hasWorkingMeter !== false);
     setDailyUsageThreshold(String(h.dailyUsageThreshold ?? "500.00"));
-  }
-
-  function handleCancelEdit() {
-    setEditingHouseholdId(null);
-    setFlatNumber("");
-    setFlatSize("");
-    setOccupancy("");
-    setResidentEmail("");
-    setHasWorkingMeter(true);
-    setDailyUsageThreshold("500.00");
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function handleDelete(id) {
-    if (!window.confirm("Are you sure you want to delete this household?")) return;
+    if (!window.confirm("Delete this household? This cannot be undone.")) return;
     try {
       await deleteHousehold(auth.token, id);
       await loadHouseholds(selectedApartmentId);
@@ -120,206 +142,269 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
     }
   }
 
+  const filteredHouseholds = households.filter(h =>
+    h.flatNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (h.residentEmail && h.residentEmail.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   return (
-    <section className="at-container" style={{ maxWidth: "900px", paddingTop: "56px", paddingBottom: "80px" }}>
-      <BackToDashboard setPage={setPage} />
+    <div style={{ display: "flex", flexDirection: "column", gap: "28px", padding: "32px" }}>
+      {/* Header Banner */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+        <div>
+          <BackToDashboard setPage={setPage} />
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "16px" }}>
+            <div style={{ width: "46px", height: "46px", borderRadius: "14px", background: "linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(56,189,248,0.2) 100%)", border: "1px solid rgba(16,185,129,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Home size={24} color="#34D399" />
+            </div>
+            <div>
+              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Household Management</h1>
+              <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>Manage flats, resident contacts, and meter status per building</p>
+            </div>
+          </div>
+        </div>
 
-      <div className="at-flex at-items-center at-gap-3">
-        <Home size={22} color="var(--at-verdigris-deep)" />
-        <h1 className="at-display" style={{ fontSize: "26px", fontWeight: 600, color: "var(--at-ink-deep)" }}>
-          Households
-        </h1>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
+          {apartments.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "13px", color: "#94A3B8", fontWeight: 600 }}>Building:</span>
+              <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)} style={{ minWidth: "200px" }}>
+                {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </SaasSelect>
+            </div>
+          )}
+          {apartments.length > 0 && (
+            <button
+              onClick={() => { resetForm(); setShowForm(true); }}
+              style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                border: "none", color: "#FFFFFF", fontWeight: 700, fontSize: "14px",
+                padding: "12px 22px", borderRadius: "12px", cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(16,185,129,0.4)", fontFamily: "inherit",
+              }}
+            >
+              <Plus size={18} /> Add Household
+            </button>
+          )}
+        </div>
       </div>
-      <p style={{ fontSize: "14px", color: "var(--at-text-body)", marginTop: "4px" }}>
-        Add flats to an apartment, or review the ones already onboarded.
-      </p>
 
-      {apartmentsError && <p className="at-error" style={{ marginTop: "16px" }}>{apartmentsError}</p>}
-
-      {!apartmentsError && apartments.length === 0 && (
-        <div className="at-card" style={{ padding: "20px", marginTop: "24px", fontSize: "14px", color: "var(--at-text-muted)" }}>
-          You need at least one apartment before adding households.{" "}
-          <button onClick={() => setPage("admin-apartments")} className="at-link-btn at-focus">
-            Add an apartment first
-          </button>
+      {/* Errors */}
+      {apartmentsError && (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: "12px", padding: "12px 16px", color: "#F87171", fontSize: "13.5px" }}>
+          <AlertCircle size={16} /> {apartmentsError}
         </div>
       )}
 
-      {apartments.length > 0 && (
-        <>
-          <div className="at-card" style={{ padding: "24px", marginTop: "24px" }}>
-            <h2 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "16px" }}>
-              {editingHouseholdId ? "Edit household" : "Add a household"}
+      {!apartmentsError && apartments.length === 0 && !loadingHouseholds && (
+        <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "48px", textAlign: "center" }}>
+          <Building2 size={44} color="#334155" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
+          <p style={{ color: "#94A3B8", fontSize: "15px" }}>
+            You need to create at least one apartment building first.{" "}
+            <button onClick={() => setPage("admin-apartments")} style={{ background: "none", border: "none", color: "#38BDF8", fontWeight: 700, cursor: "pointer", fontSize: "15px", textDecoration: "underline" }}>
+              Add an apartment
+            </button>
+          </p>
+        </div>
+      )}
+
+      {/* Form Drawer */}
+      {showForm && apartments.length > 0 && (
+        <div style={{ background: "rgba(17,26,42,0.9)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "20px", padding: "32px", backdropFilter: "blur(20px)", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
+              {editingHouseholdId ? "Edit Household Details" : "Register New Household Unit"}
             </h2>
-            <form
-              onSubmit={handleSubmit}
-              style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "16px", alignItems: "end" }}
-            >
-              <div>
-                <label style={{ fontSize: "13px", fontWeight: 500 }}>Apartment</label>
-                <select
-                  className="at-input at-focus"
-                  style={{ marginTop: "5px" }}
-                  value={selectedApartmentId}
-                  onChange={(e) => setSelectedApartmentId(e.target.value)}
-                  disabled={!!editingHouseholdId}
-                >
-                  {apartments.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name}
-                    </option>
-                  ))}
-                </select>
+            <button onClick={resetForm} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "#94A3B8", borderRadius: "8px", padding: "6px", cursor: "pointer", display: "flex" }}><X size={18} /></button>
+          </div>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#34D399", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>Flat Configuration</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "16px" }}>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Apartment Building</label>
+                  <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)} disabled={!!editingHouseholdId}>
+                    {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </SaasSelect>
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Flat Number *</label>
+                  <SaasInput value={flatNumber} onChange={e => setFlatNumber(e.target.value)} placeholder="A-101" required />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Flat Size (sq ft) *</label>
+                  <SaasInput type="number" step="0.01" value={flatSize} onChange={e => setFlatSize(e.target.value)} placeholder="850" required />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Occupants *</label>
+                  <SaasInput type="number" value={occupancy} onChange={e => setOccupancy(e.target.value)} placeholder="3" required />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Resident Email</label>
+                  <SaasInput type="email" value={residentEmail} onChange={e => setResidentEmail(e.target.value)} placeholder="resident@example.com" />
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Working Meter?</label>
+                  <SaasSelect value={hasWorkingMeter ? "true" : "false"} onChange={e => setHasWorkingMeter(e.target.value === "true")}>
+                    <option value="true">Yes — Active Meter</option>
+                    <option value="false">No — Meter Faulty</option>
+                  </SaasSelect>
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Daily Threshold (L) *</label>
+                  <SaasInput type="number" step="0.01" value={dailyUsageThreshold} onChange={e => setDailyUsageThreshold(e.target.value)} placeholder="500.00" required />
+                </div>
               </div>
-              <div>
-                <label style={{ fontSize: "13px", fontWeight: 500 }}>Flat number</label>
-                <input
-                  className="at-input at-focus"
-                  style={{ marginTop: "5px" }}
-                  value={flatNumber}
-                  onChange={(e) => setFlatNumber(e.target.value)}
-                  placeholder="A-101"
-                  required
-                />
+            </div>
+            {formError && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: "10px", padding: "10px 14px", color: "#F87171", fontSize: "13px" }}>
+                <AlertCircle size={16} /> {formError}
               </div>
-              <div>
-                <label style={{ fontSize: "13px", fontWeight: 500 }}>Flat size (sq ft)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="at-input at-focus"
-                  style={{ marginTop: "5px" }}
-                  value={flatSize}
-                  onChange={(e) => setFlatSize(e.target.value)}
-                  placeholder="850.5"
-                  required
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: "13px", fontWeight: 500 }}>Occupancy</label>
-                <input
-                  type="number"
-                  className="at-input at-focus"
-                  style={{ marginTop: "5px" }}
-                  value={occupancy}
-                  onChange={(e) => setOccupancy(e.target.value)}
-                  placeholder="3"
-                  required
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: "13px", fontWeight: 500 }}>Resident Email</label>
-                <input
-                  type="email"
-                  className="at-input at-focus"
-                  style={{ marginTop: "5px" }}
-                  value={residentEmail}
-                  onChange={(e) => setResidentEmail(e.target.value)}
-                  placeholder="resident@example.com"
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: "13px", fontWeight: 500 }}>Working Meter?</label>
-                <select
-                  className="at-input at-focus"
-                  style={{ marginTop: "5px" }}
-                  value={hasWorkingMeter ? "true" : "false"}
-                  onChange={(e) => setHasWorkingMeter(e.target.value === "true")}
-                >
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: "13px", fontWeight: 500 }}>Daily Limit (units)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className="at-input at-focus"
-                  style={{ marginTop: "5px" }}
-                  value={dailyUsageThreshold}
-                  onChange={(e) => setDailyUsageThreshold(e.target.value)}
-                  placeholder="500.00"
-                  required
-                />
-              </div>
-              <div className="at-flex at-items-center at-gap-2">
-                <button type="submit" disabled={submitting} className="at-btn-brass at-focus" style={{ padding: "10px 16px" }}>
-                  {submitting ? (editingHouseholdId ? "Saving…" : "Adding…") : (editingHouseholdId ? "Save" : "Add")}
-                </button>
-                {editingHouseholdId && (
-                  <button
-                    type="button"
-                    onClick={handleCancelEdit}
-                    className="at-btn-outline at-focus"
-                    style={{ padding: "10px 16px" }}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-            {formError && <p className="at-error" style={{ marginTop: "10px" }}>{formError}</p>}
+            )}
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button type="submit" disabled={submitting} style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", border: "none", color: "#FFFFFF", fontWeight: 700, fontSize: "14px", padding: "12px 26px", borderRadius: "10px", cursor: submitting ? "not-allowed" : "pointer", boxShadow: "0 4px 14px rgba(16,185,129,0.35)", fontFamily: "inherit" }}>
+                {submitting ? (editingHouseholdId ? "Saving…" : "Adding…") : (editingHouseholdId ? "Save Changes" : "Create Household")}
+              </button>
+              <button type="button" onClick={resetForm} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#94A3B8", fontWeight: 600, fontSize: "14px", padding: "12px 20px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Table Container */}
+      {apartments.length > 0 && (
+        <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Flats List</h2>
+              {selectedApartmentId && apartments.find(a => String(a.id) === selectedApartmentId) && (
+                <span style={{ fontSize: "12px", color: "#34D399", background: "rgba(16,185,129,0.15)", padding: "4px 12px", borderRadius: "16px", border: "1px solid rgba(16,185,129,0.3)", fontWeight: 700 }}>
+                  {apartments.find(a => String(a.id) === selectedApartmentId)?.name}
+                </span>
+              )}
+            </div>
+
+            <div style={{ position: "relative", width: "100%", maxWidth: "300px" }}>
+              <Search size={16} color="#64748B" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
+              <input
+                type="text"
+                placeholder="Search flat number or email..."
+                style={{
+                  width: "100%",
+                  background: "rgba(13, 22, 36, 0.9)",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                  color: "#FFFFFF",
+                  padding: "8px 12px 8px 38px",
+                  borderRadius: "10px",
+                  fontSize: "13px",
+                  outline: "none",
+                }}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
 
-          <div className="at-card" style={{ marginTop: "24px", overflow: "hidden" }}>
-            {loadingHouseholds && <p style={{ padding: "20px", fontSize: "14px", color: "var(--at-text-muted)" }}>Loading households…</p>}
-            {listError && <p className="at-error" style={{ padding: "20px" }}>{listError}</p>}
-            {!loadingHouseholds && !listError && (
-              <table className="at-table">
+          {loadingHouseholds && <div style={{ padding: "40px", textAlign: "center", color: "#94A3B8" }}>Loading households list…</div>}
+          {listError && (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: "10px", padding: "12px 16px", color: "#F87171", fontSize: "13px" }}>
+              <AlertCircle size={16} /> {listError}
+            </div>
+          )}
+
+          {!loadingHouseholds && !listError && (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Flat number</th>
-                    <th>Flat size</th>
-                    <th>Occupancy</th>
-                    <th>Email</th>
-                    <th>Meter Status</th>
-                    <th>Daily Limit</th>
-                    <th>Actions</th>
+                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <th style={{ padding: "14px 16px" }}>Unit ID</th>
+                    <th style={{ padding: "14px 16px" }}>Flat Number</th>
+                    <th style={{ padding: "14px 16px" }}>Size</th>
+                    <th style={{ padding: "14px 16px" }}>Occupants</th>
+                    <th style={{ padding: "14px 16px" }}>Resident Email</th>
+                    <th style={{ padding: "14px 16px" }}>Meter Status</th>
+                    <th style={{ padding: "14px 16px" }}>Daily Threshold</th>
+                    <th style={{ padding: "14px 16px", textAlign: "right" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {households.length === 0 && (
+                  {filteredHouseholds.length === 0 ? (
                     <tr>
-                      <td colSpan={8} style={{ color: "var(--at-text-muted)" }}>
-                        No households yet for this apartment — add one above.
+                      <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#64748B" }}>
+                        <Home size={36} color="#334155" style={{ marginBottom: "8px", display: "block", margin: "0 auto 8px" }} />
+                        No households in this building match active search.
                       </td>
                     </tr>
+                  ) : (
+                    filteredHouseholds.map(h => (
+                      <tr key={h.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.18s ease" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                      >
+                        <td style={{ padding: "16px" }}>
+                          <span style={{ background: "rgba(16,185,129,0.12)", color: "#34D399", fontSize: "12px", fontWeight: 700, padding: "3px 8px", borderRadius: "6px" }}>#{h.id}</span>
+                        </td>
+                        <td style={{ padding: "16px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Home size={15} color="#34D399" />
+                            </div>
+                            <span style={{ fontWeight: 700, color: "#FFFFFF", fontSize: "14px" }}>{h.flatNumber}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: "16px", color: "#94A3B8", fontSize: "13.5px" }}>{h.flatSize} sq ft</td>
+                        <td style={{ padding: "16px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#FFFFFF", fontSize: "13.5px", fontWeight: 600 }}>
+                            <Users size={14} color="#38BDF8" />
+                            {h.occupancy} People
+                          </div>
+                        </td>
+                        <td style={{ padding: "16px" }}>
+                          {h.residentEmail ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#94A3B8", fontSize: "13px" }}>
+                              <Mail size={13} color="#64748B" /> {h.residentEmail}
+                            </div>
+                          ) : <span style={{ color: "#475569", fontSize: "13px" }}>Unlinked</span>}
+                        </td>
+                        <td style={{ padding: "16px" }}>
+                          {h.hasWorkingMeter !== false ? (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(16,185,129,0.15)", color: "#34D399", fontSize: "12px", fontWeight: 700, padding: "4px 10px", borderRadius: "16px", border: "1px solid rgba(16,185,129,0.3)" }}>
+                              <CheckCircle2 size={13} /> Active
+                            </span>
+                          ) : (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(244,63,94,0.15)", color: "#F87171", fontSize: "12px", fontWeight: 700, padding: "4px 10px", borderRadius: "16px", border: "1px solid rgba(244,63,94,0.3)" }}>
+                              <XCircle size={13} /> Broken
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ padding: "16px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#38BDF8", fontSize: "13.5px", fontWeight: 700 }}>
+                            <Gauge size={14} color="#38BDF8" />
+                            {h.dailyUsageThreshold ?? "500.00"} L
+                          </div>
+                        </td>
+                        <td style={{ padding: "16px" }}>
+                          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                            <button onClick={() => handleEdit(h)} style={{ display: "flex", alignItems: "center", gap: "5px", background: "rgba(56,189,248,0.12)", border: "1px solid rgba(56,189,248,0.25)", color: "#38BDF8", fontSize: "12px", fontWeight: 600, padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}>
+                              <Edit2 size={13} /> Edit
+                            </button>
+                            <button onClick={() => handleDelete(h.id)} style={{ display: "flex", alignItems: "center", gap: "5px", background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.25)", color: "#F87171", fontSize: "12px", fontWeight: 600, padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}>
+                              <Trash2 size={13} /> Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   )}
-                  {households.map((h) => (
-                    <tr key={h.id}>
-                      <td><span className="at-badge">#{h.id}</span></td>
-                      <td>{h.flatNumber}</td>
-                      <td>{h.flatSize} sq ft</td>
-                      <td>{h.occupancy}</td>
-                      <td>{h.residentEmail || "-"}</td>
-                      <td>
-                        {h.hasWorkingMeter !== false ? (
-                          <span style={{ color: "var(--at-verdigris-deep)", fontWeight: 555 }}>Active</span>
-                        ) : (
-                          <span style={{ color: "var(--at-error)", fontWeight: 555 }}>Broken</span>
-                        )}
-                      </td>
-                      <td>{h.dailyUsageThreshold ?? "500.00"} units</td>
-                      <td>
-                        <div className="at-flex at-items-center at-gap-2">
-                          <button onClick={() => handleEdit(h)} className="btn-edit at-focus">
-                            Edit
-                          </button>
-                          <button onClick={() => handleDelete(h.id)} className="btn-delete at-focus">
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
                 </tbody>
               </table>
-            )}
-          </div>
-        </>
+            </div>
+          )}
+        </div>
       )}
-    </section>
+    </div>
   );
 }

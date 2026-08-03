@@ -7,20 +7,19 @@ export default function StatBand() {
   const cycles = useCountUp(86);
 
   const stats = [
-    { value: households, suffix: "+", label: "households metered" },
-    { value: (accuracy / 10).toFixed(1), suffix: "%", label: "billing accuracy" },
-    { value: cycles, suffix: "", label: "cycles closed on time" },
+    { value: households, suffix: "+", label: "Households Metered" },
+    { value: (accuracy / 10).toFixed(1), suffix: "%", label: "Billing Accuracy" },
+    { value: cycles, suffix: "", label: "Cycles Closed On Time" },
   ];
 
   return (
-    <section style={{ background: "var(--at-stat-bg)" }} className="py-10">
+    <section style={{ borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(17,26,42,0.5)", backdropFilter: "blur(12px)", padding: "36px 0" }}>
       <div
         className="at-container"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
-          paddingTop: "40px",
-          paddingBottom: "40px",
+          gap: "24px",
         }}
       >
         {stats.map((s, i) => (
@@ -28,15 +27,13 @@ export default function StatBand() {
             key={i}
             style={{
               textAlign: "center",
-              padding: "0 16px",
-              borderLeft: i > 0 ? "1px solid rgba(237,232,222,0.15)" : "none",
+              borderLeft: i > 0 ? "1px solid rgba(255,255,255,0.08)" : "none",
             }}
           >
-            <div className="at-mono" style={{ color: "var(--at-brass)", fontSize: "30px", fontWeight: 500 }}>
-              {s.value}
-              {s.suffix}
+            <div style={{ fontSize: "36px", fontWeight: 800, background: "linear-gradient(135deg, #FFFFFF 0%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "-0.02em" }}>
+              {s.value}{s.suffix}
             </div>
-            <div style={{ color: "var(--at-stat-text)", fontSize: "13px", marginTop: "4px" }}>{s.label}</div>
+            <div style={{ color: "#64748B", fontSize: "13px", fontWeight: 500, marginTop: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.label}</div>
           </div>
         ))}
       </div>

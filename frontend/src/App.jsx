@@ -3,6 +3,7 @@ import "./styles/theme.css";
 
 import NavBar from "./components/NavBar.jsx";
 import Footer from "./components/Footer.jsx";
+import BackgroundGlow from "./components/BackgroundGlow.jsx";
 
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -14,6 +15,8 @@ import AdminApartmentsPage from "./pages/AdminApartmentsPage.jsx";
 import AdminHouseholdsPage from "./pages/AdminHouseholdsPage.jsx";
 import AdminWaterUsagePage from "./pages/AdminWaterUsagePage.jsx";
 import AdminBillingPage from "./pages/AdminBillingPage.jsx";
+import AdminInvoicesPage from "./pages/AdminInvoicesPage.jsx";
+import AdminTariffPlansPage from "./pages/AdminTariffPlansPage.jsx";
 import ResidentBillsPage from "./pages/ResidentBillsPage.jsx";
 import AlertsPage from "./pages/AlertsPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
@@ -41,6 +44,7 @@ export default function App() {
   const [page, setPage] = useState("home");
   const [auth, setAuth] = useState(null); // { token, username, role } | null
   const [dashboardMonth, setDashboardMonth] = useState("2026-07"); // Sync month globally
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("at-theme") || "dark";
   });
@@ -56,6 +60,7 @@ export default function App() {
   }
 
   function handlePageChange(next) {
+    setSidebarOpen(false);
     if (next === "logout") {
       setAuth(null);
       setPage("home");
@@ -69,7 +74,7 @@ export default function App() {
 
   // Guard: admin-only pages require an authenticated ADMIN. Anyone else
   // (not logged in, or a RESIDENT) gets bounced back to the dashboard/home.
-  const isAdminPage = activePage === "admin-apartments" || activePage === "admin-households" || activePage === "admin-water-usage" || activePage === "admin-billing";
+  const isAdminPage = activePage === "admin-apartments" || activePage === "admin-households" || activePage === "admin-water-usage" || activePage === "admin-billing" || activePage === "admin-invoices" || activePage === "admin-tariffs";
   if (isAdminPage && (!auth || auth.role !== "ADMIN")) {
     activePage = auth ? "dashboard" : "home";
   }
@@ -100,6 +105,10 @@ export default function App() {
         return { title: "Water Usage", subtitle: "Log manual readings and view history" };
       case "admin-billing":
         return { title: "Billing Cycles", subtitle: "Open cycles, adjust invoices and generate bills" };
+      case "admin-invoices":
+        return { title: "Invoices", subtitle: "View, filter, and adjust household water bills" };
+      case "admin-tariffs":
+        return { title: "Tariff Plans", subtitle: "Manage rates, tier thresholds and excess usage charges" };
       case "profile":
         return { title: "Settings & Profile", subtitle: "Manage administrator credentials" };
       default:
@@ -112,11 +121,64 @@ export default function App() {
   if (isAdmin) {
     return (
       <div className={`at-root admin-portal-theme ${theme === "light" ? "admin-light" : ""}`}>
+        <BackgroundGlow />
         {/* Left Sidebar */}
-        <aside className="admin-sidebar">
-          <button onClick={() => handlePageChange("dashboard")} className="admin-sidebar-logo">
-            <Droplets size={24} color="#38BDF8" strokeWidth={2.5} />
-            <span className="admin-sidebar-logo-text">AquaTrack</span>
+        <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
+          <button
+            onClick={() => handlePageChange("dashboard")}
+            className="admin-sidebar-logo"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "4px 8px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
+            <div
+              style={{
+                width: "38px",
+                height: "38px",
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #38BDF8 0%, #6366F1 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 16px rgba(56, 189, 248, 0.45)",
+                flexShrink: 0,
+              }}
+            >
+              <Droplets size={22} color="#FFFFFF" strokeWidth={2.5} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              <span
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 800,
+                  letterSpacing: "-0.03em",
+                  background: "linear-gradient(135deg, #FFFFFF 0%, #38BDF8 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  lineHeight: 1.1,
+                }}
+              >
+                AquaTrack
+              </span>
+              <span
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "#38BDF8",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Admin Console
+              </span>
+            </div>
           </button>
 
           <nav className="admin-sidebar-menu">
@@ -160,19 +222,19 @@ export default function App() {
               Water Usage
             </button>
 
-            {/* Invoices: Maps to billing cycle page as per requirements */}
+            {/* Invoices */}
             <button
-              onClick={() => handlePageChange("admin-billing")}
-              className="admin-sidebar-item"
+              onClick={() => handlePageChange("admin-invoices")}
+              className={`admin-sidebar-item ${activePage === "admin-invoices" ? "active" : ""}`}
             >
               <Coins size={18} />
               Invoices
             </button>
 
-            {/* Tariff Plans: Maps to apartments management page */}
+            {/* Tariff Plans */}
             <button
-              onClick={() => handlePageChange("admin-apartments")}
-              className="admin-sidebar-item"
+              onClick={() => handlePageChange("admin-tariffs")}
+              className={`admin-sidebar-item ${activePage === "admin-tariffs" ? "active" : ""}`}
             >
               <FileText size={18} />
               Tariff Plans
@@ -220,7 +282,12 @@ export default function App() {
           {/* Header */}
           <header className="admin-header">
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <button className="admin-notification-btn" style={{ padding: "4px" }}>
+              <button
+                className="admin-notification-btn"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                style={{ padding: "4px" }}
+                title="Toggle Navigation Menu"
+              >
                 <Menu size={20} />
               </button>
               <div className="admin-header-title-container">
@@ -264,7 +331,7 @@ export default function App() {
           </header>
 
           {/* Page Container */}
-          <main className="admin-content">
+          <main className="admin-content page-fade-in" key={activePage}>
             {activePage === "dashboard" && (
               <DashboardPage
                 auth={auth}
@@ -277,6 +344,8 @@ export default function App() {
             {activePage === "admin-households" && <AdminHouseholdsPage auth={auth} setPage={handlePageChange} />}
             {activePage === "admin-water-usage" && <AdminWaterUsagePage auth={auth} setPage={handlePageChange} />}
             {activePage === "admin-billing" && <AdminBillingPage auth={auth} setPage={handlePageChange} />}
+            {activePage === "admin-invoices" && <AdminInvoicesPage auth={auth} setPage={handlePageChange} />}
+            {activePage === "admin-tariffs" && <AdminTariffPlansPage auth={auth} setPage={handlePageChange} />}
             {activePage === "profile" && <ProfilePage auth={auth} onAuthed={handleAuthed} setPage={handlePageChange} />}
           </main>
         </div>
@@ -286,10 +355,11 @@ export default function App() {
 
   // Resident / Anonymous layout
   return (
-    <div className={`at-root ${theme === "dark" ? "dark-theme" : ""}`}>
+    <div className={`at-root ${theme === "dark" ? "dark-theme" : "light-theme"}`}>
+      <BackgroundGlow />
       <NavBar page={activePage} setPage={handlePageChange} auth={auth} theme={theme} toggleTheme={toggleTheme} />
 
-      <main style={{ flex: 1 }}>
+      <main style={{ flex: 1 }} className="page-fade-in" key={activePage}>
         {activePage === "home" && <HomePage setPage={handlePageChange} />}
         {activePage === "login" && <LoginPage setPage={handlePageChange} onAuthed={handleAuthed} />}
         {activePage === "register" && <RegisterPage setPage={handlePageChange} onAuthed={handleAuthed} />}

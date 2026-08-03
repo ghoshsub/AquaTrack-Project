@@ -1,29 +1,71 @@
 import React, { useEffect, useState } from "react";
-import { Receipt, Plus, Trash2, Lock, Archive, Calendar, Coins, CheckCircle, Info } from "lucide-react";
+import {
+  Receipt, Plus, Lock, Archive, Calendar, CheckCircle, AlertCircle,
+  Droplets, Building2, Edit2, Check, X, ChevronRight
+} from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
 import {
-  listBillingCycles,
-  openBillingCycle,
-  getBillingCycleDetails,
-  finalizeBillingCycle,
-  archiveBillingCycle,
-  getCycleUsagePreviews,
-  updateInvoiceAdjustments
+  listBillingCycles, openBillingCycle, getBillingCycleDetails,
+  finalizeBillingCycle, archiveBillingCycle,
+  getCycleUsagePreviews, updateInvoiceAdjustments
 } from "../api/billingApi.js";
+
+const inputBase = {
+  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.14)",
+  color: "#FFFFFF", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+  fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+  transition: "all 0.2s ease",
+};
+
+function SaasInput({ type = "text", ...props }) {
+  return (
+    <input type={type} style={inputBase} {...props}
+      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
+      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+    />
+  );
+}
+
+function SaasSelect({ children, ...props }) {
+  return (
+    <select style={inputBase} {...props}
+      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
+      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+    >
+      {children}
+    </select>
+  );
+}
 
 function formatBillingMonth(dateStr) {
   if (!dateStr) return "";
   const parts = dateStr.split("-");
   if (parts.length < 2) return dateStr;
-  const monthIndex = parseInt(parts[1], 10) - 1;
-  const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const monthName = months[monthIndex] || parts[1];
-  return `${monthName} Bill`;
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  return `${months[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
 }
+
+function CycleStatusBadge({ status }) {
+  const map = {
+    OPEN: { bg: "rgba(56,189,248,0.15)", color: "#38BDF8", border: "rgba(56,189,248,0.35)" },
+    FINALIZED: { bg: "rgba(245,158,11,0.15)", color: "#FBBF24", border: "rgba(245,158,11,0.35)" },
+    ARCHIVED: { bg: "rgba(100,116,139,0.15)", color: "#94A3B8", border: "rgba(100,116,139,0.3)" },
+  };
+  const s = map[status] || map.ARCHIVED;
+  return (
+    <span style={{ fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "20px", background: s.bg, color: s.color, border: `1px solid ${s.border}`, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+      {status}
+    </span>
+  );
+}
+
+const cardStyle = {
+  background: "rgba(17,26,42,0.9)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: "20px",
+  backdropFilter: "blur(20px)",
+};
 
 export default function AdminBillingPage({ auth, setPage }) {
   const [apartments, setApartments] = useState([]);
@@ -34,24 +76,19 @@ export default function AdminBillingPage({ auth, setPage }) {
   const [loadingCycles, setLoadingCycles] = useState(false);
   const [cyclesError, setCyclesError] = useState("");
 
-  // Cycle details
   const [selectedCycleId, setSelectedCycleId] = useState(null);
   const [cycleDetails, setCycleDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [detailsError, setDetailsError] = useState("");
 
-  // Create cycle form
+  const [billingMonth, setBillingMonth] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [billingMonth, setBillingMonth] = useState("");
   const [useMonthSelect, setUseMonthSelect] = useState(true);
   const [createError, setCreateError] = useState("");
   const [creatingCycle, setCreatingCycle] = useState(false);
 
-  // Household water usage readings entry
   const [householdReadings, setHouseholdReadings] = useState([]);
-
-  // Inline adjustment state
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
   const [tempAdjustments, setTempAdjustments] = useState("");
   const [updatingInvoice, setUpdatingInvoice] = useState(false);
@@ -77,13 +114,8 @@ export default function AdminBillingPage({ auth, setPage }) {
     try {
       const data = await listBillingCycles(auth.token, apartmentId);
       setCycles(data);
-      if (data.length > 0) {
-        // Automatically select the first/newest cycle
-        setSelectedCycleId(data[0].id);
-      } else {
-        setSelectedCycleId(null);
-        setCycleDetails(null);
-      }
+      if (data.length > 0) setSelectedCycleId(data[0].id);
+      else { setSelectedCycleId(null); setCycleDetails(null); }
     } catch (err) {
       setCyclesError(err.message || "Could not load billing cycles.");
     } finally {
@@ -91,10 +123,7 @@ export default function AdminBillingPage({ auth, setPage }) {
     }
   }
 
-  useEffect(() => {
-    loadCycles(selectedApartmentId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedApartmentId]);
+  useEffect(() => { loadCycles(selectedApartmentId); }, [selectedApartmentId]);
 
   async function loadCycleDetails(cycleId) {
     if (!cycleId) return;
@@ -106,8 +135,7 @@ export default function AdminBillingPage({ auth, setPage }) {
       if (data.status === "OPEN") {
         const previews = await getCycleUsagePreviews(auth.token, cycleId);
         setHouseholdReadings(previews.map(p => ({
-          householdId: p.householdId,
-          flatNumber: p.flatNumber,
+          householdId: p.householdId, flatNumber: p.flatNumber,
           readingValue: p.existingUsage !== null ? String(p.existingUsage) : "0"
         })));
       }
@@ -118,43 +146,22 @@ export default function AdminBillingPage({ auth, setPage }) {
     }
   }
 
-  useEffect(() => {
-    loadCycleDetails(selectedCycleId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCycleId]);
+  useEffect(() => { loadCycleDetails(selectedCycleId); }, [selectedCycleId]);
 
   async function handleCreateCycle(e) {
     e.preventDefault();
     setCreateError("");
     setCreatingCycle(true);
     try {
-      let finalStart = startDate;
-      let finalEnd = endDate;
-
+      let finalStart = startDate, finalEnd = endDate;
       if (useMonthSelect) {
-        if (!billingMonth) {
-          throw new Error("Please select a billing month.");
-        }
+        if (!billingMonth) throw new Error("Please select a billing month.");
         const [yearStr, monthStr] = billingMonth.split("-");
-        const year = Number(yearStr);
-        const month = Number(monthStr);
         finalStart = `${yearStr}-${monthStr}-01`;
-        
-        // Find last day of the month
-        const lastDay = new Date(year, month, 0).getDate();
-        const lastDayStr = String(lastDay).padStart(2, "0");
-        finalEnd = `${yearStr}-${monthStr}-${lastDayStr}`;
+        finalEnd = `${yearStr}-${monthStr}-${new Date(Number(yearStr), Number(monthStr), 0).getDate()}`;
       }
-
-      const payload = {
-        apartmentId: Number(selectedApartmentId),
-        startDate: finalStart,
-        endDate: finalEnd
-      };
-      const newCycle = await openBillingCycle(auth.token, payload);
-      setStartDate("");
-      setEndDate("");
-      setBillingMonth("");
+      const newCycle = await openBillingCycle(auth.token, { apartmentId: Number(selectedApartmentId), startDate: finalStart, endDate: finalEnd });
+      setStartDate(""); setEndDate(""); setBillingMonth("");
       await loadCycles(selectedApartmentId);
       setSelectedCycleId(newCycle.id);
     } catch (err) {
@@ -165,15 +172,8 @@ export default function AdminBillingPage({ auth, setPage }) {
   }
 
   async function handleFinalize() {
-    if (!window.confirm("Generating invoices will calculate all charges according to the tariff plan, and create invoices for all households. You cannot revert this. Proceed?")) return;
-    
-    const readingsPayload = {
-      readings: householdReadings.map(r => ({
-        householdId: r.householdId,
-        readingValue: Number(r.readingValue)
-      }))
-    };
-
+    if (!window.confirm("Generate invoices for all households? This action cannot be reversed. Proceed?")) return;
+    const readingsPayload = { readings: householdReadings.map(r => ({ householdId: r.householdId, readingValue: Number(r.readingValue) })) };
     setLoadingDetails(true);
     try {
       await finalizeBillingCycle(auth.token, selectedCycleId, readingsPayload);
@@ -186,7 +186,7 @@ export default function AdminBillingPage({ auth, setPage }) {
   }
 
   async function handleArchive() {
-    if (!window.confirm("Are you sure you want to archive this cycle? It will lock all invoices from further adjustment edits.")) return;
+    if (!window.confirm("Archive this cycle? Invoices will be locked from further edits.")) return;
     setLoadingDetails(true);
     try {
       await archiveBillingCycle(auth.token, selectedCycleId);
@@ -196,11 +196,6 @@ export default function AdminBillingPage({ auth, setPage }) {
     } finally {
       setLoadingDetails(false);
     }
-  }
-
-  function startEditingInvoice(inv) {
-    setEditingInvoiceId(inv.id);
-    setTempAdjustments(String(inv.adjustments));
   }
 
   async function handleSaveAdjustments(invId) {
@@ -217,373 +212,319 @@ export default function AdminBillingPage({ auth, setPage }) {
   }
 
   return (
-    <section className="at-container" style={{ maxWidth: "1000px", paddingTop: "56px", paddingBottom: "80px" }}>
-      <BackToDashboard setPage={setPage} />
-
-      <div className="at-flex at-items-center at-gap-3">
-        <Receipt size={22} color="var(--at-verdigris-deep)" />
-        <h1 className="at-display" style={{ fontSize: "26px", fontWeight: 600, color: "var(--at-ink-deep)" }}>
-          Billing Engine & Cycles
-        </h1>
+    <div style={{ display: "flex", flexDirection: "column", gap: "28px", padding: "32px" }}>
+      {/* Header */}
+      <div>
+        <BackToDashboard setPage={setPage} />
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", marginTop: "16px" }}>
+          <div style={{ width: "46px", height: "46px", borderRadius: "14px", background: "linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(239,68,68,0.2) 100%)", border: "1px solid rgba(245,158,11,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Receipt size={24} color="#FBBF24" />
+          </div>
+          <div>
+            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Billing Engine & Cycles</h1>
+            <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>Open billing periods, record usage, and generate resident invoices</p>
+          </div>
+        </div>
       </div>
-      <p style={{ fontSize: "14px", color: "var(--at-text-body)", marginTop: "4px" }}>
-        Track tankers, municipal water procurement cost distributions, and finalize per-household cycles.
-      </p>
 
-      {apartmentsError && <p className="at-error" style={{ marginTop: "16px" }}>{apartmentsError}</p>}
+      {apartmentsError && (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: "12px", padding: "12px 16px", color: "#F87171", fontSize: "13.5px" }}>
+          <AlertCircle size={16} /> {apartmentsError}
+        </div>
+      )}
 
-      {!apartmentsError && apartments.length === 0 && (
-        <div className="at-card" style={{ padding: "20px", marginTop: "24px", fontSize: "14px", color: "var(--at-text-muted)" }}>
-          You need an apartment onboarded before setting up billing.{" "}
-          <button onClick={() => setPage("admin-apartments")} className="at-link-btn at-focus">
-            Add apartment first
-          </button>
+      {!apartmentsError && apartments.length === 0 && !loadingCycles && (
+        <div style={{ ...cardStyle, padding: "48px", textAlign: "center" }}>
+          <Building2 size={44} color="#334155" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
+          <p style={{ color: "#94A3B8", fontSize: "15px" }}>
+            You need an apartment first.{" "}
+            <button onClick={() => setPage("admin-apartments")} style={{ background: "none", border: "none", color: "#38BDF8", fontWeight: 700, cursor: "pointer", fontSize: "15px", textDecoration: "underline" }}>
+              Add apartment
+            </button>
+          </p>
         </div>
       )}
 
       {apartments.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "24px", marginTop: "28px" }}>
-          
-          {/* Left panel: cycle lists and opener */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            
+        <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "20px", alignItems: "start" }}>
+          {/* Left Sidebar */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {/* Apartment Selector */}
-            <div className="at-card" style={{ padding: "20px" }}>
-              <label style={{ fontSize: "13px", fontWeight: 550, display: "block", marginBottom: "6px" }}>Select Apartment</label>
-              <select
-                className="at-input at-focus"
-                value={selectedApartmentId}
-                onChange={(e) => setSelectedApartmentId(e.target.value)}
-              >
-                {apartments.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name}</option>
-                ))}
-              </select>
+            <div style={{ ...cardStyle, padding: "20px" }}>
+              <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#94A3B8", marginBottom: "10px" }}>Select Building</label>
+              <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)}>
+                {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </SaasSelect>
             </div>
 
-            {/* Cycle Opener */}
-            <div className="at-card" style={{ padding: "20px" }}>
-              <h2 style={{ fontSize: "14px", fontWeight: 600, marginBottom: "12px" }}>Open New Billing Period</h2>
-              
-              <div style={{ display: "flex", gap: "10px", marginBottom: "16px", borderBottom: "1px solid var(--at-border-light)", paddingBottom: "8px" }}>
-                <button
-                  type="button"
-                  onClick={() => setUseMonthSelect(true)}
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 650,
-                    color: useMonthSelect ? "var(--at-verdigris-deep)" : "var(--at-text-muted)",
-                    background: "transparent",
-                    border: "none",
-                    borderBottom: useMonthSelect ? "2px solid var(--at-verdigris-deep)" : "none",
-                    paddingBottom: "4px",
-                    cursor: "pointer"
-                  }}
-                >
-                  By Month
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUseMonthSelect(false)}
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 650,
-                    color: !useMonthSelect ? "var(--at-verdigris-deep)" : "var(--at-text-muted)",
-                    background: "transparent",
-                    border: "none",
-                    borderBottom: !useMonthSelect ? "2px solid var(--at-verdigris-deep)" : "none",
-                    paddingBottom: "4px",
-                    cursor: "pointer"
-                  }}
-                >
-                  Custom Dates
-                </button>
+            {/* Open New Cycle Card */}
+            <div style={{ ...cardStyle, padding: "22px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px" }}>
+                <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(56,189,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Plus size={15} color="#38BDF8" />
+                </div>
+                <h2 style={{ fontSize: "14px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Open New Billing Period</h2>
+              </div>
+
+              <div style={{ display: "flex", background: "rgba(0,0,0,0.25)", borderRadius: "10px", padding: "3px", marginBottom: "16px" }}>
+                {[["By Month", true], ["Custom Dates", false]].map(([label, val]) => (
+                  <button key={label} type="button" onClick={() => setUseMonthSelect(val)}
+                    style={{ flex: 1, background: useMonthSelect === val ? "rgba(56,189,248,0.15)" : "transparent", border: useMonthSelect === val ? "1px solid rgba(56,189,248,0.35)" : "1px solid transparent", color: useMonthSelect === val ? "#38BDF8" : "#64748B", fontSize: "12px", fontWeight: 700, padding: "7px 8px", borderRadius: "8px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.18s" }}>
+                    {label}
+                  </button>
+                ))}
               </div>
 
               <form onSubmit={handleCreateCycle} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {useMonthSelect ? (
-                  <div>
-                    <label style={{ fontSize: "12px", fontWeight: 500 }}>Select Month</label>
-                    <input
-                      type="month"
-                      required
-                      className="at-input at-focus"
-                      value={billingMonth}
-                      onChange={(e) => setBillingMonth(e.target.value)}
-                    />
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <label style={{ fontSize: "11px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>Billing Month</label>
+                    <SaasInput type="month" required value={billingMonth} onChange={e => setBillingMonth(e.target.value)} />
                   </div>
                 ) : (
                   <>
-                    <div>
-                      <label style={{ fontSize: "12px", fontWeight: 500 }}>Start Date</label>
-                      <input
-                        type="date"
-                        required
-                        className="at-input at-focus"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                      />
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>Start Date</label>
+                      <SaasInput type="date" required value={startDate} onChange={e => setStartDate(e.target.value)} />
                     </div>
-                    <div>
-                      <label style={{ fontSize: "12px", fontWeight: 500 }}>End Date</label>
-                      <input
-                        type="date"
-                        required
-                        className="at-input at-focus"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                      />
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>End Date</label>
+                      <SaasInput type="date" required value={endDate} onChange={e => setEndDate(e.target.value)} />
                     </div>
                   </>
                 )}
-                <button type="submit" disabled={creatingCycle} className="at-btn-brass at-focus" style={{ width: "100%", padding: "10px", marginTop: "4px" }}>
-                  {creatingCycle ? "Creating..." : "Open Cycle"}
+                <button type="submit" disabled={creatingCycle}
+                  style={{ background: "linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)", border: "none", color: "#0F172A", fontWeight: 800, fontSize: "13px", padding: "11px", borderRadius: "10px", cursor: creatingCycle ? "not-allowed" : "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(56,189,248,0.35)", marginTop: "4px" }}>
+                  {creatingCycle ? "Creating…" : "Open Billing Cycle"}
                 </button>
               </form>
-              {createError && <p className="at-error" style={{ marginTop: "10px", fontSize: "12px" }}>{createError}</p>}
+              {createError && (
+                <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "6px", color: "#F87171", fontSize: "12px" }}>
+                  <AlertCircle size={13} /> {createError}
+                </div>
+              )}
             </div>
 
-            {/* Cycle Selector List */}
-            <div className="at-card" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
-              <h2 style={{ fontSize: "14px", fontWeight: 600 }}>Billing History</h2>
-              {loadingCycles && <p style={{ fontSize: "13px", color: "var(--at-text-muted)" }}>Loading cycles...</p>}
-              {cyclesError && <p className="at-error">{cyclesError}</p>}
-              {!loadingCycles && cycles.length === 0 && (
-                <p style={{ fontSize: "13px", color: "var(--at-text-muted)" }}>No cycles opened yet.</p>
-              )}
-              {cycles.map((c) => {
-                const isActive = selectedCycleId === c.id;
-                let badgeStyle = { color: "#fff", background: "var(--at-verdigris-deep)" };
-                if (c.status === "FINALIZED") badgeStyle = { color: "var(--at-ink)", background: "var(--at-brass)" };
-                if (c.status === "ARCHIVED") badgeStyle = { color: "var(--at-text-muted-deep)", background: "var(--at-bg-hover)" };
-
-                return (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCycleId(c.id)}
-                    className="at-focus"
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "12px",
-                      borderRadius: "8px",
-                      border: isActive ? "2px solid var(--at-verdigris-deep)" : "1px solid var(--at-border-light)",
-                      background: isActive ? "rgba(35, 117, 107, 0.05)" : "transparent",
-                      cursor: "pointer",
-                      transition: "all 0.15s ease"
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "13px", fontWeight: isActive ? 600 : 500 }}>
-                        {c.startDate ? formatBillingMonth(c.startDate) : `Cycle #${c.id}`}
-                      </span>
-                      <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "10px", fontWeight: 600, ...badgeStyle }}>
-                        {c.status}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+            {/* Cycle History */}
+            <div style={{ ...cardStyle, padding: "20px" }}>
+              <h2 style={{ fontSize: "14px", fontWeight: 800, color: "#FFFFFF", margin: "0 0 16px" }}>Billing History</h2>
+              {loadingCycles && <p style={{ fontSize: "13px", color: "#64748B" }}>Loading cycles…</p>}
+              {cyclesError && <p style={{ color: "#F87171", fontSize: "12px" }}>{cyclesError}</p>}
+              {!loadingCycles && cycles.length === 0 && <p style={{ fontSize: "13px", color: "#475569" }}>No cycles opened yet.</p>}
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                {cycles.map(c => {
+                  const isActive = selectedCycleId === c.id;
+                  return (
+                    <button key={c.id} onClick={() => setSelectedCycleId(c.id)}
+                      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", padding: "11px 14px", borderRadius: "10px", border: isActive ? "1px solid rgba(56,189,248,0.45)" : "1px solid rgba(255,255,255,0.06)", background: isActive ? "rgba(56,189,248,0.1)" : "rgba(255,255,255,0.02)", cursor: "pointer", fontFamily: "inherit", transition: "all 0.18s" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <Calendar size={13} color={isActive ? "#38BDF8" : "#64748B"} />
+                        <span style={{ fontSize: "13px", fontWeight: 700, color: isActive ? "#FFF" : "#94A3B8" }}>
+                          {c.startDate ? formatBillingMonth(c.startDate) : `Cycle #${c.id}`}
+                        </span>
+                      </div>
+                      <CycleStatusBadge status={c.status} />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Right panel: Details of selected cycle */}
+          {/* Right Panel: Cycle Details */}
           <div>
             {!selectedCycleId && (
-              <div className="at-card" style={{ padding: "40px", textAlign: "center", color: "var(--at-text-muted)" }}>
-                Select or open a billing cycle on the left to manage it.
+              <div style={{ ...cardStyle, padding: "60px", textAlign: "center" }}>
+                <Receipt size={44} color="#334155" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
+                <p style={{ color: "#64748B", fontSize: "14px" }}>Select or open a billing cycle to view details.</p>
               </div>
             )}
 
             {selectedCycleId && loadingDetails && (
-              <p style={{ fontSize: "14px", color: "var(--at-text-muted)" }}>Loading cycle details...</p>
+              <div style={{ ...cardStyle, padding: "40px", textAlign: "center", color: "#64748B", fontSize: "14px" }}>Loading cycle details…</div>
             )}
 
             {selectedCycleId && !loadingDetails && detailsError && (
-              <p className="at-error">{detailsError}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: "12px", padding: "12px 16px", color: "#F87171", fontSize: "13px" }}>
+                <AlertCircle size={15} /> {detailsError}
+              </div>
             )}
 
             {selectedCycleId && !loadingDetails && cycleDetails && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-                
-                {/* Header card */}
-                <div className="at-card" style={{ padding: "28px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                     <div>
-                       <h2 style={{ fontSize: "18px", fontWeight: 600 }}>Billing Period: {cycleDetails.startDate ? formatBillingMonth(cycleDetails.startDate) : ""}</h2>
-                     </div>
-                    <span style={{
-                      fontSize: "12px",
-                      padding: "4px 12px",
-                      borderRadius: "12px",
-                      fontWeight: 600,
-                      color: cycleDetails.status === "OPEN" ? "#fff" : "var(--at-ink)",
-                      background: cycleDetails.status === "OPEN" ? "var(--at-verdigris-deep)" : "var(--at-brass)"
-                    }}>
-                      {cycleDetails.status}
-                    </span>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "24px", borderTop: "1px solid var(--admin-border-muted, var(--at-border-light))", paddingTop: "20px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {/* Header Card */}
+                <div style={{ ...cardStyle, padding: "28px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
                     <div>
-                      <span style={{ fontSize: "12px", color: "var(--admin-text-muted)" }}>Apartment</span>
-                      <p style={{ fontSize: "16px", fontWeight: 600, color: "var(--admin-text-white)", marginTop: "2px" }}>
-                        {cycleDetails.apartment?.name || "Unknown"}
+                      <p style={{ fontSize: "12px", color: "#64748B", margin: "0 0 4px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Billing Period</p>
+                      <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>
+                        {cycleDetails.startDate ? formatBillingMonth(cycleDetails.startDate) : `Cycle #${cycleDetails.id}`}
+                      </h2>
+                      <p style={{ fontSize: "13px", color: "#64748B", margin: "6px 0 0", display: "flex", alignItems: "center", gap: "5px" }}>
+                        <Building2 size={13} /> {cycleDetails.apartment?.name || "Unknown Apartment"}
                       </p>
                     </div>
+                    <CycleStatusBadge status={cycleDetails.status} />
                   </div>
 
-                  <div style={{ marginTop: "24px", display: "flex", gap: "12px" }}>
+                  <div style={{ display: "flex", gap: "12px", marginTop: "20px", flexWrap: "wrap" }}>
                     {cycleDetails.status === "OPEN" && (
-                      <button onClick={handleFinalize} className="at-btn-brass at-focus" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px" }}>
-                        <Lock size={15} />
-                        Generate Invoice
+                      <button onClick={handleFinalize}
+                        style={{ display: "flex", alignItems: "center", gap: "8px", background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)", border: "none", color: "#1C1917", fontWeight: 800, fontSize: "13.5px", padding: "12px 22px", borderRadius: "10px", cursor: "pointer", boxShadow: "0 4px 14px rgba(245,158,11,0.35)", fontFamily: "inherit" }}>
+                        <Lock size={15} /> Generate Invoice
                       </button>
                     )}
                     {cycleDetails.status === "FINALIZED" && (
-                      <button onClick={handleArchive} className="at-btn-outline at-focus" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px" }}>
-                        <Archive size={15} />
-                        Archive & Lock Invoices
+                      <button onClick={handleArchive}
+                        style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(100,116,139,0.15)", border: "1px solid rgba(100,116,139,0.35)", color: "#94A3B8", fontWeight: 700, fontSize: "13px", padding: "12px 20px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>
+                        <Archive size={15} /> Archive & Lock
                       </button>
                     )}
                     {cycleDetails.status === "ARCHIVED" && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--admin-text-muted)" }}>
-                        <CheckCircle size={16} color="var(--at-verdigris-deep)" />
-                        This cycle is archived and locked.
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#34D399" }}>
+                        <CheckCircle size={15} /> Archived & Locked
                       </div>
                     )}
                   </div>
                 </div>
 
-                 {/* Household readings input section for OPEN cycles */}
-                 {cycleDetails.status === "OPEN" && (
-                   <div className="at-card" style={{ padding: "28px" }}>
-                     <h3 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "16px" }}>Household Water Usage Readings</h3>
-                     <p style={{ fontSize: "13px", color: "var(--at-text-muted)", marginBottom: "20px" }}>
-                       Enter the water usage reading (in liters) for each household for this cycle. If water usage logs have already been recorded for this month, they will be pre-populated below.
-                     </p>
-                     
-                     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                       {householdReadings.map((reading, index) => (
-                         <div key={reading.householdId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--at-bg-hover)", borderRadius: "6px" }}>
-                           <span style={{ fontWeight: 600, fontSize: "14px", color: "var(--at-ink-deep)" }}>
-                             Flat {reading.flatNumber}
-                           </span>
-                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                             <input
-                               type="number"
-                               step="0.001"
-                               className="at-input at-focus"
-                               style={{ width: "120px", padding: "6px 10px", fontSize: "13px" }}
-                               value={reading.readingValue}
-                               onChange={(e) => {
-                                 const updated = [...householdReadings];
-                                 updated[index].readingValue = e.target.value;
-                                 setHouseholdReadings(updated);
-                               }}
-                             />
-                             <span style={{ fontSize: "12px", color: "var(--at-text-muted)" }}>liters</span>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                   </div>
-                 )}
+                {/* Household Readings (OPEN) */}
+                {cycleDetails.status === "OPEN" && (
+                  <div style={{ ...cardStyle, padding: "28px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                      <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "rgba(56,189,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Droplets size={16} color="#38BDF8" />
+                      </div>
+                      <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Household Water Usage Readings</h3>
+                    </div>
+                    <p style={{ fontSize: "13px", color: "#64748B", marginBottom: "20px", lineHeight: 1.6 }}>
+                      Enter water usage (in liters) for each household. Pre-filled from recorded logs.
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      {householdReadings.map((reading, index) => (
+                        <div key={reading.householdId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(56,189,248,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Droplets size={14} color="#38BDF8" />
+                            </div>
+                            <span style={{ fontWeight: 700, fontSize: "14px", color: "#FFFFFF" }}>Flat {reading.flatNumber}</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <input type="number" step="0.001"
+                              style={{ ...inputBase, width: "120px", padding: "8px 12px", fontSize: "13px" }}
+                              value={reading.readingValue}
+                              onChange={e => {
+                                const updated = [...householdReadings];
+                                updated[index].readingValue = e.target.value;
+                                setHouseholdReadings(updated);
+                              }}
+                              onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
+                              onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+                            />
+                            <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 600 }}>liters</span>
+                          </div>
+                        </div>
+                      ))}
+                      {householdReadings.length === 0 && (
+                        <p style={{ color: "#475569", fontSize: "13px" }}>No households found for this cycle.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
 
-                 {/* Generated Invoices section */}
-                 {cycleDetails.status !== "OPEN" && (
-                   <div className="at-card" style={{ padding: "28px" }}>
-                     <h3 style={{ fontSize: "15px", fontWeight: 600, marginBottom: "16px" }}>Resident Invoices</h3>
-                     <table className="at-table">
-                       <thead>
-                         <tr>
-                           <th>Flat</th>
-                           <th>Water Usage</th>
-                           <th>Base Charge</th>
-                           <th>Adjustments</th>
-                           <th>Total Invoice</th>
-                           <th>Status</th>
-                           {cycleDetails.status === "FINALIZED" && <th>Action</th>}
-                         </tr>
-                       </thead>
-                       <tbody>
-                         {!cycleDetails.invoices || cycleDetails.invoices.length === 0 ? (
-                           <tr>
-                             <td colSpan={cycleDetails.status === "FINALIZED" ? 7 : 6} style={{ color: "var(--at-text-muted)" }}>
-                               No invoices found.
-                             </td>
-                           </tr>
-                         ) : (
-                           cycleDetails.invoices.map((inv) => {
-                             const isEditing = editingInvoiceId === inv.id;
-                             return (
-                               <tr key={inv.id}>
-                                 <td><strong>{inv.household?.flatNumber || "Unknown"}</strong></td>
-                                 <td>{inv.waterUsage ?? "0.000"} liters</td>
-                                 <td>INR {inv.baseCharge}</td>
-                                 <td>
-                                   {isEditing ? (
-                                     <input
-                                       type="number"
-                                       step="0.01"
-                                       className="at-input at-focus"
-                                       style={{ width: "90px", padding: "4px 8px", fontSize: "13px" }}
-                                       value={tempAdjustments}
-                                       onChange={(e) => setTempAdjustments(e.target.value)}
-                                     />
-                                   ) : (
-                                     <span style={{ color: inv.adjustments < 0 ? "var(--at-verdigris-deep)" : inv.adjustments > 0 ? "var(--at-error)" : "inherit" }}>
-                                       INR {inv.adjustments}
-                                     </span>
-                                   )}
-                                 </td>
-                                 <td><strong>INR {inv.total}</strong></td>
-                                 <td>
-                                   <span className="at-badge" style={{
-                                     background: inv.status === "PAID" ? "#dcfce7" : "#fee2e2",
-                                     color: inv.status === "PAID" ? "#166534" : "#991b1b",
-                                     padding: "2px 8px",
-                                     borderRadius: "10px",
-                                     fontSize: "11px",
-                                     fontWeight: 600
-                                   }}>
-                                     {inv.status}
-                                   </span>
-                                 </td>
-                                 {cycleDetails.status === "FINALIZED" && (
-                                   <td>
-                                     {isEditing ? (
-                                       <div className="at-flex at-gap-1">
-                                         <button disabled={updatingInvoice} onClick={() => handleSaveAdjustments(inv.id)} className="at-link-btn at-focus" style={{ fontWeight: 600 }}>
-                                           Save
-                                         </button>
-                                         <button onClick={() => setEditingInvoiceId(null)} className="at-link-btn at-focus" style={{ color: "var(--at-text-muted)" }}>
-                                           Cancel
-                                         </button>
-                                       </div>
-                                     ) : (
-                                       <button onClick={() => startEditingInvoice(inv)} className="at-link-btn at-focus">
-                                         Adjust
-                                       </button>
-                                     )}
-                                   </td>
-                                 )}
-                               </tr>
-                             );
-                           })
-                         )}
-                       </tbody>
-                     </table>
-                   </div>
-                 )}
-
-               </div>
-             )}
-           </div>
-
-         </div>
-       )}
-    </section>
+                {/* Invoices Table (non-OPEN) */}
+                {cycleDetails.status !== "OPEN" && (
+                  <div style={{ ...cardStyle, overflow: "hidden" }}>
+                    <div style={{ padding: "22px 26px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <Receipt size={16} color="#FBBF24" />
+                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF" }}>Resident Invoices</span>
+                      </div>
+                      <span style={{ fontSize: "12px", color: "#94A3B8", background: "rgba(255,255,255,0.07)", padding: "4px 12px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                        {cycleDetails.invoices?.length || 0} invoices
+                      </span>
+                    </div>
+                    <div style={{ overflowX: "auto" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                            {["Flat", "Usage (L)", "Base Charge", "Adjustments", "Total", "Status", ...(cycleDetails.status === "FINALIZED" ? ["Action"] : [])].map(h => (
+                              <th key={h} style={{ padding: "14px 18px", textAlign: "left", whiteSpace: "nowrap" }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {!cycleDetails.invoices || cycleDetails.invoices.length === 0 ? (
+                            <tr><td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "#475569", fontSize: "13px" }}>No invoices found.</td></tr>
+                          ) : (
+                            cycleDetails.invoices.map(inv => {
+                              const isEditing = editingInvoiceId === inv.id;
+                              return (
+                                <tr key={inv.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.18s" }}
+                                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
+                                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                                >
+                                  <td style={{ padding: "16px 18px", fontWeight: 700, color: "#FFFFFF", fontSize: "14px" }}>Flat {inv.household?.flatNumber || "—"}</td>
+                                  <td style={{ padding: "16px 18px", color: "#94A3B8", fontSize: "13.5px" }}>{inv.waterUsage ?? "0.000"} L</td>
+                                  <td style={{ padding: "16px 18px", color: "#FFFFFF", fontSize: "13.5px", fontWeight: 600 }}>₹{inv.baseCharge}</td>
+                                  <td style={{ padding: "16px 18px" }}>
+                                    {isEditing ? (
+                                      <input type="number" step="0.01"
+                                        style={{ ...inputBase, width: "100px", padding: "6px 10px", fontSize: "13px" }}
+                                        value={tempAdjustments}
+                                        onChange={e => setTempAdjustments(e.target.value)}
+                                        onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
+                                        onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+                                      />
+                                    ) : (
+                                      <span style={{ fontSize: "13.5px", fontWeight: 700, color: inv.adjustments < 0 ? "#34D399" : inv.adjustments > 0 ? "#F87171" : "#94A3B8" }}>
+                                        ₹{inv.adjustments}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td style={{ padding: "16px 18px" }}>
+                                    <span style={{ fontSize: "14px", fontWeight: 800, color: "#38BDF8" }}>₹{inv.total}</span>
+                                  </td>
+                                  <td style={{ padding: "16px 18px" }}>
+                                    <span style={{ fontSize: "11px", fontWeight: 700, padding: "4px 10px", borderRadius: "20px", background: inv.status === "PAID" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)", color: inv.status === "PAID" ? "#34D399" : "#F87171", border: `1px solid ${inv.status === "PAID" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}` }}>
+                                      {inv.status}
+                                    </span>
+                                  </td>
+                                  {cycleDetails.status === "FINALIZED" && (
+                                    <td style={{ padding: "16px 18px" }}>
+                                      {isEditing ? (
+                                        <div style={{ display: "flex", gap: "6px" }}>
+                                          <button disabled={updatingInvoice} onClick={() => handleSaveAdjustments(inv.id)}
+                                            style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.35)", color: "#34D399", fontSize: "12px", fontWeight: 700, padding: "5px 10px", borderRadius: "7px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: "4px" }}>
+                                            <Check size={12} /> Save
+                                          </button>
+                                          <button onClick={() => setEditingInvoiceId(null)}
+                                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#94A3B8", fontSize: "12px", fontWeight: 600, padding: "5px 10px", borderRadius: "7px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: "4px" }}>
+                                            <X size={12} /> Cancel
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button onClick={() => { setEditingInvoiceId(inv.id); setTempAdjustments(String(inv.adjustments)); }}
+                                          style={{ background: "rgba(56,189,248,0.12)", border: "1px solid rgba(56,189,248,0.25)", color: "#38BDF8", fontSize: "12px", fontWeight: 600, padding: "5px 12px", borderRadius: "7px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: "4px" }}>
+                                          <Edit2 size={12} /> Adjust
+                                        </button>
+                                      )}
+                                    </td>
+                                  )}
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
