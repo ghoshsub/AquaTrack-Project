@@ -3,6 +3,7 @@ package com.example.aquatrack.service;
 import com.example.aquatrack.dto.ApartmentRequest;
 import com.example.aquatrack.model.Apartment;
 import com.example.aquatrack.model.TariffPlan;
+import com.example.aquatrack.model.User;
 import com.example.aquatrack.repository.ApartmentRepository;
 import com.example.aquatrack.repository.TariffPlanRepository;
 import org.springframework.stereotype.Service;
@@ -15,20 +16,26 @@ public class ApartmentService {
 
     private final ApartmentRepository apartmentRepository;
     private final TariffPlanRepository tariffPlanRepository;
+    private final AdminResolver adminResolver;
 
     public ApartmentService(ApartmentRepository apartmentRepository,
-                            TariffPlanRepository tariffPlanRepository) {
+                            TariffPlanRepository tariffPlanRepository,
+                            AdminResolver adminResolver) {
         this.apartmentRepository = apartmentRepository;
         this.tariffPlanRepository = tariffPlanRepository;
+        this.adminResolver = adminResolver;
     }
 
     @Transactional
     public Apartment create(ApartmentRequest request) {
+        User admin = adminResolver.requireAdmin();
+
         Apartment apartment = new Apartment();
         apartment.setName(request.getName());
         apartment.setAddress(request.getAddress());
         apartment.setOwnerEmail(request.getOwnerEmail());
         apartment.setOwnerPhone(request.getOwnerPhone());
+        apartment.setAdmin(admin);
 
         // Save apartment first to get an ID
         apartment = apartmentRepository.save(apartment);
@@ -47,7 +54,9 @@ public class ApartmentService {
 
     @Transactional
     public Apartment update(Long id, ApartmentRequest request) {
+        adminResolver.requireAdmin();
         Apartment apartment = findById(id);
+
         apartment.setName(request.getName());
         apartment.setAddress(request.getAddress());
         apartment.setOwnerEmail(request.getOwnerEmail());
@@ -68,7 +77,18 @@ public class ApartmentService {
         return apartmentRepository.save(apartment);
     }
 
+    /**
+     * Returns all apartments in the database (shared across all admins).
+     */
     public List<Apartment> findAll() {
+        adminResolver.requireAdmin();
+        return apartmentRepository.findAll();
+    }
+
+    /**
+     * Returns all apartments regardless of admin — used internally (e.g. for resident lookup).
+     */
+    public List<Apartment> findAllForResidents() {
         return apartmentRepository.findAll();
     }
 
@@ -77,7 +97,15 @@ public class ApartmentService {
                 .orElseThrow(() -> new IllegalArgumentException("Apartment not found: " + id));
     }
 
+    /**
+     * Finds apartment by id (shared access across admins).
+     */
+    public Apartment findByIdForAdmin(Long id, Long adminId) {
+        return findById(id);
+    }
+
     public void deleteById(Long id) {
+        adminResolver.requireAdmin();
         if (!apartmentRepository.existsById(id)) {
             throw new IllegalArgumentException("Apartment not found: " + id);
         }

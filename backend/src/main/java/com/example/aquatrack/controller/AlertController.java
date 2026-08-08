@@ -36,10 +36,8 @@ public class AlertController {
     public ResponseEntity<List<Alert>> getAlerts(@RequestParam(value = "apartmentId", required = false) Long apartmentId) {
         User user = getCurrentUser();
         if (user.getRole() == User.Role.ADMIN) {
-            if (apartmentId == null) {
-                return ResponseEntity.badRequest().build();
-            }
-            return ResponseEntity.ok(alertService.getAlertsByApartment(apartmentId));
+            // Return all alerts scoped to the current admin's apartments
+            return ResponseEntity.ok(alertService.getAlertsForCurrentAdmin());
         } else {
             if (user.getHousehold() == null) {
                 return ResponseEntity.ok(Collections.emptyList());

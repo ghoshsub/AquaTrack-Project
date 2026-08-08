@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TypeAnimation } from "react-type-animation";
 import {
   Droplets, ArrowRight, ShieldCheck, Zap, Gauge, BellRing, Building2,
@@ -7,6 +8,7 @@ import {
 import Water3DCanvas from "../components/Water3DCanvas.jsx";
 
 export default function LandingPage({ setPage }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("telemetry");
 
   const cardGlassStyle = {
@@ -51,12 +53,12 @@ export default function LandingPage({ setPage }) {
                 }}
               >
                 <Sparkles size={14} />
-                <span>AQUATRACK 3.0 • NEXT-GEN 3D WATER TELEMETRY</span>
+                <span>{t("hero.badge")}</span>
               </div>
 
               <h1 className="font-extrabold leading-tight tracking-tight">
                 <span className="text-white/85 text-3xl md:text-4xl lg:text-5xl">
-                  Transforming Water
+                  {t("hero.mainHeading")}
                 </span>
 
                 <br />
@@ -64,20 +66,19 @@ export default function LandingPage({ setPage }) {
                 <span className="bg-gradient-to-r from-cyan-400 via-sky-400 to-violet-500 bg-clip-text text-transparent text-3xl md:text-4xl lg:text-5xl">
                   <TypeAnimation
                     sequence={[
-                      "Into Intelligence.", 1500,
-                      "Into Action.", 1500,
-                      "Into Sustainability.", 1500,
-                      "Into Smart Decisions.", 1500,
-                      "Into Real-Time Insights.", 1500,
+                      t("hero.animation1"), 1300,
+                      t("hero.animation2"), 1300,
+                      t("hero.animation3"), 1300,
+                      t("hero.animation4"), 1300,
+                      t("hero.animation5"), 1300,
                     ]}
                     wrapper="span"
-                    speed={50}
+                    speed={55}
                     repeat={Infinity}
                     cursor={true}
                   />
                 </span>
               </h1>
-
               <p
                 style={{
                   marginTop: "20px",
@@ -87,7 +88,7 @@ export default function LandingPage({ setPage }) {
                   maxWidth: "500px",
                 }}
               >
-                The high-precision water management platform for residential complexes. Automate meter readings, enforce tiered tariff rules, and flag leaks in real time.
+                {t("hero.subtext")}
               </p>
 
               {/* Action Buttons */}
@@ -111,7 +112,7 @@ export default function LandingPage({ setPage }) {
                     transition: "all 0.18s ease",
                   }}
                 >
-                  Explore AquaTrack <ArrowRight size={16} />
+                  {t("hero.cta1")} <ArrowRight size={16} />
                 </button>
 
 
@@ -121,15 +122,15 @@ export default function LandingPage({ setPage }) {
               <div style={{ display: "flex", alignItems: "center", gap: "20px", marginTop: "40px", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "24px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#64748B" }}>
                   <ShieldCheck size={16} color="#34D399" />
-                  <span>256-bit Security</span>
+                  <span>{t("features.f6Title")}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#64748B" }}>
                   <Zap size={16} color="#38BDF8" />
-                  <span>Sub-second Sync</span>
+                  <span>{t("hero.stat2Label")}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#64748B" }}>
                   <Database size={16} color="#818CF8" />
-                  <span>Flyway DB Audited</span>
+                  <span>{t("features.f5Title")}</span>
                 </div>
               </div>
             </div>
@@ -142,12 +143,12 @@ export default function LandingPage({ setPage }) {
                 {/* Floating Telemetry Pill Badges */}
                 <div style={{ position: "absolute", top: "20px", left: "20px", background: "rgba(15, 23, 42, 0.85)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "12px", padding: "8px 14px", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", gap: "8px" }}>
                   <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#34D399" }} />
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: "#FFFFFF" }}>Main Tank: 94.2%</span>
+                  <span style={{ fontSize: "12px", fontWeight: 600, color: "#FFFFFF" }}>{t("hero.stat1Label")}: 94.2%</span>
                 </div>
 
                 <div style={{ position: "absolute", bottom: "20px", right: "20px", background: "rgba(15, 23, 42, 0.85)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "12px", padding: "8px 14px", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", gap: "8px" }}>
                   <Activity size={14} color="#38BDF8" />
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: "#38BDF8" }}>Flow: 4.8 L/s</span>
+                  <span style={{ fontSize: "12px", fontWeight: 600, color: "#38BDF8" }}>{t("dashboard.consumption")}: 4.8 L/s</span>
                 </div>
               </div>
             </div>
@@ -159,10 +160,10 @@ export default function LandingPage({ setPage }) {
         <section style={{ marginBottom: "100px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px" }}>
             {[
-              { val: "99.8%", label: "Billing Accuracy", sub: "Zero manual math errors", color: "#38BDF8" },
-              { val: "1.8M+", label: "Liters Metered", sub: "Real-time telemetry", color: "#34D399" },
-              { val: "48+", label: "Residential Complexes", sub: "Onboarded & active", color: "#818CF8" },
-              { val: "< 10ms", label: "Sync Latency", sub: "Instant database logs", color: "#FBBF24" },
+              { val: t("hero.stat1Value"), label: t("hero.stat1Label"), sub: "Billing accuracy", color: "#38BDF8" },
+              { val: t("hero.stat2Value"), label: t("hero.stat2Label"), sub: "Real-time uptime", color: "#34D399" },
+              { val: t("hero.stat3Value"), label: t("hero.stat3Label"), sub: "Processed volume", color: "#818CF8" },
+              { val: t("hero.stat4Value"), label: t("hero.stat4Label"), sub: "Average savings", color: "#FBBF24" },
             ].map((st, idx) => (
               <div key={idx} style={{ ...cardGlassStyle, padding: "28px 24px", textAlign: "center" }}>
                 <div style={{ fontSize: "36px", fontWeight: 800, color: st.color, letterSpacing: "-0.02em" }}>{st.val}</div>
@@ -177,19 +178,19 @@ export default function LandingPage({ setPage }) {
         <section style={{ marginBottom: "120px" }}>
           <div style={{ textAlign: "center", maxWidth: "600px", margin: "0 auto 56px" }}>
             <h2 style={{ fontSize: "36px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
-              Engineered for absolute billing clarity
+              {t("features.heading")}
             </h2>
             <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "12px", lineHeight: 1.6 }}>
-              Built specifically for apartment associations and residents to eliminate manual math, Excel tracking, and billing disputes.
+              {t("features.subheading")}
             </p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "24px" }}>
             {[
-              { icon: Gauge, title: "Tiered Tariff Engine", desc: "Configure base allowances and excess rates per building. Rates auto-apply on cycle closure.", color: "#38BDF8" },
-              { icon: ShieldCheck, title: "Duplicate-Safe Logging", desc: "Manual inputs and bulk CSV uploads are validated against past dates to eliminate duplicate entries.", color: "#34D399" },
-              { icon: BellRing, title: "AI Spike & Leak Alerts", desc: "Proactive telemetry scans highlight abnormal daily consumption spikes before bills are generated.", color: "#F43F5E" },
-              { icon: Building2, title: "Multi-Apartment RBAC", desc: "Assign custom roles for building admins and residents with complete data isolation.", color: "#818CF8" },
+              { icon: Gauge, title: t("features.f1Title"), desc: t("features.f1Desc"), color: "#38BDF8" },
+              { icon: ShieldCheck, title: t("features.f2Title"), desc: t("features.f2Desc"), color: "#34D399" },
+              { icon: BellRing, title: t("features.f3Title"), desc: t("features.f3Desc"), color: "#F43F5E" },
+              { icon: Building2, title: t("features.f4Title"), desc: t("features.f4Desc"), color: "#818CF8" },
             ].map((f, i) => (
               <div
                 key={i}
@@ -217,11 +218,11 @@ export default function LandingPage({ setPage }) {
           <div style={{ ...cardGlassStyle, padding: "36px", position: "relative", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "28px" }}>
               <div>
-                <h3 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>Live Telemetry Console</h3>
-                <p style={{ fontSize: "13px", color: "#64748B", margin: "4px 0 0" }}>Interactive view of apartment water telemetry & cycle status</p>
+                <h3 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>{t("sidebar.adminConsole")}</h3>
+                <p style={{ fontSize: "13px", color: "#64748B", margin: "4px 0 0" }}>{t("adminHeader.dashboardSub")}</p>
               </div>
               <div style={{ display: "flex", background: "rgba(255,255,255,0.05)", borderRadius: "10px", padding: "4px" }}>
-                {[["telemetry", "Live Telemetry"], ["breakdown", "Cycle Invoices"], ["history", "Billing Logs"]].map(([tab, label]) => (
+                {[["telemetry", t("sidebar.dashboard")], ["breakdown", t("sidebar.invoices")], ["history", t("sidebar.waterUsage")]].map(([tab, label]) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -237,17 +238,17 @@ export default function LandingPage({ setPage }) {
             <div style={{ background: "rgba(11, 17, 32, 0.9)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "24px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "24px" }}>
                 <div style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>Total Apartments</span>
-                  <div style={{ fontSize: "24px", fontWeight: 800, color: "#FFFFFF", marginTop: "4px" }}>12 Buildings</div>
+                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>{t("apartments.title")}</span>
+                  <div style={{ fontSize: "24px", fontWeight: 800, color: "#FFFFFF", marginTop: "4px" }}>12 {t("apartments.title")}</div>
                 </div>
                 <div style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>Current Month Usage</span>
+                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>{t("dashboard.totalConsumption")}</span>
                   <div style={{ fontSize: "24px", fontWeight: 800, color: "#38BDF8", marginTop: "4px" }}>156,800 L</div>
                 </div>
                 <div style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>Cycle Status</span>
+                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>{t("billing.status")}</span>
                   <div style={{ fontSize: "13px", fontWeight: 700, color: "#34D399", background: "rgba(16,185,129,0.15)", padding: "4px 10px", borderRadius: "20px", display: "inline-block", marginTop: "8px" }}>
-                    Cycle OPEN (July 2026)
+                    {t("billing.open")}
                   </div>
                 </div>
               </div>
@@ -257,22 +258,22 @@ export default function LandingPage({ setPage }) {
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#64748B", fontSize: "11px", textTransform: "uppercase" }}>
-                      <th style={{ padding: "12px" }}>Apartment</th>
-                      <th style={{ padding: "12px" }}>Households</th>
-                      <th style={{ padding: "12px" }}>Usage (L)</th>
-                      <th style={{ padding: "12px" }}>Amount (₹)</th>
-                      <th style={{ padding: "12px" }}>Status</th>
+                      <th style={{ padding: "12px" }}>{t("apartments.name")}</th>
+                      <th style={{ padding: "12px" }}>{t("households.title")}</th>
+                      <th style={{ padding: "12px" }}>{t("waterUsage.reading")}</th>
+                      <th style={{ padding: "12px" }}>{t("invoices.total")}</th>
+                      <th style={{ padding: "12px" }}>{t("common.status")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      { name: "Green Meadows", flats: 48, usage: "125,600 L", amount: "₹1,25,600", status: "OPEN", color: "#34D399" },
-                      { name: "Sunrise Residency", flats: 36, usage: "98,400 L", amount: "₹98,400", status: "OPEN", color: "#34D399" },
-                      { name: "Lake View Heights", flats: 52, usage: "156,800 L", amount: "₹1,56,800", status: "CLOSED", color: "#F87171" },
+                      { name: "Green Meadows", flats: 48, usage: "125,600 L", amount: "₹1,25,600", status: t("billing.open"), color: "#34D399" },
+                      { name: "Sunrise Residency", flats: 36, usage: "98,400 L", amount: "₹98,400", status: t("billing.open"), color: "#34D399" },
+                      { name: "Lake View Heights", flats: 52, usage: "156,800 L", amount: "₹1,56,800", status: t("billing.finalized"), color: "#F87171" },
                     ].map((row, idx) => (
                       <tr key={idx} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", fontSize: "13px" }}>
                         <td style={{ padding: "14px 12px", fontWeight: 600, color: "#FFFFFF" }}>{row.name}</td>
-                        <td style={{ padding: "14px 12px", color: "#94A3B8" }}>{row.flats} Flats</td>
+                        <td style={{ padding: "14px 12px", color: "#94A3B8" }}>{row.flats} {t("households.title")}</td>
                         <td style={{ padding: "14px 12px", color: "#38BDF8", fontWeight: 600 }}>{row.usage}</td>
                         <td style={{ padding: "14px 12px", color: "#FFFFFF", fontWeight: 600 }}>{row.amount}</td>
                         <td style={{ padding: "14px 12px" }}>
@@ -303,10 +304,10 @@ export default function LandingPage({ setPage }) {
             }}
           >
             <h2 style={{ fontSize: "36px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", margin: 0 }}>
-              Upgrade your apartment's water management today
+              {t("cta.heading")}
             </h2>
             <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "14px", maxWidth: "520px", margin: "14px auto 0", lineHeight: 1.6 }}>
-              Onboard your complex in under 5 minutes. No hardware changes or setup fees required.
+              {t("cta.subheading")}
             </p>
             <button
               onClick={() => setPage("register")}
@@ -327,7 +328,7 @@ export default function LandingPage({ setPage }) {
                 marginTop: "32px",
               }}
             >
-              Create Free Admin Account <ArrowRight size={18} />
+              {t("cta.button")} <ArrowRight size={18} />
             </button>
           </div>
         </section>

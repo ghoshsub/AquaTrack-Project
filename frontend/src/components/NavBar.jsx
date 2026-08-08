@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Home, LogIn, UserPlus, Info, Mail, Droplets, LogOut, User,
   Bell, Receipt, Sun, Moon, LayoutDashboard, Menu, X
 } from "lucide-react";
+import LanguageSwitcher from "./LanguageSwitcher.jsx";
 
 export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isAuthed = !!auth;
@@ -104,7 +107,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                 textTransform: "uppercase",
               }}
             >
-              Smart Water Intelligence
+              {t("nav.tagline")}
             </span>
           </div>
         </button>
@@ -118,6 +121,9 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
             gap: "8px",
           }}
         >
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
@@ -143,7 +149,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
               e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(15, 23, 42, 0.05)";
               e.currentTarget.style.borderColor = isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)";
             }}
-            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            title={isDark ? t("nav.switchLight") : t("nav.switchDark")}
           >
             {isDark ? <Sun size={17} color="#FBBF24" /> : <Moon size={17} color="#6366F1" />}
           </button>
@@ -151,9 +157,9 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
           {!isAuthed ? (
             <>
               {[
-                { key: "home", label: "Home", icon: Home },
-                { key: "about", label: "About", icon: Info },
-                { key: "contact", label: "Contact", icon: Mail },
+                { key: "home", label: t("nav.home"), icon: Home },
+                { key: "about", label: t("nav.about"), icon: Info },
+                { key: "contact", label: t("nav.contact"), icon: Mail },
               ].map(({ key, label, icon: Icon }) => {
                 const isActive = page === key;
                 return (
@@ -228,7 +234,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                 }}
               >
                 <LogIn size={16} />
-                Log In
+                {t("nav.login")}
               </button>
 
               <button
@@ -260,7 +266,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                 }}
               >
                 <UserPlus size={16} />
-                Get Started
+                {t("nav.getStarted")}
               </button>
             </>
           ) : (
@@ -284,7 +290,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                 }}
               >
                 <LayoutDashboard size={16} />
-                Dashboard
+                {t("nav.dashboard")}
               </button>
 
               {isResident && (
@@ -308,7 +314,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                     }}
                   >
                     <Receipt size={16} />
-                    My Bills
+                    {t("nav.myBills")}
                   </button>
                   <button
                     onClick={() => handleNavClick("alerts")}
@@ -329,7 +335,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                     }}
                   >
                     <Bell size={16} />
-                    Alerts
+                    {t("nav.alerts")}
                   </button>
                 </>
               )}
@@ -353,7 +359,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                 }}
               >
                 <User size={16} />
-                Profile
+                {t("nav.profile")}
               </button>
 
               <button
@@ -382,7 +388,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                 }}
               >
                 <LogOut size={16} />
-                Log Out
+                {t("nav.logout")}
               </button>
             </>
           )}
@@ -425,6 +431,11 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
             animation: "fadeInNav 0.2s ease-out forwards",
           }}
         >
+          {/* Language Switcher (mobile) */}
+          <div style={{ paddingBottom: "8px", borderBottom: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(0,0,0,0.06)" }}>
+            <LanguageSwitcher />
+          </div>
+
           {!isAuthed ? (
             <>
               <button
@@ -444,7 +455,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                   textAlign: "left",
                 }}
               >
-                <Home size={18} /> Home
+                <Home size={18} /> {t("nav.home")}
               </button>
               <button
                 onClick={() => handleNavClick("about")}
@@ -463,7 +474,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                   textAlign: "left",
                 }}
               >
-                <Info size={18} /> About
+                <Info size={18} /> {t("nav.about")}
               </button>
               <button
                 onClick={() => handleNavClick("contact")}
@@ -482,7 +493,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                   textAlign: "left",
                 }}
               >
-                <Mail size={18} /> Contact
+                <Mail size={18} /> {t("nav.contact")}
               </button>
               <button
                 onClick={() => handleNavClick("login")}
@@ -502,7 +513,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                   marginTop: "6px",
                 }}
               >
-                <LogIn size={18} /> Log In
+                <LogIn size={18} /> {t("nav.login")}
               </button>
               <button
                 onClick={() => handleNavClick("register")}
@@ -521,7 +532,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                   gap: "10px",
                 }}
               >
-                <UserPlus size={18} /> Get Started
+                <UserPlus size={18} /> {t("nav.getStarted")}
               </button>
             </>
           ) : (
@@ -543,7 +554,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                   textAlign: "left",
                 }}
               >
-                <LayoutDashboard size={18} /> Dashboard
+                <LayoutDashboard size={18} /> {t("nav.dashboard")}
               </button>
 
               {isResident && (
@@ -565,7 +576,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                       textAlign: "left",
                     }}
                   >
-                    <Receipt size={18} /> My Bills
+                    <Receipt size={18} /> {t("nav.myBills")}
                   </button>
                   <button
                     onClick={() => handleNavClick("alerts")}
@@ -584,7 +595,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                       textAlign: "left",
                     }}
                   >
-                    <Bell size={18} /> Alerts
+                    <Bell size={18} /> {t("nav.alerts")}
                   </button>
                 </>
               )}
@@ -606,7 +617,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                   textAlign: "left",
                 }}
               >
-                <User size={18} /> Profile
+                <User size={18} /> {t("nav.profile")}
               </button>
 
               <button
@@ -627,7 +638,7 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                   marginTop: "6px",
                 }}
               >
-                <LogOut size={18} /> Log Out
+                <LogOut size={18} /> {t("nav.logout")}
               </button>
             </>
           )}
@@ -649,6 +660,10 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
         }
         @keyframes fadeInNav {
           from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(-4px); }
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>

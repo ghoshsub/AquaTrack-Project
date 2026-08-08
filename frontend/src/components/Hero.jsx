@@ -1,7 +1,10 @@
 import React from "react";
-import { ArrowRight, Droplets, Sparkles, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { ArrowRight, Droplets, Sparkles } from "lucide-react";
 
 export default function Hero({ setPage }) {
+  const { t } = useTranslation();
+
   return (
     <section
       style={{
@@ -37,7 +40,7 @@ export default function Hero({ setPage }) {
             }}
           >
             <Sparkles size={14} />
-            <span>Next-Gen Water Intelligence & Billing Platform</span>
+            <span>{t("hero.badge")}</span>
           </div>
 
           <h1
@@ -50,7 +53,7 @@ export default function Hero({ setPage }) {
               margin: 0,
             }}
           >
-            Every drop,{" "}
+            {t("hero.heading1")}{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, #38BDF8 0%, #818CF8 100%)",
@@ -58,8 +61,9 @@ export default function Hero({ setPage }) {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              accounted for.
-            </span>
+              {t("hero.heading2")}
+            </span>{" "}
+            {t("hero.heading3")}
           </h1>
 
           <p
@@ -71,7 +75,7 @@ export default function Hero({ setPage }) {
               maxWidth: "480px",
             }}
           >
-            AquaTrack automates meter readings, enforces tiered tariff structures, flags abnormal leak spikes, and delivers itemized digital statements across all households seamlessly.
+            {t("hero.subtext")}
           </p>
 
           <div style={{ display: "flex", gap: "14px", marginTop: "32px", flexWrap: "wrap" }}>
@@ -96,7 +100,7 @@ export default function Hero({ setPage }) {
               onMouseEnter={e => e.currentTarget.style.transform = "translateY(-1px)"}
               onMouseLeave={e => e.currentTarget.style.transform = "none"}
             >
-              Get started <ArrowRight size={16} />
+              {t("hero.cta1")} <ArrowRight size={16} />
             </button>
 
             <button
@@ -116,7 +120,7 @@ export default function Hero({ setPage }) {
               onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(56,189,248,0.4)"; e.currentTarget.style.background = "rgba(56,189,248,0.08)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
             >
-              Learn more
+              {t("hero.cta2")}
             </button>
           </div>
         </div>
@@ -137,9 +141,9 @@ export default function Hero({ setPage }) {
               <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(56,189,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Droplets size={20} color="#38BDF8" />
               </div>
-              <span style={{ fontSize: "15px", fontWeight: 700, color: "#FFFFFF" }}>Live Consumption Stream</span>
+              <span style={{ fontSize: "15px", fontWeight: 700, color: "#FFFFFF" }}>{t("dashboard.recentActivity")}</span>
             </div>
-            <span style={{ fontSize: "11px", fontWeight: 700, color: "#34D399", background: "rgba(16,185,129,0.15)", padding: "3px 10px", borderRadius: "20px" }}>Active Metering</span>
+            <span style={{ fontSize: "11px", fontWeight: 700, color: "#34D399", background: "rgba(16,185,129,0.15)", padding: "3px 10px", borderRadius: "20px" }}>{t("hero.stat1Label")}</span>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>

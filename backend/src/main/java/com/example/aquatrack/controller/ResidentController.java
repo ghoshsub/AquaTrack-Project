@@ -50,7 +50,7 @@ public class ResidentController {
 
     @GetMapping("/apartments")
     public ResponseEntity<List<Apartment>> getApartments() {
-        return ResponseEntity.ok(apartmentService.findAll());
+        return ResponseEntity.ok(apartmentService.findAllForResidents());
     }
 
     @GetMapping("/dashboard")

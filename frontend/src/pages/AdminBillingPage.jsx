@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Receipt, Plus, Lock, Archive, Calendar, CheckCircle, AlertCircle,
   Droplets, Building2, Edit2, Check, X, ChevronRight
@@ -68,6 +69,7 @@ const cardStyle = {
 };
 
 export default function AdminBillingPage({ auth, setPage }) {
+  const { t } = useTranslation();
   const [apartments, setApartments] = useState([]);
   const [selectedApartmentId, setSelectedApartmentId] = useState("");
   const [apartmentsError, setApartmentsError] = useState("");
@@ -97,10 +99,12 @@ export default function AdminBillingPage({ auth, setPage }) {
     async function loadApartments() {
       try {
         const data = await listApartments(auth.token);
-        setApartments(data);
-        if (data.length > 0) setSelectedApartmentId(String(data[0].id));
+        const list = data || [];
+        setApartments(list);
+        if (list.length > 0 && !selectedApartmentId) setSelectedApartmentId(String(list[0].id));
       } catch (err) {
-        setApartmentsError(err.message || "Could not load apartments.");
+        setApartmentsError(err.message || "Failed to load apartments.");
+        setApartments([]);
       }
     }
     loadApartments();
@@ -108,36 +112,60 @@ export default function AdminBillingPage({ auth, setPage }) {
   }, []);
 
   async function loadCycles(apartmentId) {
-    if (!apartmentId) return;
+    if (!apartmentId) {
+      setCycles([]);
+      setSelectedCycleId(null);
+      setCycleDetails(null);
+      return;
+    }
     setLoadingCycles(true);
     setCyclesError("");
     try {
-      const data = await listBillingCycles(auth.token, apartmentId);
-      setCycles(data);
-      if (data.length > 0) setSelectedCycleId(data[0].id);
+      const realCycles = await listBillingCycles(auth.token, apartmentId);
+      const list = realCycles || [];
+      setCycles(list);
+      if (list.length > 0) setSelectedCycleId(list[0].id);
       else { setSelectedCycleId(null); setCycleDetails(null); }
     } catch (err) {
-      setCyclesError(err.message || "Could not load billing cycles.");
+      setCyclesError(err.message || "Failed to load cycles.");
+      setCycles([]);
+      setSelectedCycleId(null);
+      setCycleDetails(null);
     } finally {
       setLoadingCycles(false);
     }
   }
 
-  useEffect(() => { loadCycles(selectedApartmentId); }, [selectedApartmentId]);
+  useEffect(() => {
+    async function run() { await loadCycles(selectedApartmentId); }
+    run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedApartmentId]);
 
   async function loadCycleDetails(cycleId) {
-    if (!cycleId) return;
+    if (!cycleId) {
+      setCycleDetails(null);
+      return;
+    }
     setLoadingDetails(true);
     setDetailsError("");
     try {
-      const data = await getBillingCycleDetails(auth.token, cycleId);
-      setCycleDetails(data);
-      if (data.status === "OPEN") {
-        const previews = await getCycleUsagePreviews(auth.token, cycleId);
-        setHouseholdReadings(previews.map(p => ({
-          householdId: p.householdId, flatNumber: p.flatNumber,
-          readingValue: p.existingUsage !== null ? String(p.existingUsage) : "0"
-        })));
+      const realDetails = await getBillingCycleDetails(auth.token, cycleId);
+      setCycleDetails(realDetails);
+      if (realDetails && realDetails.status === "OPEN") {
+        const previews = await getCycleUsagePreviews(auth.token, cycleId).catch(() => null);
+        if (previews && previews.length > 0) {
+          setHouseholdReadings(previews.map(p => ({
+            householdId: p.householdId, flatNumber: p.flatNumber,
+            readingValue: p.existingUsage !== null ? String(p.existingUsage) : "0"
+          })));
+        } else {
+          setHouseholdReadings((realDetails.invoices || []).map(inv => ({
+            householdId: inv.household?.id || inv.id,
+            flatNumber: inv.household?.flatNumber || "Flat",
+            readingValue: String(inv.waterUsage || 0)
+          })));
+        }
       }
     } catch (err) {
       setDetailsError(err.message || "Could not load cycle details.");
@@ -146,7 +174,11 @@ export default function AdminBillingPage({ auth, setPage }) {
     }
   }
 
-  useEffect(() => { loadCycleDetails(selectedCycleId); }, [selectedCycleId]);
+  useEffect(() => {
+    async function run() { await loadCycleDetails(selectedCycleId); }
+    run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCycleId]);
 
   async function handleCreateCycle(e) {
     e.preventDefault();
@@ -163,7 +195,7 @@ export default function AdminBillingPage({ auth, setPage }) {
       const newCycle = await openBillingCycle(auth.token, { apartmentId: Number(selectedApartmentId), startDate: finalStart, endDate: finalEnd });
       setStartDate(""); setEndDate(""); setBillingMonth("");
       await loadCycles(selectedApartmentId);
-      setSelectedCycleId(newCycle.id);
+      if (newCycle?.id) setSelectedCycleId(newCycle.id);
     } catch (err) {
       setCreateError(err.message || "Failed to open billing cycle.");
     } finally {
@@ -178,6 +210,7 @@ export default function AdminBillingPage({ auth, setPage }) {
     try {
       await finalizeBillingCycle(auth.token, selectedCycleId, readingsPayload);
       await loadCycles(selectedApartmentId);
+      await loadCycleDetails(selectedCycleId);
     } catch (err) {
       alert(err.message || "Failed to generate invoices.");
     } finally {
@@ -191,6 +224,7 @@ export default function AdminBillingPage({ auth, setPage }) {
     try {
       await archiveBillingCycle(auth.token, selectedCycleId);
       await loadCycles(selectedApartmentId);
+      await loadCycleDetails(selectedCycleId);
     } catch (err) {
       alert(err.message || "Failed to archive billing cycle.");
     } finally {
@@ -221,8 +255,8 @@ export default function AdminBillingPage({ auth, setPage }) {
             <Receipt size={24} color="#FBBF24" />
           </div>
           <div>
-            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Billing Engine & Cycles</h1>
-            <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>Open billing periods, record usage, and generate resident invoices</p>
+            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("billing.title")}</h1>
+            <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("billing.subheading")}</p>
           </div>
         </div>
       </div>
@@ -237,9 +271,9 @@ export default function AdminBillingPage({ auth, setPage }) {
         <div style={{ ...cardStyle, padding: "48px", textAlign: "center" }}>
           <Building2 size={44} color="#334155" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
           <p style={{ color: "#94A3B8", fontSize: "15px" }}>
-            You need an apartment first.{" "}
+            {t("billing.noCycles")}{" "}
             <button onClick={() => setPage("admin-apartments")} style={{ background: "none", border: "none", color: "#38BDF8", fontWeight: 700, cursor: "pointer", fontSize: "15px", textDecoration: "underline" }}>
-              Add apartment
+              {t("apartments.addApartment")}
             </button>
           </p>
         </div>
@@ -251,7 +285,7 @@ export default function AdminBillingPage({ auth, setPage }) {
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {/* Apartment Selector */}
             <div style={{ ...cardStyle, padding: "20px" }}>
-              <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#94A3B8", marginBottom: "10px" }}>Select Building</label>
+              <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#94A3B8", marginBottom: "10px" }}>{t("billing.apartment")}</label>
               <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)}>
                 {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
               </SaasSelect>
@@ -263,7 +297,7 @@ export default function AdminBillingPage({ auth, setPage }) {
                 <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(56,189,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Plus size={15} color="#38BDF8" />
                 </div>
-                <h2 style={{ fontSize: "14px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Open New Billing Period</h2>
+                <h2 style={{ fontSize: "14px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>{t("billing.openCycle")}</h2>
               </div>
 
               <div style={{ display: "flex", background: "rgba(0,0,0,0.25)", borderRadius: "10px", padding: "3px", marginBottom: "16px" }}>

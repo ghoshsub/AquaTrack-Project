@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { login } from "../api/authApi.js";
 import GoogleSignInButton from "../components/GoogleSignInButton.jsx";
 import {
-  User, Lock, Eye, EyeOff, AlertCircle, ArrowRight,
+  Mail, User, Lock, Eye, EyeOff, AlertCircle, ArrowRight,
   Droplets, ShieldCheck, Gauge, BellRing, Sparkles, Activity, CheckCircle2
 } from "lucide-react";
 
@@ -20,23 +21,95 @@ const inputStyle = {
   boxSizing: "border-box",
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function LoginPage({ setPage, onAuthed }) {
-  const [username, setUsername] = useState("");
+  const { t } = useTranslation();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [touchedEmail, setTouchedEmail] = useState(false);
+  const [touchedPassword, setTouchedPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const validateEmail = (val) => {
+    const trimmed = val.trim();
+    if (!trimmed) return t("auth.emailRequired");
+    if (trimmed.includes("@") && !EMAIL_REGEX.test(trimmed)) return t("auth.emailInvalid");
+    return "";
+  };
+
+  const validatePassword = (val) => {
+    if (!val) return t("auth.passwordRequired");
+    return "";
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    if (touchedEmail) {
+      setEmailError(validateEmail(val));
+    }
+  };
+
+  const handleEmailBlur = () => {
+    setTouchedEmail(true);
+    setEmailError(validateEmail(email));
+  };
+
+  const handlePasswordChange = (e) => {
+    const val = e.target.value;
+    setPassword(val);
+    if (touchedPassword) {
+      setPasswordError(validatePassword(val));
+    }
+  };
+
+  const handlePasswordBlur = () => {
+    setTouchedPassword(true);
+    setPasswordError(validatePassword(password));
+  };
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    const eErr = validateEmail(email);
+    const pErr = validatePassword(password);
+
+    setEmailError(eErr);
+    setPasswordError(pErr);
+    setTouchedEmail(true);
+    setTouchedPassword(true);
+
+    if (eErr || pErr) {
+      return;
+    }
+
     setLoading(true);
     try {
-      const data = await login(username, password);
+      const data = await login(email.trim(), password);
       onAuthed(data);
       setPage("dashboard");
     } catch (err) {
-      setError(err.message || "Could not reach the server.");
+      const errMsg = err.message || t("auth.loginError");
+      setError(errMsg);
+      if (
+        errMsg.toLowerCase().includes("email") ||
+        errMsg.toLowerCase().includes("account") ||
+        errMsg.toLowerCase().includes("no account found")
+      ) {
+        setEmailError(errMsg);
+      } else if (
+        errMsg.toLowerCase().includes("password") ||
+        errMsg.toLowerCase().includes("credential") ||
+        errMsg.toLowerCase().includes("invalid password")
+      ) {
+        setPasswordError(errMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -99,10 +172,9 @@ export default function LoginPage({ setPage, onAuthed }) {
           WebkitBackdropFilter: "blur(24px)",
           position: "relative",
           zIndex: 2,
-
         }}
       >
-        {/* LEFT COLUMN: Attractive Branding & Feature Section */}
+        {/* LEFT COLUMN: Branding & Feature Section */}
         <div
           style={{
             background: "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(17, 26, 46, 0.9) 100%)",
@@ -168,7 +240,7 @@ export default function LoginPage({ setPage, onAuthed }) {
               }}
             >
               <Sparkles size={14} />
-              <span>SECURED CONSOLE ACCESS</span>
+              <span>{t("auth.loginSubtitle")}</span>
             </div>
 
             <h2
@@ -181,19 +253,19 @@ export default function LoginPage({ setPage, onAuthed }) {
                 margin: "0 0 16px 0",
               }}
             >
-              Smart water intelligence for modern complexes.
+              {t("hero.loginHeading")}
             </h2>
 
             <p style={{ fontSize: "15px", color: "#94A3B8", lineHeight: 1.65, margin: "0 0 32px 0" }}>
-              Automate meter readings, enforce tiered tariff rules, and track consumption anomalies with sub-second accuracy.
+              {t("hero.subtext")}
             </p>
 
             {/* Feature Highlights */}
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {[
-                { icon: Gauge, title: "Tiered Tariff Engine", desc: "Automated rate calculation per building tier", color: "#38BDF8" },
-                { icon: BellRing, title: "AI Leak Alerts", desc: "Instant notifications for abnormal spikes", color: "#34D399" },
-                { icon: ShieldCheck, title: "Role Isolation", desc: "Separate access for Admins & Residents", color: "#818CF8" },
+                { icon: Gauge, title: t("features.f2Title"), desc: t("features.f2Desc"), color: "#38BDF8" },
+                { icon: BellRing, title: t("features.f4Title"), desc: t("features.f4Desc"), color: "#34D399" },
+                { icon: ShieldCheck, title: t("features.f5Title"), desc: t("features.f5Desc"), color: "#818CF8" },
               ].map(({ icon: Icon, title, desc, color }, idx) => (
                 <div
                   key={idx}
@@ -273,28 +345,28 @@ export default function LoginPage({ setPage, onAuthed }) {
                 margin: "0 0 8px 0",
               }}
             >
-              Welcome back
+              {t("auth.loginTitle")}
             </h1>
             <p style={{ fontSize: "14px", color: "#94A3B8", margin: 0, lineHeight: 1.5 }}>
-              Sign in to your AquaTrack account to manage billing and view telemetry.
+              {t("auth.loginSubtitle")}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            {/* Username Field */}
+            {/* Email or Username Field */}
             <div>
               <label
                 style={{
                   display: "block",
                   fontSize: "12px",
                   fontWeight: 600,
-                  color: "#94A3B8",
+                  color: emailError ? "#F87171" : "#94A3B8",
                   marginBottom: "8px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
                 }}
               >
-                Username
+                {t("auth.emailOrUsername")}
               </label>
               <div style={{ position: "relative" }}>
                 <User
@@ -304,26 +376,44 @@ export default function LoginPage({ setPage, onAuthed }) {
                     left: "14px",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#64748B",
+                    color: emailError ? "#F87171" : "#64748B",
                   }}
                 />
                 <input
                   type="text"
-                  style={inputStyle}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
-                  required
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "#38BDF8";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(56, 189, 248, 0.18)";
+                  style={{
+                    ...inputStyle,
+                    borderColor: emailError ? "#F87171" : "rgba(255, 255, 255, 0.14)",
+                    boxShadow: emailError ? "0 0 0 3px rgba(248, 113, 113, 0.2)" : "none",
                   }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(255, 255, 255, 0.14)";
-                    e.target.style.boxShadow = "none";
+                  value={email}
+                  onChange={handleEmailChange}
+                  onBlur={handleEmailBlur}
+                  placeholder={t("auth.emailOrUsernamePlaceholder")}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = emailError ? "#F87171" : "#38BDF8";
+                    e.target.style.boxShadow = emailError
+                      ? "0 0 0 3px rgba(248, 113, 113, 0.25)"
+                      : "0 0 0 3px rgba(56, 189, 248, 0.18)";
                   }}
                 />
               </div>
+              {emailError && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "6px",
+                    color: "#F87171",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                  }}
+                >
+                  <AlertCircle size={13} style={{ flexShrink: 0 }} />
+                  <span>{emailError}</span>
+                </div>
+              )}
             </div>
 
             {/* Password Field */}
@@ -333,13 +423,13 @@ export default function LoginPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "12px",
                   fontWeight: 600,
-                  color: "#94A3B8",
+                  color: passwordError ? "#F87171" : "#94A3B8",
                   marginBottom: "8px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
                 }}
               >
-                Password
+                {t("auth.password")}
               </label>
               <div style={{ position: "relative" }}>
                 <Lock
@@ -349,23 +439,26 @@ export default function LoginPage({ setPage, onAuthed }) {
                     left: "14px",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#64748B",
+                    color: passwordError ? "#F87171" : "#64748B",
                   }}
                 />
                 <input
                   type={showPassword ? "text" : "password"}
-                  style={{ ...inputStyle, paddingRight: "44px" }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "#38BDF8";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(56, 189, 248, 0.18)";
+                  style={{
+                    ...inputStyle,
+                    paddingRight: "44px",
+                    borderColor: passwordError ? "#F87171" : "rgba(255, 255, 255, 0.14)",
+                    boxShadow: passwordError ? "0 0 0 3px rgba(248, 113, 113, 0.2)" : "none",
                   }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(255, 255, 255, 0.14)";
-                    e.target.style.boxShadow = "none";
+                  value={password}
+                  onChange={handlePasswordChange}
+                  onBlur={handlePasswordBlur}
+                  placeholder={t("auth.passwordPlaceholder")}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = passwordError ? "#F87171" : "#38BDF8";
+                    e.target.style.boxShadow = passwordError
+                      ? "0 0 0 3px rgba(248, 113, 113, 0.25)"
+                      : "0 0 0 3px rgba(56, 189, 248, 0.18)";
                   }}
                 />
                 <button
@@ -387,6 +480,22 @@ export default function LoginPage({ setPage, onAuthed }) {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {passwordError && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "6px",
+                    color: "#F87171",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                  }}
+                >
+                  <AlertCircle size={13} style={{ flexShrink: 0 }} />
+                  <span>{passwordError}</span>
+                </div>
+              )}
             </div>
 
             {/* Error Banner */}
@@ -448,10 +557,10 @@ export default function LoginPage({ setPage, onAuthed }) {
               }}
             >
               {loading ? (
-                "Signing in…"
+                t("auth.loggingIn")
               ) : (
                 <>
-                  Sign In <ArrowRight size={17} />
+                  {t("auth.loginBtn")} <ArrowRight size={17} />
                 </>
               )}
             </button>
@@ -461,7 +570,7 @@ export default function LoginPage({ setPage, onAuthed }) {
           <div style={{ display: "flex", alignItems: "center", gap: "14px", margin: "22px 0" }}>
             <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
             <span style={{ fontSize: "12px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              or continue with
+              {t("auth.orGoogle")}
             </span>
             <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
           </div>
@@ -477,7 +586,7 @@ export default function LoginPage({ setPage, onAuthed }) {
 
           {/* Create Account Link */}
           <p style={{ fontSize: "14px", textAlign: "center", color: "#94A3B8", marginTop: "24px", margin: "24px 0 0 0" }}>
-            No account yet?{" "}
+            {t("auth.noAccount")}{" "}
             <button
               onClick={() => setPage("register")}
               style={{
@@ -492,7 +601,7 @@ export default function LoginPage({ setPage, onAuthed }) {
                 textUnderlineOffset: "3px",
               }}
             >
-              Create one for free
+              {t("auth.signUpLink")}
             </button>
           </p>
         </div>

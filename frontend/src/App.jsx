@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./styles/theme.css";
 
 import NavBar from "./components/NavBar.jsx";
 import Footer from "./components/Footer.jsx";
 import BackgroundGlow from "./components/BackgroundGlow.jsx";
+import LanguageSwitcher from "./components/LanguageSwitcher.jsx";
 
 import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
@@ -41,6 +43,7 @@ import {
 } from "lucide-react";
 
 export default function App() {
+  const { t } = useTranslation();
   const [page, setPage] = useState("home");
   const [auth, setAuth] = useState(null); // { token, username, role } | null
   const [dashboardMonth, setDashboardMonth] = useState("2026-07"); // Sync month globally
@@ -96,23 +99,23 @@ export default function App() {
   function getAdminHeaderTitle() {
     switch (activePage) {
       case "dashboard":
-        return { title: "Dashboard", subtitle: "Overview of your water billing system" };
+        return { title: t("adminHeader.dashboard"), subtitle: t("adminHeader.dashboardSub") };
       case "admin-apartments":
-        return { title: "Apartments", subtitle: "Onboard new buildings and configure plans" };
+        return { title: t("adminHeader.apartments"), subtitle: t("adminHeader.apartmentsSub") };
       case "admin-households":
-        return { title: "Households", subtitle: "Manage flats and occupancy metrics" };
+        return { title: t("adminHeader.households"), subtitle: t("adminHeader.householdsSub") };
       case "admin-water-usage":
-        return { title: "Water Usage", subtitle: "Log manual readings and view history" };
+        return { title: t("adminHeader.waterUsage"), subtitle: t("adminHeader.waterUsageSub") };
       case "admin-billing":
-        return { title: "Billing Cycles", subtitle: "Open cycles, adjust invoices and generate bills" };
+        return { title: t("adminHeader.billing"), subtitle: t("adminHeader.billingSub") };
       case "admin-invoices":
-        return { title: "Invoices", subtitle: "View, filter, and adjust household water bills" };
+        return { title: t("adminHeader.invoices"), subtitle: t("adminHeader.invoicesSub") };
       case "admin-tariffs":
-        return { title: "Tariff Plans", subtitle: "Manage rates, tier thresholds and excess usage charges" };
+        return { title: t("adminHeader.tariffs"), subtitle: t("adminHeader.tariffsSub") };
       case "profile":
-        return { title: "Settings & Profile", subtitle: "Manage administrator credentials" };
+        return { title: t("adminHeader.profile"), subtitle: t("adminHeader.profileSub") };
       default:
-        return { title: "AquaTrack Console", subtitle: "Water Utility Admin Portal" };
+        return { title: t("adminHeader.default"), subtitle: t("adminHeader.defaultSub") };
     }
   }
 
@@ -176,7 +179,7 @@ export default function App() {
                   textTransform: "uppercase",
                 }}
               >
-                Admin Console
+                {t("sidebar.adminConsole")}
               </span>
             </div>
           </button>
@@ -187,7 +190,7 @@ export default function App() {
               className={`admin-sidebar-item ${activePage === "dashboard" ? "active" : ""}`}
             >
               <LayoutDashboard size={18} />
-              Dashboard
+              {t("sidebar.dashboard")}
             </button>
 
             <button
@@ -195,7 +198,7 @@ export default function App() {
               className={`admin-sidebar-item ${activePage === "admin-apartments" ? "active" : ""}`}
             >
               <Building2 size={18} />
-              Apartments
+              {t("sidebar.apartments")}
             </button>
 
             <button
@@ -203,7 +206,7 @@ export default function App() {
               className={`admin-sidebar-item ${activePage === "admin-households" ? "active" : ""}`}
             >
               <HomeIcon size={18} />
-              Households
+              {t("sidebar.households")}
             </button>
 
             <button
@@ -211,7 +214,7 @@ export default function App() {
               className={`admin-sidebar-item ${activePage === "admin-billing" ? "active" : ""}`}
             >
               <Receipt size={18} />
-              Billing Cycles
+              {t("sidebar.billing")}
             </button>
 
             <button
@@ -219,7 +222,7 @@ export default function App() {
               className={`admin-sidebar-item ${activePage === "admin-water-usage" ? "active" : ""}`}
             >
               <Droplets size={18} />
-              Water Usage
+              {t("sidebar.waterUsage")}
             </button>
 
             {/* Invoices */}
@@ -228,7 +231,7 @@ export default function App() {
               className={`admin-sidebar-item ${activePage === "admin-invoices" ? "active" : ""}`}
             >
               <Coins size={18} />
-              Invoices
+              {t("sidebar.invoices")}
             </button>
 
             {/* Tariff Plans */}
@@ -237,18 +240,18 @@ export default function App() {
               className={`admin-sidebar-item ${activePage === "admin-tariffs" ? "active" : ""}`}
             >
               <FileText size={18} />
-              Tariff Plans
+              {t("sidebar.tariffs")}
             </button>
 
             {/* Reports: View-only toast placeholder or dashboard indicator */}
             <button
               onClick={() => {
-                alert("Reports and advanced analytics are coming soon in the next system updates!");
+                alert(t("common.reportsComing"));
               }}
               className="admin-sidebar-item"
             >
               <BarChart3 size={18} />
-              Reports
+              {t("sidebar.reports")}
             </button>
 
             <button
@@ -256,7 +259,7 @@ export default function App() {
               className={`admin-sidebar-item ${activePage === "profile" ? "active" : ""}`}
             >
               <Settings size={18} />
-              Settings
+              {t("sidebar.settings")}
             </button>
           </nav>
 
@@ -267,13 +270,13 @@ export default function App() {
             </div>
             <div className="admin-sidebar-info">
               <span className="admin-sidebar-info-name">{auth.username || "Admin"}</span>
-              <span className="admin-sidebar-info-role">Administrator</span>
+              <span className="admin-sidebar-info-role">{t("sidebar.administrator")}</span>
             </div>
           </div>
 
           <button onClick={() => handlePageChange("logout")} className="admin-sidebar-logout">
             <LogOut size={16} />
-            Log out
+            {t("sidebar.logout")}
           </button>
         </aside>
 
@@ -286,7 +289,7 @@ export default function App() {
                 className="admin-notification-btn"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 style={{ padding: "4px" }}
-                title="Toggle Navigation Menu"
+                title={t("adminHeader.toggleNav")}
               >
                 <Menu size={20} />
               </button>
@@ -297,12 +300,15 @@ export default function App() {
             </div>
 
             <div className="admin-header-right">
+              {/* Language Switcher */}
+              <LanguageSwitcher compact />
+
               {/* Theme Toggle option */}
               <button
                 onClick={toggleTheme}
                 className="admin-notification-btn"
                 style={{ color: "var(--admin-text-white)", padding: "6px", display: "flex", alignItems: "center" }}
-                title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                title={theme === "dark" ? t("adminHeader.switchLight") : t("adminHeader.switchDark")}
               >
                 {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
               </button>

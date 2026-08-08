@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Building2, Plus, Edit2, Trash2, AlertCircle, X, MapPin, Mail, Phone, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Building2, Plus, Edit2, Trash2, AlertCircle, X, MapPin, Search } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { createApartment, listApartments, deleteApartment, updateApartment } from "../api/apartmentApi.js";
 
@@ -48,6 +49,7 @@ function SaasInput({ type = "text", ...props }) {
 }
 
 export default function AdminApartmentsPage({ auth, setPage }) {
+  const { t } = useTranslation();
   const [apartments, setApartments] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [listError, setListError] = useState("");
@@ -68,10 +70,11 @@ export default function AdminApartmentsPage({ auth, setPage }) {
     setLoadingList(true);
     setListError("");
     try {
-      const data = await listApartments(auth.token);
-      setApartments(data);
+      const backendData = await listApartments(auth.token);
+      setApartments(backendData || []);
     } catch (err) {
-      setListError(err.message || "Could not load apartments.");
+      setListError(err.message || "Failed to load apartments.");
+      setApartments([]);
     } finally {
       setLoadingList(false);
     }
@@ -104,8 +107,8 @@ export default function AdminApartmentsPage({ auth, setPage }) {
       } else {
         await createApartment(auth.token, payload);
       }
-      resetForm();
       await loadApartments();
+      resetForm();
     } catch (err) {
       setFormError(err.message || `Could not ${editingApartmentId ? "update" : "create"} apartment.`);
     } finally {
@@ -149,8 +152,8 @@ export default function AdminApartmentsPage({ auth, setPage }) {
               <Building2 size={24} color="#38BDF8" />
             </div>
             <div>
-              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Apartment Management</h1>
-              <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>Onboard buildings, configure tier rates, and manage contact info</p>
+              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("apartments.title")}</h1>
+              <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("apartments.subheading")}</p>
             </div>
           </div>
         </div>
@@ -166,7 +169,7 @@ export default function AdminApartmentsPage({ auth, setPage }) {
             transition: "all 0.2s ease",
           }}
         >
-          <Plus size={18} /> Add Apartment
+          <Plus size={18} /> {t("apartments.addApartment")}
         </button>
       </div>
 
@@ -175,7 +178,7 @@ export default function AdminApartmentsPage({ auth, setPage }) {
         <div style={{ background: "rgba(17, 26, 42, 0.9)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "20px", padding: "32px", backdropFilter: "blur(20px)", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
             <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
-              {editingApartmentId ? "Edit Building Details" : "Register New Apartment"}
+              {editingApartmentId ? t("apartments.editApartment") : t("apartments.addApartment")}
             </h2>
             <button onClick={resetForm} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "#94A3B8", borderRadius: "8px", padding: "6px", cursor: "pointer", display: "flex" }}>
               <X size={18} />
@@ -184,23 +187,23 @@ export default function AdminApartmentsPage({ auth, setPage }) {
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div>
-              <p style={{ fontSize: "12px", fontWeight: 700, color: "#38BDF8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>Building Information</p>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#38BDF8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>{t("apartments.details")}</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Apartment Name *</label>
-                  <SaasInput value={name} onChange={e => setName(e.target.value)} placeholder="Green Meadows Residency" required />
+                  <label style={labelStyle}>{t("apartments.name")} *</label>
+                  <SaasInput value={name} onChange={e => setName(e.target.value)} placeholder={t("apartments.namePlaceholder")} required />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Address *</label>
-                  <SaasInput value={address} onChange={e => setAddress(e.target.value)} placeholder="123 Lake View Road, City" required />
+                  <label style={labelStyle}>{t("apartments.address")} *</label>
+                  <SaasInput value={address} onChange={e => setAddress(e.target.value)} placeholder={t("apartments.addressPlaceholder")} required />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Owner Email</label>
-                  <SaasInput type="email" value={ownerEmail} onChange={e => setOwnerEmail(e.target.value)} placeholder="owner@example.com" />
+                  <label style={labelStyle}>{t("apartments.ownerEmail")}</label>
+                  <SaasInput type="email" value={ownerEmail} onChange={e => setOwnerEmail(e.target.value)} placeholder={t("apartments.emailPlaceholder")} />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Owner Phone</label>
-                  <SaasInput value={ownerPhone} onChange={e => setOwnerPhone(e.target.value)} placeholder="+91-9876543210" />
+                  <label style={labelStyle}>{t("apartments.ownerPhone")}</label>
+                  <SaasInput value={ownerPhone} onChange={e => setOwnerPhone(e.target.value)} placeholder={t("apartments.phonePlaceholder")} />
                 </div>
               </div>
             </div>
@@ -208,18 +211,18 @@ export default function AdminApartmentsPage({ auth, setPage }) {
             <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }} />
 
             <div>
-              <p style={{ fontSize: "12px", fontWeight: 700, color: "#A78BFA", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>Tariff Plan (Water Rates)</p>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#A78BFA", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>{t("tariffs.title")}</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Base Rate (₹/L) *</label>
+                  <label style={labelStyle}>{t("tariffs.baseRate")} *</label>
                   <SaasInput type="number" step="0.01" required value={baseRate} onChange={e => setBaseRate(e.target.value)} placeholder="1.00" />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Base Tier Limit (L) *</label>
+                  <label style={labelStyle}>{t("tariffs.baseTierLimit")} *</label>
                   <SaasInput type="number" step="0.01" required value={baseTierLimit} onChange={e => setBaseTierLimit(e.target.value)} placeholder="5000" />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Excess Rate (₹/L) *</label>
+                  <label style={labelStyle}>{t("tariffs.excessRate")} *</label>
                   <SaasInput type="number" step="0.01" required value={excessRate} onChange={e => setExcessRate(e.target.value)} placeholder="2.50" />
                 </div>
               </div>
@@ -242,10 +245,10 @@ export default function AdminApartmentsPage({ auth, setPage }) {
                   boxShadow: "0 4px 14px rgba(56,189,248,0.35)", fontFamily: "inherit",
                 }}
               >
-                {submitting ? (editingApartmentId ? "Saving…" : "Adding…") : (editingApartmentId ? "Save Changes" : "Create Apartment")}
+                {submitting ? t("common.loading") : (editingApartmentId ? t("apartments.save") : t("apartments.addApartment"))}
               </button>
               <button type="button" onClick={resetForm} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#94A3B8", fontWeight: 600, fontSize: "14px", padding: "12px 20px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>
-                Cancel
+                {t("apartments.cancel")}
               </button>
             </div>
           </form>

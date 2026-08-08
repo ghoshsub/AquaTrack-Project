@@ -1,7 +1,9 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 
 export default function BackToDashboard({ setPage }) {
+  const { t } = useTranslation();
   return (
     <button
       onClick={() => setPage("dashboard")}
@@ -24,7 +26,7 @@ export default function BackToDashboard({ setPage }) {
       onMouseLeave={e => { e.currentTarget.style.color = "var(--admin-text-muted)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
     >
       <ArrowLeft size={14} />
-      Back to dashboard
+      {t("common.back")}
     </button>
   );
 }

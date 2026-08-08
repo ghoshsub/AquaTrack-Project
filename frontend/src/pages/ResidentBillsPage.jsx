@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Receipt, Calendar, Info, Building2, Droplets, CheckCircle2, Clock,
   Search, Filter, CreditCard, Download, DollarSign,
@@ -33,6 +34,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function ResidentBillsPage({ auth, setPage }) {
+  const { t } = useTranslation();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -167,8 +169,8 @@ export default function ResidentBillsPage({ auth, setPage }) {
               <Receipt size={24} color="#38BDF8" />
             </div>
             <div>
-              <div style={{ fontSize: "11px", fontWeight: 800, color: "#38BDF8", letterSpacing: "0.08em", textTransform: "uppercase" }}>RESIDENT FINANCIAL PORTAL</div>
-              <h1 style={{ fontSize: "28px", fontWeight: 800, color: "#FFFFFF", margin: "2px 0 0", letterSpacing: "-0.02em" }}>My Bills & Invoices</h1>
+              <div style={{ fontSize: "11px", fontWeight: 800, color: "#38BDF8", letterSpacing: "0.08em", textTransform: "uppercase" }}>{t("nav.myBills").toUpperCase()}</div>
+              <h1 style={{ fontSize: "28px", fontWeight: 800, color: "#FFFFFF", margin: "2px 0 0", letterSpacing: "-0.02em" }}>{t("residentBills.title")}</h1>
             </div>
           </div>
           <div style={{ background: "rgba(56,189,248,0.1)", border: "1px solid rgba(56,189,248,0.25)", color: "#38BDF8", fontSize: "12.5px", fontWeight: 700, padding: "8px 16px", borderRadius: "12px" }}>
@@ -187,17 +189,17 @@ export default function ResidentBillsPage({ auth, setPage }) {
       {/* ── KPI Summary Cards ────────────────────────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "18px" }}>
         <div style={{ ...cardStyle, padding: "20px 24px" }}>
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "#94A3B8", textTransform: "uppercase" }}>Total Billed</div>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#94A3B8", textTransform: "uppercase" }}>{t("dashboard.totalBilled")}</div>
           <div style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", marginTop: "6px" }}>₹{new Intl.NumberFormat("en-IN").format(Math.round(totalAmountBilled))}</div>
           <div style={{ fontSize: "12px", color: "#64748B", marginTop: "4px" }}>{invoices.length} Total Statements</div>
         </div>
         <div style={{ ...cardStyle, padding: "20px 24px" }}>
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "#94A3B8", textTransform: "uppercase" }}>Total Paid</div>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#94A3B8", textTransform: "uppercase" }}>{t("invoices.paid")}</div>
           <div style={{ fontSize: "26px", fontWeight: 800, color: "#34D399", marginTop: "6px" }}>₹{new Intl.NumberFormat("en-IN").format(Math.round(totalPaid))}</div>
           <div style={{ fontSize: "12px", color: "#34D399", marginTop: "4px", fontWeight: 600 }}>✓ Settled Invoices</div>
         </div>
         <div style={{ ...cardStyle, padding: "20px 24px" }}>
-          <div style={{ fontSize: "12px", fontWeight: 600, color: "#94A3B8", textTransform: "uppercase" }}>Outstanding Balance</div>
+          <div style={{ fontSize: "12px", fontWeight: 600, color: "#94A3B8", textTransform: "uppercase" }}>{t("residentBills.totalDue")}</div>
           <div style={{ fontSize: "26px", fontWeight: 800, color: totalUnpaid > 0 ? "#F87171" : "#34D399", marginTop: "6px" }}>₹{new Intl.NumberFormat("en-IN").format(Math.round(totalUnpaid))}</div>
           <div style={{ fontSize: "12px", color: totalUnpaid > 0 ? "#F87171" : "#64748B", marginTop: "4px", fontWeight: 600 }}>
             {totalUnpaid > 0 ? `${unpaidCount} Pending Invoice${unpaidCount > 1 ? "s" : ""}` : "Zero Due"}
@@ -219,12 +221,12 @@ export default function ResidentBillsPage({ auth, setPage }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <Filter size={15} color="#94A3B8" />
-          <span style={{ fontSize: "13px", color: "#94A3B8", fontWeight: 600 }}>Filter:</span>
+          <span style={{ fontSize: "13px", color: "#94A3B8", fontWeight: 600 }}>{t("invoices.filter")}:</span>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
             style={{ background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.12)", color: "#FFFFFF", padding: "8px 14px", borderRadius: "10px", fontSize: "13px", outline: "none", cursor: "pointer" }}>
-            <option value="ALL">All Invoices</option>
-            <option value="UNPAID">Pending / Unpaid</option>
-            <option value="PAID">Paid / Cleared</option>
+            <option value="ALL">{t("invoices.allStatuses")}</option>
+            <option value="UNPAID">{t("invoices.unpaid")}</option>
+            <option value="PAID">{t("invoices.paid")}</option>
           </select>
         </div>
       </div>

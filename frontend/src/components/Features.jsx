@@ -1,36 +1,39 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Gauge, ShieldCheck, BellRing } from "lucide-react";
 
-const ITEMS = [
-  {
-    icon: Gauge,
-    title: "Tiered Rate Calculator",
-    body: "Base allowance and excess tier rates apply automatically per building without spreadsheet calculations.",
-    color: "#38BDF8",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Duplicate-Safe Logging",
-    body: "Manual entries and bulk CSV imports undergo strict validation checks to prevent double entries.",
-    color: "#10B981",
-  },
-  {
-    icon: BellRing,
-    title: "Leak & Spike Detection",
-    body: "Abnormal daily water spikes trigger automatic alerts before they turn into costly billing surprises.",
-    color: "#F43F5E",
-  },
-];
-
 export default function Features() {
+  const { t } = useTranslation();
+
+  const ITEMS = [
+    {
+      icon: Gauge,
+      title: t("features.f2Title"),
+      body: t("features.f2Desc"),
+      color: "#38BDF8",
+    },
+    {
+      icon: ShieldCheck,
+      title: t("features.f1Title"),
+      body: t("features.f1Desc"),
+      color: "#10B981",
+    },
+    {
+      icon: BellRing,
+      title: t("features.f4Title"),
+      body: t("features.f4Desc"),
+      color: "#F43F5E",
+    },
+  ];
+
   return (
     <section className="at-container" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
       <div style={{ textAlign: "center", maxWidth: "600px", margin: "0 auto 48px" }}>
         <h2 style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
-          Built around precision metering
+          {t("features.heading")}
         </h2>
         <p style={{ fontSize: "15px", color: "#64748B", marginTop: "10px", lineHeight: 1.6 }}>
-          Everything residential management needs to track consumption, generate accurate statements, and eliminate disputes.
+          {t("features.subheading")}
         </p>
       </div>
 

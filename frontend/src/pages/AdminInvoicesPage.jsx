@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Coins, Search, Edit3, CheckCircle, Clock, Building2, Calendar, FileText, Printer, Filter, X, TrendingUp, TrendingDown, AlertCircle, Download, Hash, Tag, CreditCard, Smartphone, Landmark } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Coins, Search, Edit3, CheckCircle, Clock, Building2, Calendar, FileText, Printer, Filter, X, TrendingUp, AlertCircle, Download } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
 import { listBillingCycles, getInvoicesByCycle, updateInvoiceAdjustments, downloadAdminInvoiceReceiptPdf } from "../api/billingApi.js";
@@ -13,9 +14,10 @@ function formatLiters(value) {
 }
 
 const inputBase = {
-  background: "rgba(13, 22, 36, 0.9)", border: "1px solid rgba(255, 255, 255, 0.14)",
-  color: "#FFFFFF", padding: "9px 14px", borderRadius: "10px", fontSize: "14px",
-  fontFamily: "inherit", outline: "none",
+  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.14)",
+  color: "#FFFFFF", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+  fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+  transition: "all 0.2s ease",
 };
 
 const cardStyle = {
@@ -25,23 +27,28 @@ const cardStyle = {
   backdropFilter: "blur(20px)",
 };
 
-function KpiCard({ label, value, sub, color, icon: Icon, gradient }) {
+function StatCard({ title, label, value, sub, color, icon: Icon }) {
+  const displayTitle = title || label;
   return (
-    <div style={{ ...cardStyle, padding: "22px 24px", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "3px", background: gradient }} />
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-        <span style={{ fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#64748B" }}>{label}</span>
-        <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: `${color}1A`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon size={16} color={color} />
-        </div>
+    <div style={{ ...cardStyle, padding: "20px", flex: 1, minWidth: "180px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+        <span style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#94A3B8" }}>{displayTitle}</span>
+        {Icon && (
+          <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: `${color}18`, border: `1px solid ${color}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon size={18} color={color} />
+          </div>
+        )}
       </div>
-      <div style={{ fontSize: "24px", fontWeight: 800, color, letterSpacing: "-0.03em" }}>{value}</div>
+      <div style={{ fontSize: "24px", fontWeight: 800, color: color || "#FFFFFF", letterSpacing: "-0.02em" }}>{value}</div>
       <div style={{ fontSize: "12px", color: "#64748B", marginTop: "4px" }}>{sub}</div>
     </div>
   );
 }
 
+const KpiCard = StatCard;
+
 export default function AdminInvoicesPage({ auth, setPage }) {
+  const { t } = useTranslation();
   const [apartments, setApartments] = useState([]);
   const [selectedApartmentId, setSelectedApartmentId] = useState("");
   const [cycles, setCycles] = useState([]);
@@ -69,10 +76,12 @@ export default function AdminInvoicesPage({ auth, setPage }) {
       setError("");
       try {
         const data = await listApartments(auth.token);
-        setApartments(data);
-        if (data.length > 0) setSelectedApartmentId(String(data[0].id));
+        const list = data || [];
+        setApartments(list);
+        if (list.length > 0 && !selectedApartmentId) setSelectedApartmentId(String(list[0].id));
       } catch (err) {
         setError(err.message || "Failed to load apartments.");
+        setApartments([]);
       } finally {
         setLoadingApartments(false);
       }
@@ -81,39 +90,46 @@ export default function AdminInvoicesPage({ auth, setPage }) {
   }, [auth.token]);
 
   useEffect(() => {
-    if (!selectedApartmentId) { setCycles([]); setSelectedCycleId(""); setInvoices([]); return; }
     async function loadCycles() {
+      if (!selectedApartmentId) { setCycles([]); setSelectedCycleId(""); setInvoices([]); return; }
       setLoadingCycles(true);
       setError("");
       try {
         const data = await listBillingCycles(auth.token, selectedApartmentId);
-        setCycles(data);
-        if (data.length > 0) setSelectedCycleId(String(data[0].id));
+        const list = data || [];
+        setCycles(list);
+        if (list.length > 0) setSelectedCycleId(String(list[0].id));
         else { setSelectedCycleId(""); setInvoices([]); }
       } catch (err) {
-        setError(err.message || "Failed to load billing cycles.");
+        setError(err.message || "Failed to load cycles.");
+        setCycles([]);
+        setSelectedCycleId("");
+        setInvoices([]);
       } finally {
         setLoadingCycles(false);
       }
     }
     loadCycles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedApartmentId, auth.token]);
 
   useEffect(() => {
-    if (!selectedCycleId) { setInvoices([]); return; }
     async function loadInvoices() {
+      if (!selectedCycleId) { setInvoices([]); return; }
       setLoadingInvoices(true);
       setError("");
       try {
         const data = await getInvoicesByCycle(auth.token, selectedCycleId);
         setInvoices(data || []);
       } catch (err) {
-        setError(err.message || "Failed to load invoices for selected billing cycle.");
+        setError(err.message || "Failed to load invoices.");
+        setInvoices([]);
       } finally {
         setLoadingInvoices(false);
       }
     }
     loadInvoices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCycleId, auth.token]);
 
   async function handleSaveAdjustment(e) {
@@ -121,10 +137,13 @@ export default function AdminInvoicesPage({ auth, setPage }) {
     if (!editingInvoice) return;
     setUpdatingAdjustment(true);
     try {
-      const updated = await updateInvoiceAdjustments(auth.token, editingInvoice.id, Number(adjustmentValue));
-      setInvoices((prev) => prev.map((inv) => (inv.id === updated.id ? updated : inv)));
+      await updateInvoiceAdjustments(auth.token, editingInvoice.id, Number(adjustmentValue));
       setEditingInvoice(null);
       setAdjustmentValue("");
+      if (selectedCycleId) {
+        const data = await getInvoicesByCycle(auth.token, selectedCycleId);
+        setInvoices(data || []);
+      }
     } catch (err) {
       alert(err.message || "Failed to update invoice adjustment.");
     } finally {
@@ -156,8 +175,8 @@ export default function AdminInvoicesPage({ auth, setPage }) {
               <Coins size={24} color="#A78BFA" />
             </div>
             <div>
-              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Invoices Management</h1>
-              <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>View, audit, and adjust all household invoices across billing cycles</p>
+              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("invoices.title")}</h1>
+              <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("invoices.subheading")}</p>
             </div>
           </div>
         </div>
@@ -167,7 +186,7 @@ export default function AdminInvoicesPage({ auth, setPage }) {
       <div style={{ ...cardStyle, padding: "20px 24px", display: "flex", flexWrap: "wrap", gap: "20px", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", alignItems: "center" }}>
           <div>
-            <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Apartment</label>
+            <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>{t("billing.apartment")}</label>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Building2 size={16} color="#38BDF8" />
               <select value={selectedApartmentId} onChange={(e) => setSelectedApartmentId(e.target.value)}
@@ -179,7 +198,7 @@ export default function AdminInvoicesPage({ auth, setPage }) {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Billing Cycle</label>
+            <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>{t("invoices.billingCycle")}</label>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Calendar size={16} color="#38BDF8" />
               <select value={selectedCycleId} onChange={(e) => setSelectedCycleId(e.target.value)} disabled={cycles.length === 0}
@@ -195,15 +214,15 @@ export default function AdminInvoicesPage({ auth, setPage }) {
         <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ position: "relative" }}>
             <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#64748B" }} />
-            <input type="text" placeholder="Search flat / resident..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+            <input type="text" placeholder={t("common.search")} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
               style={{ ...inputBase, paddingLeft: "36px", width: "220px" }} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <Filter size={15} color="#64748B" />
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ ...inputBase }}>
-              <option value="ALL">All Status</option>
-              <option value="UNPAID">Unpaid</option>
-              <option value="PAID">Paid</option>
+              <option value="ALL">{t("invoices.allStatuses")}</option>
+              <option value="UNPAID">{t("invoices.unpaid")}</option>
+              <option value="PAID">{t("invoices.paid")}</option>
             </select>
           </div>
         </div>
@@ -217,10 +236,10 @@ export default function AdminInvoicesPage({ auth, setPage }) {
 
       {/* KPI Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
-        <KpiCard label="Total Billed" value={formatRupees(totalBilled)} sub={`${invoices.length} invoices in cycle`} color="#38BDF8" icon={Coins} gradient="linear-gradient(90deg, #38BDF8, #6366F1)" />
-        <KpiCard label="Paid Amount" value={formatRupees(totalPaid)} sub="Cleared invoices" color="#34D399" icon={CheckCircle} gradient="linear-gradient(90deg, #34D399, #10B981)" />
-        <KpiCard label="Unpaid Balance" value={formatRupees(totalUnpaid)} sub="Pending collection" color="#FBBF24" icon={Clock} gradient="linear-gradient(90deg, #FBBF24, #F59E0B)" />
-        <KpiCard label="Average Invoice" value={formatRupees(avgBill)} sub="Per household" color="#A78BFA" icon={TrendingUp} gradient="linear-gradient(90deg, #A78BFA, #8B5CF6)" />
+        <KpiCard label={t("dashboard.totalBilled")} value={formatRupees(totalBilled)} sub={`${invoices.length} invoices`} color="#38BDF8" icon={Coins} gradient="linear-gradient(90deg, #38BDF8, #6366F1)" />
+        <KpiCard label={t("invoices.paid")} value={formatRupees(totalPaid)} sub="Cleared" color="#34D399" icon={CheckCircle} gradient="linear-gradient(90deg, #34D399, #10B981)" />
+        <KpiCard label={t("invoices.unpaid")} value={formatRupees(totalUnpaid)} sub="Pending" color="#FBBF24" icon={Clock} gradient="linear-gradient(90deg, #FBBF24, #F59E0B)" />
+        <KpiCard label={t("invoices.total")} value={formatRupees(avgBill)} sub="Average" color="#A78BFA" icon={TrendingUp} gradient="linear-gradient(90deg, #A78BFA, #8B5CF6)" />
       </div>
 
       {/* Main Table */}

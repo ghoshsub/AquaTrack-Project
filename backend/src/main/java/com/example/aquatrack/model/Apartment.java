@@ -37,6 +37,11 @@ public class Apartment {
     @Column(name = "owner_phone", length = 50)
     private String ownerPhone;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
+    @JsonIgnoreProperties({"passwordHash", "household", "hibernateLazyInitializer", "handler"})
+    private User admin;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tariff_plan_id")
     private TariffPlan tariffPlan;

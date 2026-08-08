@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { FileText, Building2, Save, CheckCircle, AlertCircle, Calculator, Layers, Info, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { FileText, Building2, Save, CheckCircle, AlertCircle, Calculator, Layers, Info } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
 import { getTariffPlan, saveTariffPlan } from "../api/tariffApi.js";
@@ -27,9 +28,9 @@ const cardStyle = {
 };
 
 export default function AdminTariffPlansPage({ auth, setPage }) {
+  const { t } = useTranslation();
   const [apartments, setApartments] = useState([]);
   const [selectedApartmentId, setSelectedApartmentId] = useState("");
-  const [tariff, setTariff] = useState(null);
 
   const [loadingApartments, setLoadingApartments] = useState(true);
   const [loadingTariff, setLoadingTariff] = useState(false);
@@ -49,37 +50,48 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
       setError("");
       try {
         const data = await listApartments(auth.token);
-        setApartments(data);
-        if (data.length > 0) setSelectedApartmentId(String(data[0].id));
+        const list = data || [];
+        setApartments(list);
+        if (list.length > 0 && !selectedApartmentId) setSelectedApartmentId(String(list[0].id));
       } catch (err) {
         setError(err.message || "Failed to load apartments.");
+        setApartments([]);
       } finally {
         setLoadingApartments(false);
       }
     }
     loadApartments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth.token]);
 
   useEffect(() => {
-    if (!selectedApartmentId) { setTariff(null); setBaseRate(""); setBaseTierLimit(""); setExcessRate(""); return; }
     async function loadTariff() {
+      if (!selectedApartmentId) {
+        setBaseRate(""); setBaseTierLimit(""); setExcessRate(""); return;
+      }
       setLoadingTariff(true);
       setError(""); setSuccessMsg("");
       try {
-        const data = await getTariffPlan(auth.token, selectedApartmentId);
-        setTariff(data);
-        if (data) {
-          setBaseRate(String(data.baseRate)); setBaseTierLimit(String(data.baseTierLimit)); setExcessRate(String(data.excessRate));
+        const realData = await getTariffPlan(auth.token, selectedApartmentId);
+        if (realData) {
+          setBaseRate(String(realData.baseRate ?? 10));
+          setBaseTierLimit(String(realData.baseTierLimit ?? 1000));
+          setExcessRate(String(realData.excessRate ?? 15));
         } else {
-          setBaseRate("150"); setBaseTierLimit("10000"); setExcessRate("0.02");
+          setBaseRate("10");
+          setBaseTierLimit("1000");
+          setExcessRate("15");
         }
-      } catch (err) {
-        setError(err.message || "Failed to load tariff plan for selected apartment.");
+      } catch {
+        setBaseRate("10");
+        setBaseTierLimit("1000");
+        setExcessRate("15");
       } finally {
         setLoadingTariff(false);
       }
     }
     loadTariff();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedApartmentId, auth.token]);
 
   async function handleSaveTariff(e) {
@@ -94,8 +106,7 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
         baseTierLimit: Number(baseTierLimit),
         excessRate: Number(excessRate),
       };
-      const updated = await saveTariffPlan(auth.token, payload);
-      setTariff(updated);
+      await saveTariffPlan(auth.token, payload);
       setSuccessMsg("Tariff plan updated successfully!");
       setTimeout(() => setSuccessMsg(""), 4000);
     } catch (err) {
@@ -126,8 +137,8 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
             <FileText size={24} color="#FBBF24" />
           </div>
           <div>
-            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Tariff Plans</h1>
-            <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>Configure water rates, tier limits, and excess surcharges per apartment</p>
+            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("tariffs.title")}</h1>
+            <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("tariffs.subheading")}</p>
           </div>
         </div>
       </div>
@@ -138,7 +149,7 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
           <Building2 size={20} color="#38BDF8" />
         </div>
         <div style={{ flex: 1 }}>
-          <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Select Apartment Complex</label>
+          <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>{t("tariffs.apartment")}</label>
           <select value={selectedApartmentId} onChange={(e) => setSelectedApartmentId(e.target.value)} disabled={loadingApartments}
             style={{ ...inputBase, padding: "10px 16px", fontSize: "14.5px", minWidth: "280px" }}>
             {apartments.length === 0 && <option value="">No apartments found</option>}
@@ -168,19 +179,19 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
               <Layers size={17} color="#FBBF24" />
             </div>
             <div>
-              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#FFF", margin: 0 }}>Tariff Plan Settings</h2>
+              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#FFF", margin: 0 }}>{t("tariffs.title")}</h2>
               <p style={{ fontSize: "12px", color: "#64748B", margin: "2px 0 0" }}>Configure billing rates for this building</p>
             </div>
           </div>
 
           {loadingTariff ? (
-            <div style={{ padding: "30px", textAlign: "center", color: "#94A3B8" }}>Loading tariff plan details…</div>
+            <div style={{ padding: "30px", textAlign: "center", color: "#94A3B8" }}>{t("common.loading")}</div>
           ) : (
             <form onSubmit={handleSaveTariff} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Base Rate */}
               <div>
                 <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>
-                  Base Charge Rate (₹)
+                  {t("tariffs.baseRate")}
                 </label>
                 <input type="number" step="0.01" min="0" value={baseRate} onChange={(e) => setBaseRate(e.target.value)} placeholder="e.g. 150.00" required
                   style={inputBase}
@@ -193,7 +204,7 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
               {/* Base Tier Limit */}
               <div>
                 <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>
-                  Base Tier Limit (Liters)
+                  {t("tariffs.baseTierLimit")}
                 </label>
                 <input type="number" step="1" min="0" value={baseTierLimit} onChange={(e) => setBaseTierLimit(e.target.value)} placeholder="e.g. 10000" required
                   style={inputBase}

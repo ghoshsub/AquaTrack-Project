@@ -2,6 +2,7 @@ package com.example.aquatrack.service;
 
 import com.example.aquatrack.model.Alert;
 import com.example.aquatrack.model.Household;
+import com.example.aquatrack.model.User;
 import com.example.aquatrack.model.WaterUsageLog;
 import com.example.aquatrack.repository.AlertRepository;
 import com.example.aquatrack.repository.HouseholdRepository;
@@ -26,13 +27,16 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final HouseholdRepository householdRepository;
     private final WaterUsageLogRepository waterUsageLogRepository;
+    private final AdminResolver adminResolver;
 
     public AlertService(AlertRepository alertRepository,
                         HouseholdRepository householdRepository,
-                        WaterUsageLogRepository waterUsageLogRepository) {
+                        WaterUsageLogRepository waterUsageLogRepository,
+                        AdminResolver adminResolver) {
         this.alertRepository = alertRepository;
         this.householdRepository = householdRepository;
         this.waterUsageLogRepository = waterUsageLogRepository;
+        this.adminResolver = adminResolver;
     }
 
     @Scheduled(cron = "0 0 2 * * ?") // 2:00 AM daily
@@ -99,7 +103,6 @@ public class AlertService {
     }
 
     private void triggerAlert(Household h, Alert.AlertType type, String message, LocalDate date, BigDecimal value) {
-        // Log in DB (In-app Notification)
         Alert alert = new Alert();
         alert.setHousehold(h);
         alert.setAlertType(type);
@@ -109,11 +112,21 @@ public class AlertService {
         alert.setIsRead(false);
         alertRepository.save(alert);
 
-        // Log Mock Email Notification
         String recipient = h.getResidentEmail() != null ? h.getResidentEmail() : "no-resident-linked@example.com";
         logger.info("EMAIL SENT to [{}]: [AquaTrack Alert] - {}", recipient, message);
     }
 
+    /**
+     * Returns all alerts (shared across all admins).
+     */
+    public List<Alert> getAlertsForCurrentAdmin() {
+        adminResolver.requireAdmin();
+        return alertRepository.findAll();
+    }
+
+    /**
+     * Returns alerts for a specific apartment, verifying admin ownership.
+     */
     public List<Alert> getAlertsByApartment(Long apartmentId) {
         return alertRepository.findByApartmentId(apartmentId);
     }

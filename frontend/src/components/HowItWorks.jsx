@@ -1,31 +1,37 @@
 import React from "react";
-
-const STEPS = [
-  {
-    n: "01",
-    title: "Record Meter Readings",
-    body: "Enter individual household readings manually or import batch CSV readings for the entire apartment complex.",
-  },
-  {
-    n: "02",
-    title: "Close & Finalize Cycle",
-    body: "AquaTrack evaluates consumption against tariff rules, applies base/excess rates, and calculates total dues.",
-  },
-  {
-    n: "03",
-    title: "Deliver Digital Invoices",
-    body: "Every resident receives an itemized digital breakdown accessible right from their personal resident dashboard.",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function HowItWorks() {
+  const { t } = useTranslation();
+
+  const STEPS = [
+    {
+      n: "01",
+      title: t("howItWorks.step1Title"),
+      body: t("howItWorks.step1Desc"),
+    },
+    {
+      n: "02",
+      title: t("howItWorks.step2Title"),
+      body: t("howItWorks.step2Desc"),
+    },
+    {
+      n: "03",
+      title: t("howItWorks.step3Title"),
+      body: t("howItWorks.step3Desc"),
+    },
+  ];
+
   return (
     <section style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(13,22,36,0.6)", padding: "80px 0" }}>
       <div className="at-container">
         <div style={{ textAlign: "center", maxWidth: "600px", margin: "0 auto 48px" }}>
           <h2 style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
-            From meter log to invoice in 3 simple steps
+            {t("howItWorks.heading")}
           </h2>
+          <p style={{ fontSize: "15px", color: "#64748B", marginTop: "10px", lineHeight: 1.6 }}>
+            {t("howItWorks.subheading")}
+          </p>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "28px" }}>

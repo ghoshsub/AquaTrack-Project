@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { AlertTriangle, Bell, CheckCircle, RefreshCw, Filter, Receipt, Building2, CheckCircle2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { AlertTriangle, Bell, CheckCircle, RefreshCw, Filter, Receipt, CheckCircle2 } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
 import { listAlerts, markAlertAsRead, triggerAlertScan } from "../api/alertApi.js";
@@ -32,6 +33,7 @@ function SaasSelect({ children, ...props }) {
 }
 
 export default function AlertsPage({ auth, setPage }) {
+  const { t } = useTranslation();
   const isAdmin = auth?.role === "ADMIN";
 
   const [apartments, setApartments] = useState([]);
@@ -56,7 +58,7 @@ export default function AlertsPage({ auth, setPage }) {
         setApartments(data);
         if (data.length > 0) setSelectedApartmentId(String(data[0].id));
       } catch (err) {
-        setApartmentsError(err.message || "Could not load apartments.");
+        setApartmentsError(err.message || t("common.error"));
       }
     }
     loadApartments();
@@ -70,7 +72,7 @@ export default function AlertsPage({ auth, setPage }) {
       const data = await listAlerts(auth.token, isAdmin ? selectedApartmentId : null);
       setAlerts(data);
     } catch (err) {
-      setAlertsError(err.message || "Could not load alerts.");
+      setAlertsError(err.message || t("common.error"));
     } finally {
       setLoadingAlerts(false);
     }
@@ -86,7 +88,7 @@ export default function AlertsPage({ auth, setPage }) {
       await markAlertAsRead(auth.token, id);
       await loadAlerts();
     } catch (err) {
-      alert(err.message || "Could not mark alert as read.");
+      alert(err.message || t("common.error"));
     }
   }
 
@@ -99,7 +101,7 @@ export default function AlertsPage({ auth, setPage }) {
       setScanDate("");
       await loadAlerts();
     } catch (err) {
-      setScanError(err.message || "Failed to trigger scan.");
+      setScanError(err.message || t("common.error"));
     } finally {
       setScanning(false);
     }
@@ -118,7 +120,7 @@ export default function AlertsPage({ auth, setPage }) {
             <Bell size={22} color="#F43F5E" />
           </div>
           <div>
-            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Notifications & Leak Alerts</h1>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("alerts.title")}</h1>
             <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>
               {isAdmin ? "Monitor potential water leaks, threshold spikes, and daily limit violations across all flats" : "Stay informed about water leaks and daily threshold alerts for your flat"}
             </p>
@@ -131,9 +133,9 @@ export default function AlertsPage({ auth, setPage }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>
           {/* Apartment Selector */}
           <div style={{ ...cardStyle, padding: "20px" }}>
-            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748B", marginBottom: "8px" }}>Apartment</label>
+            <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748B", marginBottom: "8px" }}>{t("households.apartment")}</label>
             <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)}>
-              {apartments.length === 0 && <option value="">No apartments available</option>}
+              {apartments.length === 0 && <option value="">{t("apartments.noApartments")}</option>}
               {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </SaasSelect>
             {apartmentsError && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "6px" }}>{apartmentsError}</p>}
@@ -151,7 +153,7 @@ export default function AlertsPage({ auth, setPage }) {
               </div>
               <button type="submit" disabled={scanning}
                 style={{ background: "linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)", border: "none", color: "#0F172A", fontWeight: 700, fontSize: "13px", padding: "10px 16px", borderRadius: "10px", cursor: scanning ? "not-allowed" : "pointer", opacity: scanning ? 0.7 : 1, fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                {scanning ? "Scanning…" : "Run Scan"}
+                {scanning ? t("common.loading") : "Run Scan"}
               </button>
             </form>
             {scanSuccess && <p style={{ fontSize: "12px", color: "#34D399", marginTop: "8px" }}>{scanSuccess}</p>}
@@ -164,26 +166,26 @@ export default function AlertsPage({ auth, setPage }) {
       <div style={{ ...cardStyle, padding: "24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: "14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "15px", fontWeight: 700, color: "#FFFFFF" }}>Alert Feed</span>
+            <span style={{ fontSize: "15px", fontWeight: 700, color: "#FFFFFF" }}>{t("alerts.title")}</span>
             <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", background: "rgba(244,63,94,0.15)", color: "#F43F5E" }}>{filteredAlerts.length}</span>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <Filter size={13} color="#64748B" />
             <SaasSelect value={filterRead} onChange={e => setFilterRead(e.target.value)} style={{ width: "130px", padding: "6px 10px", fontSize: "12px" }}>
-              <option value="UNREAD_ONLY">Unread only</option>
+              <option value="UNREAD_ONLY">{t("alerts.unread")}</option>
               <option value="ALL">All alerts</option>
             </SaasSelect>
           </div>
         </div>
 
-        {loadingAlerts && <p style={{ color: "#64748B", fontSize: "14px", textAlign: "center", padding: "30px 0" }}>Fetching alerts…</p>}
+        {loadingAlerts && <p style={{ color: "#64748B", fontSize: "14px", textAlign: "center", padding: "30px 0" }}>{t("common.loading")}</p>}
         {alertsError && <p style={{ color: "#F87171", fontSize: "13px" }}>{alertsError}</p>}
 
         {!loadingAlerts && !alertsError && filteredAlerts.length === 0 && (
           <div style={{ padding: "48px 20px", textAlign: "center", color: "#475569" }}>
             <CheckCircle2 size={40} color="#10B981" style={{ display: "block", margin: "0 auto 12px" }} />
-            <p style={{ fontSize: "14px", color: "#94A3B8", margin: 0 }}>No alerts found in this view. Everything looks clear!</p>
+            <p style={{ fontSize: "14px", color: "#94A3B8", margin: 0 }}>{t("alerts.allClear")}</p>
           </div>
         )}
 
@@ -205,7 +207,7 @@ export default function AlertsPage({ auth, setPage }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
                     <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>
-                      {isBill ? "Monthly Bill Generated" : isLeak ? "Possible Water Leak" : "Threshold Exceeded"}
+                      {isBill ? "Monthly Bill Generated" : isLeak ? t("alerts.leak") : t("alerts.threshold")}
                       {isAdmin && a.household && (
                         <span style={{ fontSize: "12px", color: "#38BDF8", fontWeight: 500, marginLeft: "8px" }}>
                           (Flat {a.household.flatNumber})
@@ -218,13 +220,13 @@ export default function AlertsPage({ auth, setPage }) {
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", borderTop: "1px dashed rgba(255,255,255,0.08)", paddingTop: "10px" }}>
                     <span style={{ fontSize: "12px", color: "#64748B" }}>
-                      {isBill ? <>Amount: <strong style={{ color: "#FFFFFF" }}>₹{a.readingValue}</strong></> : <>Reading: <strong style={{ color: "#FFFFFF" }}>{a.readingValue} L</strong></>}
+                      {isBill ? <>Amount: <strong style={{ color: "#FFFFFF" }}>₹{a.readingValue}</strong></> : <>{t("alerts.reading")}: <strong style={{ color: "#FFFFFF" }}>{a.readingValue} L</strong></>}
                     </span>
 
                     {!a.isRead && (
                       <button onClick={() => handleMarkAsRead(a.id)}
                         style={{ fontSize: "12px", fontWeight: 600, color: "#34D399", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "6px", padding: "4px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", fontFamily: "inherit" }}>
-                        <CheckCircle size={12} /> Dismiss
+                        <CheckCircle size={12} /> {t("alerts.markRead")}
                       </button>
                     )}
                   </div>
@@ -237,3 +239,4 @@ export default function AlertsPage({ auth, setPage }) {
     </div>
   );
 }
+

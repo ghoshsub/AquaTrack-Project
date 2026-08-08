@@ -31,6 +31,7 @@ public class BillingService {
     private final WaterUsageLogRepository waterUsageLogRepository;
     private final AlertRepository alertRepository;
     private final EmailService emailService;
+    private final AdminResolver adminResolver;
 
     public BillingService(BillingCycleRepository billingCycleRepository,
                           InvoiceRepository invoiceRepository,
@@ -38,7 +39,8 @@ public class BillingService {
                           ApartmentRepository apartmentRepository,
                           WaterUsageLogRepository waterUsageLogRepository,
                           AlertRepository alertRepository,
-                          EmailService emailService) {
+                          EmailService emailService,
+                          AdminResolver adminResolver) {
         this.billingCycleRepository = billingCycleRepository;
         this.invoiceRepository = invoiceRepository;
         this.householdRepository = householdRepository;
@@ -46,10 +48,13 @@ public class BillingService {
         this.waterUsageLogRepository = waterUsageLogRepository;
         this.alertRepository = alertRepository;
         this.emailService = emailService;
+        this.adminResolver = adminResolver;
     }
 
     @Transactional
     public BillingCycle openBillingCycle(BillingCycleRequest request) {
+        adminResolver.requireAdmin();
+
         Apartment apartment = apartmentRepository.findById(request.getApartmentId())
                 .orElseThrow(() -> new IllegalArgumentException("Apartment not found: " + request.getApartmentId()));
 
@@ -81,16 +86,19 @@ public class BillingService {
     }
 
     public List<BillingCycle> getBillingCyclesByApartment(Long apartmentId) {
+        adminResolver.requireAdmin();
         return billingCycleRepository.findByApartmentId(apartmentId);
     }
 
     public BillingCycle getBillingCycleDetails(Long id) {
+        adminResolver.requireAdmin();
         return billingCycleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Billing cycle not found: " + id));
     }
 
     @Transactional
     public BillingCycle finalizeBillingCycle(Long id, InvoiceGenerationRequest request) {
+        adminResolver.requireAdmin();
         BillingCycle cycle = billingCycleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Billing cycle not found: " + id));
 
@@ -111,8 +119,8 @@ public class BillingService {
         List<Invoice> invoices = new ArrayList<>();
 
         for (InvoiceGenerationRequest.HouseholdReading reading : request.getReadings()) {
-            Household h = householdRepository.findById(reading.getHouseholdId())
-                    .orElseThrow(() -> new IllegalArgumentException("Household not found: " + reading.getHouseholdId()));
+            Household h = householdRepository.findByIdAndApartmentAdminId(reading.getHouseholdId(), admin.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Household not found or access denied: " + reading.getHouseholdId()));
 
             BigDecimal consumption = reading.getReadingValue() != null ? reading.getReadingValue() : BigDecimal.ZERO;
 
@@ -161,7 +169,7 @@ public class BillingService {
 
         BillingCycle saved = billingCycleRepository.save(cycle);
 
-        // Generate in-app alerts and mock email notifications for all households (flat guys) in this cycle
+        // Generate in-app alerts and mock email notifications for all households in this cycle
         for (Invoice invoice : saved.getInvoices()) {
             Alert alert = new Alert();
             alert.setHousehold(invoice.getHousehold());
@@ -178,7 +186,7 @@ public class BillingService {
             alert.setIsRead(false);
             alertRepository.save(alert);
 
-            // Determine recipient email: check if a User is linked to the household and has an email, else fallback to residentEmail
+            // Determine recipient email
             String recipient = null;
             if (invoice.getHousehold().getUser() != null && invoice.getHousehold().getUser().getEmail() != null && !invoice.getHousehold().getUser().getEmail().trim().isEmpty()) {
                 recipient = invoice.getHousehold().getUser().getEmail();
@@ -186,7 +194,6 @@ public class BillingService {
                 recipient = invoice.getHousehold().getResidentEmail();
             }
 
-            // Send real email with PDF attachment
             if (recipient != null && !recipient.trim().isEmpty() && !recipient.equals("no-resident-linked@example.com")) {
                 emailService.sendInvoiceEmail(invoice, recipient);
             } else {
@@ -199,6 +206,7 @@ public class BillingService {
 
     @Transactional
     public BillingCycle archiveBillingCycle(Long id) {
+        adminResolver.requireAdmin();
         BillingCycle cycle = billingCycleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Billing cycle not found: " + id));
 
@@ -212,6 +220,7 @@ public class BillingService {
 
     @Transactional
     public Invoice updateInvoiceAdjustments(Long invoiceId, BigDecimal adjustments) {
+        adminResolver.requireAdmin();
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new IllegalArgumentException("Invoice not found: " + invoiceId));
 
@@ -231,10 +240,12 @@ public class BillingService {
     }
 
     public List<Invoice> getInvoicesByCycle(Long cycleId) {
+        adminResolver.requireAdmin();
         return invoiceRepository.findByBillingCycleId(cycleId);
     }
 
     public List<Invoice> getInvoicesByHousehold(Long householdId) {
+        // Household-level queries are accessible by both admin and resident roles
         return invoiceRepository.findByHouseholdId(householdId);
     }
 
@@ -267,6 +278,7 @@ public class BillingService {
 
     @Transactional(readOnly = true)
     public List<HouseholdUsagePreview> getUsagePreviewsForCycle(Long cycleId) {
+        adminResolver.requireAdmin();
         BillingCycle cycle = billingCycleRepository.findById(cycleId)
                 .orElseThrow(() -> new IllegalArgumentException("Billing cycle not found: " + cycleId));
         List<Household> households = householdRepository.findByApartmentId(cycle.getApartment().getId());

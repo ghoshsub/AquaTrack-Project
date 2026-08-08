@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { User, Shield, Lock, Mail, Building, CheckCircle2, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { User, Shield, Building, CheckCircle2, AlertCircle } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { getProfile, updateProfile } from "../api/authApi.js";
 
@@ -22,6 +23,7 @@ function SaasInput({ type = "text", ...props }) {
 }
 
 export default function ProfilePage({ auth, onAuthed, setPage }) {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -43,13 +45,13 @@ export default function ProfilePage({ auth, onAuthed, setPage }) {
         setEmail(data.email || "");
         setDisplayName(data.displayName || "");
       } catch (err) {
-        setError(err.message || "Failed to load profile details.");
+        setError(err.message || t("common.error"));
       } finally {
         setLoading(false);
       }
     }
     if (auth?.token) loadProfile();
-  }, [auth]);
+  }, [auth, t]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -70,9 +72,9 @@ export default function ProfilePage({ auth, onAuthed, setPage }) {
       setEmail(response.profile.email || "");
       setDisplayName(response.profile.displayName || "");
       setPassword("");
-      setSuccess("Profile updated successfully!");
+      setSuccess(t("profile.updateSuccess"));
     } catch (err) {
-      setError(err.message || "Failed to update profile.");
+      setError(err.message || t("common.error"));
     } finally {
       setSubmitting(false);
     }
@@ -84,27 +86,27 @@ export default function ProfilePage({ auth, onAuthed, setPage }) {
     <div style={{ maxWidth: "600px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px", paddingTop: "5px", paddingBottom: "15px" }}>
       {/* Header */}
       <div>
-        {/* <BackToDashboard setPage={setPage} /> */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "16px" }}>
           <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "linear-gradient(135deg, rgba(56,189,248,0.2) 0%, rgba(99,102,241,0.2) 100%)", border: "1px solid rgba(56,189,248,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <User size={22} color="#38BDF8" />
           </div>
           <div>
-            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>My Profile</h1>
-            <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>Update your personal details and account credentials</p>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("profile.title")}</h1>
+            <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>{t("profile.accountDetails")}</p>
           </div>
         </div>
       </div>
 
-      {loading && <div style={{ ...cardStyle, padding: "40px", textAlign: "center", color: "#64748B", fontSize: "14px" }}>Loading profile…</div>}
+      {loading && <div style={{ ...cardStyle, padding: "40px", textAlign: "center", color: "#64748B", fontSize: "14px" }}>{t("common.loading")}</div>}
       {error && (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(244,63,94,0.1)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: "10px", padding: "10px 14px", color: "#F87171", fontSize: "13px" }}>
-          <AlertCircle size={15} /> {error}
+        <div style={{ background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: "12px", padding: "12px 16px", color: "#F87171", fontSize: "13.5px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <AlertCircle size={16} /> <span>{error}</span>
         </div>
       )}
+
       {success && (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "10px", padding: "10px 14px", color: "#34D399", fontSize: "13px" }}>
-          <CheckCircle2 size={15} /> {success}
+        <div style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "12px", padding: "12px 16px", color: "#34D399", fontSize: "13.5px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <CheckCircle2 size={16} /> <span>{success}</span>
         </div>
       )}
 
@@ -119,7 +121,9 @@ export default function ProfilePage({ auth, onAuthed, setPage }) {
               <div style={{ fontWeight: 700, fontSize: "18px", color: "#FFFFFF" }}>{profile.displayName || profile.username}</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "#38BDF8", marginTop: "4px" }}>
                 <Shield size={13} />
-                <span style={{ textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.06em" }}>{profile.role}</span>
+                <span style={{ textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.06em" }}>
+                  {profile.role === "ADMIN" ? t("profile.admin") : t("profile.resident")}
+                </span>
               </div>
             </div>
           </div>
@@ -131,7 +135,7 @@ export default function ProfilePage({ auth, onAuthed, setPage }) {
                 <input style={{ ...inputBase, background: "rgba(255,255,255,0.03)", color: "#64748B", cursor: "not-allowed" }} value={`#${profile.id}`} disabled />
               </div>
               <div style={fieldStyle}>
-                <label style={labelStyle}>Username *</label>
+                <label style={labelStyle}>{t("profile.username")} *</label>
                 <SaasInput value={username} onChange={e => setUsername(e.target.value)} required />
               </div>
             </div>
@@ -142,12 +146,12 @@ export default function ProfilePage({ auth, onAuthed, setPage }) {
             </div>
 
             <div style={fieldStyle}>
-              <label style={labelStyle}>Email Address</label>
+              <label style={labelStyle}>{t("profile.email")}</label>
               <SaasInput type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="john@example.com" />
             </div>
 
             <div style={fieldStyle}>
-              <label style={labelStyle}>New Password</label>
+              <label style={labelStyle}>{t("profile.newPassword")}</label>
               <SaasInput type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Leave blank to keep unchanged" />
             </div>
 
@@ -158,11 +162,11 @@ export default function ProfilePage({ auth, onAuthed, setPage }) {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   <div>
-                    <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase" }}>Apartment</span>
+                    <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase" }}>{t("apartments.title")}</span>
                     <p style={{ fontSize: "14px", fontWeight: 600, color: "#FFFFFF", margin: "2px 0 0" }}>{profile.apartmentName}</p>
                   </div>
                   <div>
-                    <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase" }}>Flat Number</span>
+                    <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase" }}>{t("households.flatNumber")}</span>
                     <p style={{ fontSize: "14px", fontWeight: 600, color: "#FFFFFF", margin: "2px 0 0" }}>{profile.flatNumber}</p>
                   </div>
                 </div>
@@ -171,7 +175,7 @@ export default function ProfilePage({ auth, onAuthed, setPage }) {
 
             <button type="submit" disabled={submitting}
               style={{ background: "linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)", border: "none", color: "#0F172A", fontWeight: 700, fontSize: "14px", padding: "11px 24px", borderRadius: "10px", cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.7 : 1, fontFamily: "inherit", alignSelf: "flex-start", marginTop: "6px", boxShadow: "0 4px 14px rgba(56,189,248,0.3)" }}>
-              {submitting ? "Saving…" : "Save Changes"}
+              {submitting ? t("common.loading") : t("profile.saveChanges")}
             </button>
           </form>
         </div>

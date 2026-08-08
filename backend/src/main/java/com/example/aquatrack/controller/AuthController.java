@@ -12,8 +12,6 @@ import com.example.aquatrack.service.EmailService;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,20 +21,17 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final GoogleTokenVerifier googleTokenVerifier;
     private final EmailService emailService;
 
     public AuthController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
-                          AuthenticationManager authenticationManager,
                           JwtUtil jwtUtil,
                           GoogleTokenVerifier googleTokenVerifier,
                           EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.googleTokenVerifier = googleTokenVerifier;
         this.emailService = emailService;
@@ -48,18 +43,28 @@ public class AuthController {
         GoogleTokenVerifier.GoogleUser googleUser = googleTokenVerifier.verify(request.getIdToken());
         User user = userRepository.findByGoogleId(googleUser.googleId())
                 .orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setUsername(googleUser.email());
-                    newUser.setEmail(googleUser.email());
-                    newUser.setDisplayName(googleUser.name());
-                    newUser.setGoogleId(googleUser.googleId());
-                    newUser.setAuthProvider(User.AuthProvider.GOOGLE);
-                    newUser.setRole(User.Role.RESIDENT);
-                    User saved = userRepository.save(newUser);
-                    
-                    // Send welcome email asynchronously/in separate flow
-                    emailService.sendWelcomeEmail(saved);
-                    return saved;
+                    // Also check by email in case user previously registered with email
+                    return userRepository.findByEmailIgnoreCase(googleUser.email())
+                            .map(existingUser -> {
+                                existingUser.setGoogleId(googleUser.googleId());
+                                if (existingUser.getAuthProvider() == null) {
+                                    existingUser.setAuthProvider(User.AuthProvider.GOOGLE);
+                                }
+                                return userRepository.save(existingUser);
+                            })
+                            .orElseGet(() -> {
+                                User newUser = new User();
+                                newUser.setUsername(googleUser.email());
+                                newUser.setEmail(googleUser.email());
+                                newUser.setDisplayName(googleUser.name());
+                                newUser.setGoogleId(googleUser.googleId());
+                                newUser.setAuthProvider(User.AuthProvider.GOOGLE);
+                                newUser.setRole(User.Role.RESIDENT);
+                                User saved = userRepository.save(newUser);
+                                
+                                emailService.sendWelcomeEmail(saved);
+                                return saved;
+                            });
                 });
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
@@ -69,19 +74,23 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
 
-        if (userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByUsernameIgnoreCase(request.getUsername().trim())) {
             return ResponseEntity.badRequest().body("Username already taken");
         }
 
-        if (request.getEmail() != null && !request.getEmail().trim().isEmpty() && userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest().body("Email already taken");
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            String trimmedEmail = request.getEmail().trim();
+            if (userRepository.existsByEmailIgnoreCase(trimmedEmail)) {
+                return ResponseEntity.badRequest().body("Email already registered.");
+            }
         }
 
         User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
+        user.setUsername(request.getUsername().trim());
+        user.setEmail(request.getEmail() != null ? request.getEmail().trim() : null);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
+        user.setAuthProvider(User.AuthProvider.LOCAL);
 
         userRepository.save(user);
 
@@ -94,13 +103,33 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        String identifier = (request.getEmail() != null && !request.getEmail().trim().isEmpty())
+                ? request.getEmail().trim()
+                : (request.getUsername() != null ? request.getUsername().trim() : "");
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        if (identifier.isEmpty()) {
+            return ResponseEntity.badRequest().body("Email or username is required");
+        }
 
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        // Try lookup by email (case-insensitive) first, then by username (case-insensitive)
+        java.util.Optional<User> userOpt = userRepository.findByEmailIgnoreCase(identifier);
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByUsernameIgnoreCase(identifier);
+        }
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("No account found with this email.");
+        }
+
+        User user = userOpt.get();
+
+        if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
+            return ResponseEntity.badRequest().body("This account was registered via Google Sign-In. Please sign in with Google.");
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            return ResponseEntity.status(401).body("Invalid password");
+        }
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
         return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole().name()));

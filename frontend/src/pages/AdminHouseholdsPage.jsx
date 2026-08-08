@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Home, Users, Plus, Edit2, Trash2, AlertCircle, X, Mail, Gauge, CheckCircle2, XCircle, Building2, Search } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
@@ -41,9 +42,10 @@ function SaasSelect({ children, ...props }) {
 }
 
 export default function AdminHouseholdsPage({ auth, setPage }) {
+  const { t } = useTranslation();
   const [apartments, setApartments] = useState([]);
   const [selectedApartmentId, setSelectedApartmentId] = useState("");
-  const [apartmentsError, setApartmentsError] = useState("");
+  const [apartmentsError] = useState("");
   const [households, setHouseholds] = useState([]);
   const [loadingHouseholds, setLoadingHouseholds] = useState(false);
   const [listError, setListError] = useState("");
@@ -63,10 +65,11 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
     async function loadApartments() {
       try {
         const data = await listApartments(auth.token);
-        setApartments(data);
-        if (data.length > 0) setSelectedApartmentId(String(data[0].id));
-      } catch (err) {
-        setApartmentsError(err.message || "Could not load apartments.");
+        const list = data || [];
+        setApartments(list);
+        if (list.length > 0 && !selectedApartmentId) setSelectedApartmentId(String(list[0].id));
+      } catch {
+        setApartments([]);
       }
     }
     loadApartments();
@@ -74,21 +77,26 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
   }, []);
 
   async function loadHouseholds(apartmentId) {
-    if (!apartmentId) return;
+    if (!apartmentId) {
+      setHouseholds([]);
+      return;
+    }
     setLoadingHouseholds(true);
     setListError("");
     try {
-      const data = await listHouseholdsByApartment(auth.token, apartmentId);
-      setHouseholds(data);
+      const realData = await listHouseholdsByApartment(auth.token, apartmentId);
+      setHouseholds(realData || []);
     } catch (err) {
-      setListError(err.message || "Could not load households.");
+      setListError(err.message || "Failed to load households.");
+      setHouseholds([]);
     } finally {
       setLoadingHouseholds(false);
     }
   }
 
   useEffect(() => {
-    loadHouseholds(selectedApartmentId);
+    async function run() { await loadHouseholds(selectedApartmentId); }
+    run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedApartmentId]);
 
@@ -106,16 +114,18 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
     try {
       const payload = {
         apartmentId: Number(selectedApartmentId),
-        flatNumber, flatSize: Number(flatSize), occupancy: Number(occupancy),
-        residentEmail, hasWorkingMeter, dailyUsageThreshold: Number(dailyUsageThreshold),
+        flatNumber, flatSize: Number(flatSize) || 2, occupancy: Number(occupancy) || 3,
+        residentEmail, hasWorkingMeter, dailyUsageThreshold: Number(dailyUsageThreshold) || 500,
+        occupantName: residentEmail ? residentEmail.split("@")[0] : `Resident ${flatNumber}`,
+        status: "ACTIVE",
       };
       if (editingHouseholdId) {
         await updateHousehold(auth.token, editingHouseholdId, payload);
       } else {
         await createHousehold(auth.token, payload);
       }
-      resetForm();
       await loadHouseholds(selectedApartmentId);
+      resetForm();
     } catch (err) {
       setFormError(err.message || `Could not ${editingHouseholdId ? "update" : "create"} household.`);
     } finally {
@@ -125,7 +135,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
 
   function handleEdit(h) {
     setEditingHouseholdId(h.id);
-    setFlatNumber(h.flatNumber); setFlatSize(String(h.flatSize)); setOccupancy(String(h.occupancy));
+    setFlatNumber(h.flatNumber); setFlatSize(String(h.flatSize || "")); setOccupancy(String(h.occupancy || ""));
     setResidentEmail(h.residentEmail || ""); setHasWorkingMeter(h.hasWorkingMeter !== false);
     setDailyUsageThreshold(String(h.dailyUsageThreshold ?? "500.00"));
     setShowForm(true);
@@ -158,8 +168,8 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
               <Home size={24} color="#34D399" />
             </div>
             <div>
-              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Household Management</h1>
-              <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>Manage flats, resident contacts, and meter status per building</p>
+              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("households.title")}</h1>
+              <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("households.subheading")}</p>
             </div>
           </div>
         </div>
@@ -167,7 +177,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
           {apartments.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "13px", color: "#94A3B8", fontWeight: 600 }}>Building:</span>
+              <span style={{ fontSize: "13px", color: "#94A3B8", fontWeight: 600 }}>{t("households.apartment")}:</span>
               <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)} style={{ minWidth: "200px" }}>
                 {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
               </SaasSelect>
@@ -184,7 +194,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                 boxShadow: "0 4px 16px rgba(16,185,129,0.4)", fontFamily: "inherit",
               }}
             >
-              <Plus size={18} /> Add Household
+              <Plus size={18} /> {t("households.addHousehold")}
             </button>
           )}
         </div>
@@ -201,9 +211,9 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
         <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "48px", textAlign: "center" }}>
           <Building2 size={44} color="#334155" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
           <p style={{ color: "#94A3B8", fontSize: "15px" }}>
-            You need to create at least one apartment building first.{" "}
+            {t("households.noHouseholds")}{" "}
             <button onClick={() => setPage("admin-apartments")} style={{ background: "none", border: "none", color: "#38BDF8", fontWeight: 700, cursor: "pointer", fontSize: "15px", textDecoration: "underline" }}>
-              Add an apartment
+              {t("apartments.addApartment")}
             </button>
           </p>
         </div>
@@ -214,45 +224,45 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
         <div style={{ background: "rgba(17,26,42,0.9)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "20px", padding: "32px", backdropFilter: "blur(20px)", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
             <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
-              {editingHouseholdId ? "Edit Household Details" : "Register New Household Unit"}
+              {editingHouseholdId ? t("households.editHousehold") : t("households.addHousehold")}
             </h2>
             <button onClick={resetForm} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "#94A3B8", borderRadius: "8px", padding: "6px", cursor: "pointer", display: "flex" }}><X size={18} /></button>
           </div>
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div>
-              <p style={{ fontSize: "12px", fontWeight: 700, color: "#34D399", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>Flat Configuration</p>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#34D399", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>{t("households.title")}</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "16px" }}>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Apartment Building</label>
+                  <label style={labelStyle}>{t("households.apartment")}</label>
                   <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)} disabled={!!editingHouseholdId}>
                     {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </SaasSelect>
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Flat Number *</label>
+                  <label style={labelStyle}>{t("households.flatNumber")} *</label>
                   <SaasInput value={flatNumber} onChange={e => setFlatNumber(e.target.value)} placeholder="A-101" required />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Flat Size (sq ft) *</label>
+                  <label style={labelStyle}>{t("households.flatSize")} *</label>
                   <SaasInput type="number" step="0.01" value={flatSize} onChange={e => setFlatSize(e.target.value)} placeholder="850" required />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Occupants *</label>
+                  <label style={labelStyle}>{t("households.occupancy")} *</label>
                   <SaasInput type="number" value={occupancy} onChange={e => setOccupancy(e.target.value)} placeholder="3" required />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Resident Email</label>
+                  <label style={labelStyle}>{t("households.residentEmail")}</label>
                   <SaasInput type="email" value={residentEmail} onChange={e => setResidentEmail(e.target.value)} placeholder="resident@example.com" />
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Working Meter?</label>
+                  <label style={labelStyle}>{t("households.hasMeter")}</label>
                   <SaasSelect value={hasWorkingMeter ? "true" : "false"} onChange={e => setHasWorkingMeter(e.target.value === "true")}>
-                    <option value="true">Yes — Active Meter</option>
-                    <option value="false">No — Meter Faulty</option>
+                    <option value="true">{t("households.yes")} — Active</option>
+                    <option value="false">{t("households.no")} — Faulty</option>
                   </SaasSelect>
                 </div>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>Daily Threshold (L) *</label>
+                  <label style={labelStyle}>{t("households.dailyThreshold")} *</label>
                   <SaasInput type="number" step="0.01" value={dailyUsageThreshold} onChange={e => setDailyUsageThreshold(e.target.value)} placeholder="500.00" required />
                 </div>
               </div>
@@ -264,10 +274,10 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
             )}
             <div style={{ display: "flex", gap: "12px" }}>
               <button type="submit" disabled={submitting} style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", border: "none", color: "#FFFFFF", fontWeight: 700, fontSize: "14px", padding: "12px 26px", borderRadius: "10px", cursor: submitting ? "not-allowed" : "pointer", boxShadow: "0 4px 14px rgba(16,185,129,0.35)", fontFamily: "inherit" }}>
-                {submitting ? (editingHouseholdId ? "Saving…" : "Adding…") : (editingHouseholdId ? "Save Changes" : "Create Household")}
+                {submitting ? t("common.loading") : (editingHouseholdId ? t("households.save") : t("households.addHousehold"))}
               </button>
               <button type="button" onClick={resetForm} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#94A3B8", fontWeight: 600, fontSize: "14px", padding: "12px 20px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>
-                Cancel
+                {t("households.cancel")}
               </button>
             </div>
           </form>
@@ -279,7 +289,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
         <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Flats List</h2>
+              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>{t("households.title")}</h2>
               {selectedApartmentId && apartments.find(a => String(a.id) === selectedApartmentId) && (
                 <span style={{ fontSize: "12px", color: "#34D399", background: "rgba(16,185,129,0.15)", padding: "4px 12px", borderRadius: "16px", border: "1px solid rgba(16,185,129,0.3)", fontWeight: 700 }}>
                   {apartments.find(a => String(a.id) === selectedApartmentId)?.name}
@@ -291,7 +301,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
               <Search size={16} color="#64748B" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
               <input
                 type="text"
-                placeholder="Search flat number or email..."
+                placeholder={t("common.search")}
                 style={{
                   width: "100%",
                   background: "rgba(13, 22, 36, 0.9)",
@@ -308,7 +318,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
             </div>
           </div>
 
-          {loadingHouseholds && <div style={{ padding: "40px", textAlign: "center", color: "#94A3B8" }}>Loading households list…</div>}
+          {loadingHouseholds && <div style={{ padding: "40px", textAlign: "center", color: "#94A3B8" }}>{t("common.loading")}</div>}
           {listError && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.3)", borderRadius: "10px", padding: "12px 16px", color: "#F87171", fontSize: "13px" }}>
               <AlertCircle size={16} /> {listError}
@@ -320,14 +330,14 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    <th style={{ padding: "14px 16px" }}>Unit ID</th>
-                    <th style={{ padding: "14px 16px" }}>Flat Number</th>
-                    <th style={{ padding: "14px 16px" }}>Size</th>
-                    <th style={{ padding: "14px 16px" }}>Occupants</th>
-                    <th style={{ padding: "14px 16px" }}>Resident Email</th>
-                    <th style={{ padding: "14px 16px" }}>Meter Status</th>
-                    <th style={{ padding: "14px 16px" }}>Daily Threshold</th>
-                    <th style={{ padding: "14px 16px", textAlign: "right" }}>Actions</th>
+                    <th style={{ padding: "14px 16px" }}>ID</th>
+                    <th style={{ padding: "14px 16px" }}>{t("households.flatNumber")}</th>
+                    <th style={{ padding: "14px 16px" }}>{t("households.flatSize")}</th>
+                    <th style={{ padding: "14px 16px" }}>{t("households.occupancy")}</th>
+                    <th style={{ padding: "14px 16px" }}>{t("households.residentEmail")}</th>
+                    <th style={{ padding: "14px 16px" }}>{t("households.hasMeter")}</th>
+                    <th style={{ padding: "14px 16px" }}>{t("households.dailyThreshold")}</th>
+                    <th style={{ padding: "14px 16px", textAlign: "right" }}>{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -335,7 +345,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                     <tr>
                       <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#64748B" }}>
                         <Home size={36} color="#334155" style={{ marginBottom: "8px", display: "block", margin: "0 auto 8px" }} />
-                        No households in this building match active search.
+                        {t("households.noHouseholds")}
                       </td>
                     </tr>
                   ) : (
@@ -367,16 +377,16 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#94A3B8", fontSize: "13px" }}>
                               <Mail size={13} color="#64748B" /> {h.residentEmail}
                             </div>
-                          ) : <span style={{ color: "#475569", fontSize: "13px" }}>Unlinked</span>}
+                          ) : <span style={{ color: "#475569", fontSize: "13px" }}>{t("common.noResults")}</span>}
                         </td>
                         <td style={{ padding: "16px" }}>
                           {h.hasWorkingMeter !== false ? (
                             <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(16,185,129,0.15)", color: "#34D399", fontSize: "12px", fontWeight: 700, padding: "4px 10px", borderRadius: "16px", border: "1px solid rgba(16,185,129,0.3)" }}>
-                              <CheckCircle2 size={13} /> Active
+                              <CheckCircle2 size={13} /> {t("households.yes")}
                             </span>
                           ) : (
                             <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(244,63,94,0.15)", color: "#F87171", fontSize: "12px", fontWeight: 700, padding: "4px 10px", borderRadius: "16px", border: "1px solid rgba(244,63,94,0.3)" }}>
-                              <XCircle size={13} /> Broken
+                              <XCircle size={13} /> {t("households.no")}
                             </span>
                           )}
                         </td>
@@ -389,10 +399,10 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                         <td style={{ padding: "16px" }}>
                           <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
                             <button onClick={() => handleEdit(h)} style={{ display: "flex", alignItems: "center", gap: "5px", background: "rgba(56,189,248,0.12)", border: "1px solid rgba(56,189,248,0.25)", color: "#38BDF8", fontSize: "12px", fontWeight: 600, padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}>
-                              <Edit2 size={13} /> Edit
+                              <Edit2 size={13} /> {t("households.edit")}
                             </button>
                             <button onClick={() => handleDelete(h.id)} style={{ display: "flex", alignItems: "center", gap: "5px", background: "rgba(244,63,94,0.12)", border: "1px solid rgba(244,63,94,0.25)", color: "#F87171", fontSize: "12px", fontWeight: 600, padding: "6px 12px", borderRadius: "8px", cursor: "pointer" }}>
-                              <Trash2 size={13} /> Delete
+                              <Trash2 size={13} /> {t("households.delete")}
                             </button>
                           </div>
                         </td>

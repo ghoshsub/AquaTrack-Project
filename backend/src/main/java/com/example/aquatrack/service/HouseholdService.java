@@ -3,6 +3,7 @@ package com.example.aquatrack.service;
 import com.example.aquatrack.dto.HouseholdRequest;
 import com.example.aquatrack.model.Apartment;
 import com.example.aquatrack.model.Household;
+import com.example.aquatrack.model.User;
 import com.example.aquatrack.repository.HouseholdRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +14,18 @@ public class HouseholdService {
 
     private final HouseholdRepository householdRepository;
     private final ApartmentService apartmentService;
+    private final AdminResolver adminResolver;
 
-    public HouseholdService(HouseholdRepository householdRepository, ApartmentService apartmentService) {
+    public HouseholdService(HouseholdRepository householdRepository,
+                            ApartmentService apartmentService,
+                            AdminResolver adminResolver) {
         this.householdRepository = householdRepository;
         this.apartmentService = apartmentService;
+        this.adminResolver = adminResolver;
     }
 
     public Household create(HouseholdRequest request) {
+        adminResolver.requireAdmin();
         Apartment apartment = apartmentService.findById(request.getApartmentId());
 
         if (householdRepository.existsByApartmentIdAndFlatNumber(apartment.getId(), request.getFlatNumber())) {
@@ -43,6 +49,7 @@ public class HouseholdService {
     }
 
     public Household update(Long id, HouseholdRequest request) {
+        adminResolver.requireAdmin();
         Household household = householdRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Household not found: " + id));
 
@@ -68,13 +75,15 @@ public class HouseholdService {
     }
 
     public List<Household> findByApartment(Long apartmentId) {
+        adminResolver.requireAdmin();
+        apartmentService.findById(apartmentId);
         return householdRepository.findByApartmentId(apartmentId);
     }
 
     public void deleteById(Long id) {
-        if (!householdRepository.existsById(id)) {
-            throw new IllegalArgumentException("Household not found: " + id);
-        }
-        householdRepository.deleteById(id);
+        adminResolver.requireAdmin();
+        Household household = householdRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Household not found: " + id));
+        householdRepository.deleteById(household.getId());
     }
 }

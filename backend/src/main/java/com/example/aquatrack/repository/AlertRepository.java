@@ -14,4 +14,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 
     @Query("SELECT a FROM Alert a WHERE a.household.apartment.id = :apartmentId ORDER BY a.readingDate DESC")
     List<Alert> findByApartmentId(@Param("apartmentId") Long apartmentId);
+
+    @Query("SELECT a FROM Alert a WHERE a.household.apartment.admin.id = :adminId ORDER BY a.readingDate DESC")
+    List<Alert> findByAdminId(@Param("adminId") Long adminId);
 }

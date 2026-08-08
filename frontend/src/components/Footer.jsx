@@ -1,7 +1,8 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Droplets, ShieldCheck, Mail, Phone, MapPin,
-  CheckCircle2, Globe, Share2, MessageSquare, Send
+  CheckCircle2
 } from "lucide-react";
 
 // Inline SVG Icon components for brand social icons
@@ -33,6 +34,8 @@ function LinkedinIcon({ size = 16, color = "currentColor" }) {
 }
 
 export default function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer
       style={{
@@ -108,7 +111,7 @@ export default function Footer() {
             </div>
 
             <p style={{ fontSize: "13.5px", color: "#94A3B8", lineHeight: 1.65, margin: 0 }}>
-              Next-generation 3D water telemetry and automated billing engine for modern residential complexes.
+              {t("footer.tagline")}
             </p>
 
             <div
@@ -133,10 +136,10 @@ export default function Footer() {
           {/* Quick Links Column */}
           <div>
             <div style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
-              Platform
+              {t("footer.platform")}
             </div>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px", fontSize: "13.5px", color: "#94A3B8" }}>
-              {["Smart Meter Telemetry", "Tiered Billing Engine", "Leak Detection Alerts", "Apartment Dashboards"].map((link, idx) => (
+              {[t("footer.dashboard"), t("footer.billing"), t("footer.reports"), t("footer.analytics")].map((link, idx) => (
                 <li key={idx}>
                   <span style={{ cursor: "pointer", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#38BDF8")} onMouseLeave={(e) => (e.target.style.color = "#94A3B8")}>
                     {link}
@@ -149,7 +152,7 @@ export default function Footer() {
           {/* Contact Info Column */}
           <div>
             <div style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
-              Contact Us
+              {t("footer.contact")}
             </div>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px", fontSize: "13.5px", color: "#94A3B8" }}>
               <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -170,7 +173,7 @@ export default function Footer() {
           {/* Social Icons & Status */}
           <div>
             <div style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
-              Connect & Status
+              {t("footer.company")}
             </div>
 
             <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
@@ -237,9 +240,9 @@ export default function Footer() {
             color: "#64748B",
           }}
         >
-          <div>© {new Date().getFullYear()} AquaTrack Systems Inc. All rights reserved.</div>
+          <div>{t("footer.copyright")}</div>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span>Built with precision for residential water intelligence</span>
+            <span>{t("footer.madeWith")}</span>
           </div>
         </div>
       </div>

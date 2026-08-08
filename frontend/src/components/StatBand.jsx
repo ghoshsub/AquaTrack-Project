@@ -1,15 +1,17 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import useCountUp from "../hooks/useCountUp.js";
 
 export default function StatBand() {
+  const { t } = useTranslation();
   const households = useCountUp(1240);
   const accuracy = useCountUp(998);
   const cycles = useCountUp(86);
 
   const stats = [
-    { value: households, suffix: "+", label: "Households Metered" },
-    { value: (accuracy / 10).toFixed(1), suffix: "%", label: "Billing Accuracy" },
-    { value: cycles, suffix: "", label: "Cycles Closed On Time" },
+    { value: households, suffix: "+", label: t("hero.stat1Label") },
+    { value: (accuracy / 10).toFixed(1), suffix: "%", label: t("hero.stat2Label") },
+    { value: cycles, suffix: "", label: t("hero.stat3Label") },
   ];
 
   return (

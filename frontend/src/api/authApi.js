@@ -27,13 +27,15 @@ async function handleResponse(res) {
 
 /**
  * Calls POST /api/auth/login
+ * @param {string} email
+ * @param {string} password
  * @returns {Promise<{token: string, username: string, role: string}>}
  */
-export async function login(username, password) {
+export async function login(email, password) {
   const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, username: email, password }),
   });
   return handleResponse(res);
 }

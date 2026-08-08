@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Mail, MessageSquare, Send, CheckCircle2 } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 
@@ -12,6 +13,7 @@ const inputBase = {
 };
 
 export default function ContactPage({ setPage }) {
+  const { t } = useTranslation();
   const [feedback, setFeedback] = useState("");
   const [name, setName] = useState("");
   const [sent, setSent] = useState(false);
@@ -39,8 +41,8 @@ export default function ContactPage({ setPage }) {
             <MessageSquare size={22} color="#38BDF8" />
           </div>
           <div>
-            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Contact & Feedback</h1>
-            <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>Reach out for building onboarding assistance or share feature suggestions</p>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("contact.title")}</h1>
+            <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>{t("contact.subtitle")}</p>
           </div>
         </div>
       </div>
@@ -51,7 +53,7 @@ export default function ContactPage({ setPage }) {
           <Mail size={18} color="#38BDF8" />
         </div>
         <div>
-          <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Support Email</span>
+          <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>{t("contact.email")}</span>
           <p style={{ fontSize: "14px", fontWeight: 600, color: "#FFFFFF", margin: "2px 0 0" }}>support@aquatrack.com</p>
         </div>
       </div>
@@ -61,31 +63,31 @@ export default function ContactPage({ setPage }) {
         {sent ? (
           <div style={{ textAlign: "center", padding: "24px 0" }}>
             <CheckCircle2 size={44} color="#34D399" style={{ display: "block", margin: "0 auto 14px" }} />
-            <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>Thank you for your feedback!</h3>
-            <p style={{ fontSize: "13px", color: "#94A3B8", marginTop: "6px" }}>Our team will review your message promptly.</p>
+            <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>{t("contact.success")}</h3>
+            <p style={{ fontSize: "13px", color: "#94A3B8", marginTop: "6px" }}>{t("contact.subtitle")}</p>
             <button onClick={() => setSent(false)} style={{ background: "none", border: "none", color: "#38BDF8", fontWeight: 600, cursor: "pointer", fontSize: "13px", fontFamily: "inherit", marginTop: "16px" }}>
-              Send another message
+              {t("contact.send")}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSend} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             <div style={fieldStyle}>
-              <label style={labelStyle}>Your Name (Optional)</label>
-              <input style={inputBase} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Ravi Kumar"
+              <label style={labelStyle}>{t("contact.name")}</label>
+              <input style={inputBase} value={name} onChange={e => setName(e.target.value)} placeholder={t("contact.namePlaceholder")}
                 onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
                 onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             <div style={fieldStyle}>
-              <label style={labelStyle}>Message *</label>
-              <textarea style={{ ...inputBase, minHeight: "120px", resize: "vertical", lineHeight: 1.5 }} value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Share your questions or feature requests…" required
+              <label style={labelStyle}>{t("contact.message")} *</label>
+              <textarea style={{ ...inputBase, minHeight: "120px", resize: "vertical", lineHeight: 1.5 }} value={feedback} onChange={e => setFeedback(e.target.value)} placeholder={t("contact.messagePlaceholder")} required
                 onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
                 onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             <button type="submit" disabled={sending || !feedback.trim()}
               style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", background: "linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)", border: "none", color: "#0F172A", fontWeight: 700, fontSize: "14px", padding: "12px", borderRadius: "10px", cursor: sending || !feedback.trim() ? "not-allowed" : "pointer", opacity: sending || !feedback.trim() ? 0.6 : 1, fontFamily: "inherit", boxShadow: "0 4px 14px rgba(56,189,248,0.3)" }}>
-              {sending ? "Sending…" : <><Send size={15} /> Send Feedback</>}
+              {sending ? t("contact.sending") : <><Send size={15} /> {t("contact.send")}</>}
             </button>
           </form>
         )}

@@ -2,6 +2,7 @@ package com.example.aquatrack.service;
 
 import com.example.aquatrack.dto.UsageLogRequest;
 import com.example.aquatrack.model.Household;
+import com.example.aquatrack.model.User;
 import com.example.aquatrack.model.WaterUsageLog;
 import com.example.aquatrack.repository.HouseholdRepository;
 import com.example.aquatrack.repository.WaterUsageLogRepository;
@@ -22,16 +23,20 @@ public class WaterUsageLogService {
     private final WaterUsageLogRepository usageLogRepository;
     private final HouseholdRepository householdRepository;
     private final AlertService alertService;
+    private final AdminResolver adminResolver;
 
     public WaterUsageLogService(WaterUsageLogRepository usageLogRepository,
                                 HouseholdRepository householdRepository,
-                                AlertService alertService) {
+                                AlertService alertService,
+                                AdminResolver adminResolver) {
         this.usageLogRepository = usageLogRepository;
         this.householdRepository = householdRepository;
         this.alertService = alertService;
+        this.adminResolver = adminResolver;
     }
 
     public WaterUsageLog logManualReading(UsageLogRequest request) {
+        adminResolver.requireAdmin();
         Household household = householdRepository.findById(request.getHouseholdId())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Household not found: " + request.getHouseholdId()));
@@ -62,6 +67,7 @@ public class WaterUsageLogService {
     }
 
     public BulkUploadResponse uploadBulkCsv(Long apartmentId, MultipartFile file) {
+        adminResolver.requireAdmin();
         BulkUploadResponse response = new BulkUploadResponse();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
@@ -74,7 +80,7 @@ public class WaterUsageLogService {
                 
                 if (isFirstLine) {
                     isFirstLine = false;
-                    // Skip header if it looks like one (e.g., contains alphabets)
+                    // Skip header if it looks like one
                     if (line.matches(".*[a-zA-Z]+.*")) {
                         continue;
                     }
@@ -94,9 +100,15 @@ public class WaterUsageLogService {
                     LocalDate date = LocalDate.parse(dateStr);
                     BigDecimal value = new BigDecimal(valueStr);
                     
+                    // Scoped: look up household by flat number and verify apartment belongs to admin
                     Household household = householdRepository.findByApartmentIdAndFlatNumber(apartmentId, flatNumber).orElse(null);
                     if (household == null) {
                         response.getErrors().add("Line " + lineNumber + ": Flat " + flatNumber + " not found in apartment.");
+                        continue;
+                    }
+                    // Ownership check
+                    if (household.getApartment().getAdmin() == null || !household.getApartment().getAdmin().getId().equals(admin.getId())) {
+                        response.getErrors().add("Line " + lineNumber + ": Access denied for flat " + flatNumber);
                         continue;
                     }
                     

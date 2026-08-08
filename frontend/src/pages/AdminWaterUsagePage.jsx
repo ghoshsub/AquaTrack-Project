@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Droplet, Upload, Edit3, CheckCircle2, AlertCircle, FileText, Building2, Droplets } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { Upload, Edit3, CheckCircle2, AlertCircle, FileText, Building2, Droplets } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 import { listApartments } from "../api/apartmentApi.js";
 import { listHouseholdsByApartment } from "../api/householdApi.js";
@@ -42,10 +43,11 @@ const cardStyle = {
 };
 
 export default function AdminWaterUsagePage({ auth, setPage }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("manual");
   const [apartments, setApartments] = useState([]);
   const [selectedApartmentId, setSelectedApartmentId] = useState("");
-  const [apartmentsError, setApartmentsError] = useState("");
+  const [apartmentsError] = useState("");
 
   const [households, setHouseholds] = useState([]);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState("");
@@ -67,10 +69,11 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
     async function loadApartments() {
       try {
         const data = await listApartments(auth.token);
-        setApartments(data);
-        if (data.length > 0) setSelectedApartmentId(String(data[0].id));
-      } catch (err) {
-        setApartmentsError(err.message || "Could not load apartments.");
+        const list = data || [];
+        setApartments(list);
+        if (list.length > 0 && !selectedApartmentId) setSelectedApartmentId(String(list[0].id));
+      } catch {
+        setApartments([]);
       }
     }
     loadApartments();
@@ -82,12 +85,14 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
       if (!apartmentId) { setHouseholds([]); setSelectedHouseholdId(""); return; }
       setLoadingHouseholds(true);
       try {
-        const data = await listHouseholdsByApartment(auth.token, apartmentId);
-        setHouseholds(data);
-        if (data.length > 0) setSelectedHouseholdId(String(data[0].id));
+        const realData = await listHouseholdsByApartment(auth.token, apartmentId);
+        const list = realData || [];
+        setHouseholds(list);
+        if (list.length > 0) setSelectedHouseholdId(String(list[0].id));
         else setSelectedHouseholdId("");
-      } catch (err) {
+      } catch {
         setHouseholds([]);
+        setSelectedHouseholdId("");
       } finally {
         setLoadingHouseholds(false);
       }
@@ -138,8 +143,8 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
             <Droplets size={24} color="#38BDF8" />
           </div>
           <div>
-            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>Water Usage Logs</h1>
-            <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>Log daily meter readings manually or bulk-import from CSV files</p>
+            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("waterUsage.title")}</h1>
+            <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("waterUsage.subheading")}</p>
           </div>
         </div>
       </div>
@@ -162,7 +167,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
           {/* Control Bar: Apartment Selector + Tab Switcher */}
           <div style={{ ...cardStyle, padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>Building:</span>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap" }}>{t("waterUsage.household")}:</span>
               <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)} style={{ minWidth: "220px" }}>
                 {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
               </SaasSelect>
@@ -170,7 +175,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
 
             {/* Tab Switcher */}
             <div style={{ display: "flex", background: "rgba(0,0,0,0.25)", borderRadius: "12px", padding: "4px", gap: "4px" }}>
-              {[["manual", "Manual Entry", Edit3], ["bulk", "Bulk CSV Upload", Upload]].map(([tab, label, Icon]) => (
+              {[["manual", t("waterUsage.manual"), Edit3], ["bulk", t("waterUsage.uploadCSV"), Upload]].map(([tab, label, Icon]) => (
                 <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                   style={{ display: "flex", alignItems: "center", gap: "7px", background: activeTab === tab ? "rgba(56,189,248,0.15)" : "transparent", border: activeTab === tab ? "1px solid rgba(56,189,248,0.35)" : "1px solid transparent", color: activeTab === tab ? "#38BDF8" : "#64748B", fontSize: "13px", fontWeight: 700, padding: "9px 18px", borderRadius: "9px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.18s" }}>
                   <Icon size={15} /> {label}
@@ -187,7 +192,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
                   <Edit3 size={16} color="#38BDF8" />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Log Single Reading</h2>
+                  <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>{t("waterUsage.addReading")}</h2>
                   <p style={{ fontSize: "12.5px", color: "#64748B", margin: "2px 0 0" }}>Record a metered usage value for one specific flat</p>
                 </div>
               </div>

@@ -10,6 +10,10 @@ public interface BillingCycleRepository extends JpaRepository<BillingCycle, Long
 
     List<BillingCycle> findByApartmentId(Long apartmentId);
 
+    List<BillingCycle> findByApartmentIdAndApartmentAdminId(Long apartmentId, Long adminId);
+
+    Optional<BillingCycle> findByIdAndApartmentAdminId(Long id, Long adminId);
+
     Optional<BillingCycle> findByApartmentIdAndStatus(Long apartmentId, BillingCycle.Status status);
 
     @org.springframework.data.jpa.repository.Query(

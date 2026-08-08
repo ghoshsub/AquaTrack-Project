@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { register } from "../api/authApi.js";
 import GoogleSignInButton from "../components/GoogleSignInButton.jsx";
 import {
@@ -20,45 +21,137 @@ const inputStyle = {
   boxSizing: "border-box",
 };
 
-const roleCards = [
-  {
-    value: "ADMIN",
-    label: "Administrator",
-    desc: "Manage apartments, billing & plans",
-    icon: ShieldCheck,
-    color: "#38BDF8",
-    glow: "rgba(56,189,248,0.15)",
-  },
-  {
-    value: "RESIDENT",
-    label: "Resident",
-    desc: "Track usage, pay bills & view alerts",
-    icon: User,
-    color: "#10B981",
-    glow: "rgba(16,185,129,0.15)",
-  },
-];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterPage({ setPage, onAuthed }) {
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState("ADMIN");
   const [error, setError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [touchedUsername, setTouchedUsername] = useState(false);
+  const [touchedEmail, setTouchedEmail] = useState(false);
+  const [touchedPassword, setTouchedPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const validateUsername = (val) => {
+    if (!val.trim()) return t("auth.usernameRequired");
+    return "";
+  };
+
+  const validateEmail = (val) => {
+    if (!val.trim()) return t("auth.emailRequired");
+    if (!EMAIL_REGEX.test(val.trim())) return t("auth.emailInvalid");
+    return "";
+  };
+
+  const validatePassword = (val) => {
+    if (!val) return t("auth.passwordRequired");
+    return "";
+  };
+
+  const handleUsernameChange = (e) => {
+    const val = e.target.value;
+    setUsername(val);
+    if (touchedUsername) {
+      setUsernameError(validateUsername(val));
+    }
+  };
+
+  const handleUsernameBlur = () => {
+    setTouchedUsername(true);
+    setUsernameError(validateUsername(username));
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    if (touchedEmail) {
+      setEmailError(validateEmail(val));
+    }
+  };
+
+  const handleEmailBlur = () => {
+    setTouchedEmail(true);
+    setEmailError(validateEmail(email));
+  };
+
+  const handlePasswordChange = (e) => {
+    const val = e.target.value;
+    setPassword(val);
+    if (touchedPassword) {
+      setPasswordError(validatePassword(val));
+    }
+  };
+
+  const handlePasswordBlur = () => {
+    setTouchedPassword(true);
+    setPasswordError(validatePassword(password));
+  };
+
+  const roleCards = [
+    {
+      value: "ADMIN",
+      label: t("auth.roleAdmin"),
+      desc: t("auth.roleAdmin"),
+      icon: ShieldCheck,
+      color: "#38BDF8",
+      glow: "rgba(56,189,248,0.15)",
+    },
+    {
+      value: "RESIDENT",
+      label: t("auth.roleResident"),
+      desc: t("auth.roleResident"),
+      icon: User,
+      color: "#10B981",
+      glow: "rgba(16,185,129,0.15)",
+    },
+  ];
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    const uErr = validateUsername(username);
+    const eErr = validateEmail(email);
+    const pErr = validatePassword(password);
+
+    setUsernameError(uErr);
+    setEmailError(eErr);
+    setPasswordError(pErr);
+    setTouchedUsername(true);
+    setTouchedEmail(true);
+    setTouchedPassword(true);
+
+    if (uErr || eErr || pErr) {
+      return;
+    }
+
     setLoading(true);
     try {
-      const payload = { username, email, password, role };
+      const payload = { username: username.trim(), email: email.trim(), password, role };
       const data = await register(payload);
       onAuthed(data);
       setPage("dashboard");
     } catch (err) {
-      setError(err.message || "Could not reach the server.");
+      const errMsg = err.message || t("auth.registerError");
+      setError(errMsg);
+      if (
+        errMsg.toLowerCase().includes("email") ||
+        errMsg.toLowerCase().includes("email already registered") ||
+        errMsg.toLowerCase().includes("email already taken")
+      ) {
+        setEmailError(errMsg);
+      } else if (errMsg.toLowerCase().includes("username")) {
+        setUsernameError(errMsg);
+      } else if (errMsg.toLowerCase().includes("password")) {
+        setPasswordError(errMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -166,7 +259,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   AquaTrack
                 </span>
                 <span style={{ fontSize: "10px", fontWeight: 700, color: "#38BDF8", letterSpacing: "0.08em" }}>
-                  FREE ACCOUNT REGISTRATION
+                  {t("auth.registerTitle").toUpperCase()}
                 </span>
               </div>
             </div>
@@ -188,7 +281,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
               }}
             >
               <Sparkles size={13} />
-              <span>ONBOARD YOUR APARTMENT IN 60 SECONDS</span>
+              <span>{t("hero.badge")}</span>
             </div>
 
             <h2
@@ -201,20 +294,20 @@ export default function RegisterPage({ setPage, onAuthed }) {
                 margin: "0 0 12px 0",
               }}
             >
-              Join hundreds of smart residential communities.
+              {t("hero.subheading")}
             </h2>
 
             <p style={{ fontSize: "13.5px", color: "#94A3B8", lineHeight: 1.6, margin: "0 0 22px 0" }}>
-              Get instant access to real-time water telemetry, automated monthly invoice generation, and tier-based billing rules.
+              {t("hero.subtext")}
             </p>
 
             {/* Benefit Checkmarks */}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {[
-                "Zero setup or hardware integration fees",
-                "Instant tier-based billing calculation",
-                "Automated CSV consumption data import",
-                "Role-based access for Admins and Residents",
+                t("features.f1Desc"),
+                t("features.f2Desc"),
+                t("features.f3Desc"),
+                t("features.f4Desc"),
               ].map((benefit, idx) => (
                 <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "#E2E8F0" }}>
                   <div
@@ -251,7 +344,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
             }}
           >
             <Zap size={14} color="#38BDF8" />
-            <span>Instant activation • No credit card required</span>
+            <span>{t("features.f6Title")}</span>
           </div>
         </div>
 
@@ -275,10 +368,10 @@ export default function RegisterPage({ setPage, onAuthed }) {
                 margin: "0 0 4px 0",
               }}
             >
-              Create account
+              {t("auth.registerTitle")}
             </h1>
             <p style={{ fontSize: "13px", color: "#94A3B8", margin: 0 }}>
-              Set up your AquaTrack credentials to get started.
+              {t("auth.registerSubtitle")}
             </p>
           </div>
 
@@ -296,7 +389,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   letterSpacing: "0.04em",
                 }}
               >
-                Account Type
+                {t("auth.role")}
               </label>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                 {roleCards.map(({ value, label, desc, icon: Icon, color, glow }) => {
@@ -336,13 +429,13 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#94A3B8",
+                  color: usernameError ? "#F87171" : "#94A3B8",
                   marginBottom: "4px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
                 }}
               >
-                Username
+                {t("auth.username")}
               </label>
               <div style={{ position: "relative" }}>
                 <User
@@ -352,26 +445,44 @@ export default function RegisterPage({ setPage, onAuthed }) {
                     left: "13px",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#64748B",
+                    color: usernameError ? "#F87171" : "#64748B",
                   }}
                 />
                 <input
                   type="text"
-                  style={inputStyle}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Choose a username"
-                  required
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "#38BDF8";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)";
+                  style={{
+                    ...inputStyle,
+                    borderColor: usernameError ? "#F87171" : "rgba(255, 255, 255, 0.14)",
+                    boxShadow: usernameError ? "0 0 0 3px rgba(248, 113, 113, 0.2)" : "none",
                   }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(255,255,255,0.14)";
-                    e.target.style.boxShadow = "none";
+                  value={username}
+                  onChange={handleUsernameChange}
+                  onBlur={handleUsernameBlur}
+                  placeholder={t("auth.usernamePlaceholder")}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = usernameError ? "#F87171" : "#38BDF8";
+                    e.target.style.boxShadow = usernameError
+                      ? "0 0 0 3px rgba(248, 113, 113, 0.25)"
+                      : "0 0 0 3px rgba(56, 189, 248, 0.18)";
                   }}
                 />
               </div>
+              {usernameError && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "5px",
+                    color: "#F87171",
+                    fontSize: "11.5px",
+                    fontWeight: 500,
+                  }}
+                >
+                  <AlertCircle size={12} style={{ flexShrink: 0 }} />
+                  <span>{usernameError}</span>
+                </div>
+              )}
             </div>
 
             {/* Email Field */}
@@ -381,13 +492,13 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#94A3B8",
+                  color: emailError ? "#F87171" : "#94A3B8",
                   marginBottom: "4px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
                 }}
               >
-                Email Address
+                {t("auth.email")}
               </label>
               <div style={{ position: "relative" }}>
                 <Mail
@@ -397,26 +508,44 @@ export default function RegisterPage({ setPage, onAuthed }) {
                     left: "13px",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#64748B",
+                    color: emailError ? "#F87171" : "#64748B",
                   }}
                 />
                 <input
                   type="email"
-                  style={inputStyle}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "#38BDF8";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)";
+                  style={{
+                    ...inputStyle,
+                    borderColor: emailError ? "#F87171" : "rgba(255, 255, 255, 0.14)",
+                    boxShadow: emailError ? "0 0 0 3px rgba(248, 113, 113, 0.2)" : "none",
                   }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(255,255,255,0.14)";
-                    e.target.style.boxShadow = "none";
+                  value={email}
+                  onChange={handleEmailChange}
+                  onBlur={handleEmailBlur}
+                  placeholder={t("auth.emailPlaceholder")}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = emailError ? "#F87171" : "#38BDF8";
+                    e.target.style.boxShadow = emailError
+                      ? "0 0 0 3px rgba(248, 113, 113, 0.25)"
+                      : "0 0 0 3px rgba(56, 189, 248, 0.18)";
                   }}
                 />
               </div>
+              {emailError && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "5px",
+                    color: "#F87171",
+                    fontSize: "11.5px",
+                    fontWeight: 500,
+                  }}
+                >
+                  <AlertCircle size={12} style={{ flexShrink: 0 }} />
+                  <span>{emailError}</span>
+                </div>
+              )}
             </div>
 
             {/* Password Field */}
@@ -426,13 +555,13 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#94A3B8",
+                  color: passwordError ? "#F87171" : "#94A3B8",
                   marginBottom: "4px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
                 }}
               >
-                Password
+                {t("auth.password")}
               </label>
               <div style={{ position: "relative" }}>
                 <Lock
@@ -442,23 +571,26 @@ export default function RegisterPage({ setPage, onAuthed }) {
                     left: "13px",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "#64748B",
+                    color: passwordError ? "#F87171" : "#64748B",
                   }}
                 />
                 <input
                   type={showPassword ? "text" : "password"}
-                  style={{ ...inputStyle, paddingRight: "40px" }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a strong password"
-                  required
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "#38BDF8";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)";
+                  style={{
+                    ...inputStyle,
+                    paddingRight: "40px",
+                    borderColor: passwordError ? "#F87171" : "rgba(255, 255, 255, 0.14)",
+                    boxShadow: passwordError ? "0 0 0 3px rgba(248, 113, 113, 0.2)" : "none",
                   }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(255,255,255,0.14)";
-                    e.target.style.boxShadow = "none";
+                  value={password}
+                  onChange={handlePasswordChange}
+                  onBlur={handlePasswordBlur}
+                  placeholder={t("auth.passwordPlaceholder")}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = passwordError ? "#F87171" : "#38BDF8";
+                    e.target.style.boxShadow = passwordError
+                      ? "0 0 0 3px rgba(248, 113, 113, 0.25)"
+                      : "0 0 0 3px rgba(56, 189, 248, 0.18)";
                   }}
                 />
                 <button
@@ -480,6 +612,22 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {passwordError && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    marginTop: "5px",
+                    color: "#F87171",
+                    fontSize: "11.5px",
+                    fontWeight: 500,
+                  }}
+                >
+                  <AlertCircle size={12} style={{ flexShrink: 0 }} />
+                  <span>{passwordError}</span>
+                </div>
+              )}
             </div>
 
             {/* Error Banner */}
@@ -489,12 +637,12 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
-                  background: "rgba(244,63,94,0.12)",
-                  border: "1px solid rgba(244,63,94,0.3)",
+                  background: "rgba(244, 63, 94, 0.12)",
+                  border: "1px solid rgba(244, 63, 94, 0.3)",
                   borderRadius: "10px",
                   padding: "10px 12px",
                   color: "#F87171",
-                  fontSize: "12.5px",
+                  fontSize: "13px",
                 }}
               >
                 <AlertCircle size={15} style={{ flexShrink: 0 }} />
@@ -509,7 +657,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
               style={{
                 width: "100%",
                 background: loading
-                  ? "rgba(56,189,248,0.5)"
+                  ? "rgba(56, 189, 248, 0.5)"
                   : "linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)",
                 border: "none",
                 color: "#0F172A",
@@ -522,41 +670,41 @@ export default function RegisterPage({ setPage, onAuthed }) {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "8px",
-                boxShadow: loading ? "none" : "0 4px 16px rgba(56,189,248,0.35)",
-                transition: "all 0.18s ease",
+                boxShadow: loading ? "none" : "0 4px 16px rgba(56, 189, 248, 0.4)",
+                transition: "all 0.2s ease",
                 fontFamily: "inherit",
-                marginTop: "2px",
+                marginTop: "4px",
               }}
               onMouseEnter={(e) => {
                 if (!loading) {
                   e.currentTarget.style.transform = "translateY(-1px)";
-                  e.currentTarget.style.boxShadow = "0 6px 20px rgba(56,189,248,0.5)";
+                  e.currentTarget.style.boxShadow = "0 6px 20px rgba(56, 189, 248, 0.55)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!loading) {
                   e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(56,189,248,0.35)";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(56, 189, 248, 0.4)";
                 }
               }}
             >
               {loading ? (
-                "Creating account…"
+                t("auth.registering")
               ) : (
                 <>
-                  Create Account <ArrowRight size={16} />
+                  {t("auth.registerBtn")} <ArrowRight size={16} />
                 </>
               )}
             </button>
           </form>
 
           {/* Divider */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "14px 0" }}>
-            <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.08)" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "16px 0" }}>
+            <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
             <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              or sign up with
+              {t("auth.orGoogle")}
             </span>
-            <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.08)" }} />
+            <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.1)" }} />
           </div>
 
           {/* Google Sign In */}
@@ -568,9 +716,9 @@ export default function RegisterPage({ setPage, onAuthed }) {
             onError={(msg) => setError(msg)}
           />
 
-          {/* Already have account link */}
-          <p style={{ fontSize: "13px", textAlign: "center", color: "#94A3B8", margin: "14px 0 0 0" }}>
-            Already have an account?{" "}
+          {/* Login Link */}
+          <p style={{ fontSize: "13px", textAlign: "center", color: "#94A3B8", marginTop: "16px", margin: "16px 0 0 0" }}>
+            {t("auth.hasAccount")}{" "}
             <button
               onClick={() => setPage("login")}
               style={{
@@ -585,7 +733,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
                 textUnderlineOffset: "3px",
               }}
             >
-              Sign in instead
+              {t("auth.signInLink")}
             </button>
           </p>
         </div>

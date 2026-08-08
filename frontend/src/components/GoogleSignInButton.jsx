@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { googleLogin } from "../api/googleAuthApi.js";
 
 const GOOGLE_CLIENT_ID = "78573598233-r130hni4se61pb6o9ndvnv47addikd8k.apps.googleusercontent.com";
@@ -28,6 +29,7 @@ function GoogleGLogo() {
 }
 
 export default function GoogleSignInButton({ onAuthed, onError }) {
+  const { t } = useTranslation();
   const buttonRef = useRef(null);
   const [googleLoaded, setGoogleLoaded] = useState(false);
 
@@ -134,7 +136,7 @@ export default function GoogleSignInButton({ onAuthed, onError }) {
           }}
         >
           <GoogleGLogo />
-          <span>Continue with Google</span>
+          <span>{t("auth.orGoogle")}</span>
         </button>
       )}
     </div>

@@ -1,7 +1,10 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowRight } from "lucide-react";
 
 export default function CTA({ setPage }) {
+  const { t } = useTranslation();
+
   return (
     <section style={{ padding: "80px 0" }}>
       <div className="at-container" style={{ maxWidth: "800px" }}>
@@ -17,10 +20,10 @@ export default function CTA({ setPage }) {
           }}
         >
           <h2 style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", margin: 0 }}>
-            Ready to streamline your building's water billing?
+            {t("cta.heading")}
           </h2>
           <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "12px", maxWidth: "500px", margin: "12px auto 0", lineHeight: 1.6 }}>
-            Set up your apartment, configure tariff rates, and start issuing clean itemized bills today.
+            {t("cta.subheading")}
           </p>
           <button
             onClick={() => setPage("register")}
@@ -41,7 +44,7 @@ export default function CTA({ setPage }) {
               marginTop: "28px",
             }}
           >
-            Create an account <ArrowRight size={16} />
+            {t("cta.button")} <ArrowRight size={16} />
           </button>
         </div>
       </div>
