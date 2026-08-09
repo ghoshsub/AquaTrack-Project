@@ -49,7 +49,7 @@ export default function Hero({ setPage }) {
               lineHeight: 1.1,
               fontWeight: 800,
               letterSpacing: "-0.03em",
-              color: "#FFFFFF",
+              color: "var(--admin-text-white)",
               margin: 0,
             }}
           >
@@ -71,7 +71,7 @@ export default function Hero({ setPage }) {
               marginTop: "20px",
               fontSize: "16px",
               lineHeight: 1.65,
-              color: "#94A3B8",
+              color: "var(--admin-text-muted)",
               maxWidth: "480px",
             }}
           >

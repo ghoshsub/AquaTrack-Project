@@ -47,8 +47,15 @@ export async function deleteApartment(token, id) {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
-  return handleResponse(res);
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const message = (data && (data.message || data.error)) || "Request failed.";
+    throw new Error(message);
+  }
+  // Backend returns 200 OK with no body — safe to return without parsing JSON
+  return null;
 }
+
 
 /**
  * Calls PUT /api/admin/apartments/{id}

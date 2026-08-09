@@ -7,10 +7,10 @@ import { listHouseholdsByApartment } from "../api/householdApi.js";
 import { logManualReading, uploadBulkCsv } from "../api/waterUsageApi.js";
 
 const fieldStyle = { display: "flex", flexDirection: "column", gap: "6px" };
-const labelStyle = { fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#94A3B8" };
+const labelStyle = { fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)" };
 const inputBase = {
-  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.14)",
-  color: "#FFFFFF", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+  width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
   fontFamily: "inherit", outline: "none", boxSizing: "border-box",
   transition: "all 0.2s ease",
 };
@@ -18,8 +18,8 @@ const inputBase = {
 function SaasInput({ type = "text", ...props }) {
   return (
     <input type={type} style={inputBase} {...props}
-      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
-      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+      onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+      onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
     />
   );
 }
@@ -27,8 +27,8 @@ function SaasInput({ type = "text", ...props }) {
 function SaasSelect({ children, ...props }) {
   return (
     <select style={inputBase} {...props}
-      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
-      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+      onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+      onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
     >
       {children}
     </select>
@@ -36,10 +36,11 @@ function SaasSelect({ children, ...props }) {
 }
 
 const cardStyle = {
-  background: "rgba(17,26,42,0.9)",
-  border: "1px solid rgba(255,255,255,0.12)",
+  background: "var(--admin-card-bg)",
+  border: "1px solid var(--admin-card-border)",
   borderRadius: "20px",
   backdropFilter: "blur(20px)",
+  boxShadow: "var(--admin-card-shadow)",
 };
 
 export default function AdminWaterUsagePage({ auth, setPage }) {
@@ -143,7 +144,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
             <Droplets size={24} color="#38BDF8" />
           </div>
           <div>
-            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("waterUsage.title")}</h1>
+            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0, letterSpacing: "-0.02em" }}>{t("waterUsage.title")}</h1>
             <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("waterUsage.subheading")}</p>
           </div>
         </div>
@@ -192,7 +193,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
                   <Edit3 size={16} color="#38BDF8" />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>{t("waterUsage.addReading")}</h2>
+                  <h2 style={{ fontSize: "17px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>{t("waterUsage.addReading")}</h2>
                   <p style={{ fontSize: "12.5px", color: "#64748B", margin: "2px 0 0" }}>Record a metered usage value for one specific flat</p>
                 </div>
               </div>
@@ -251,7 +252,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
                   <Upload size={16} color="#38BDF8" />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Bulk CSV Upload</h2>
+                  <h2 style={{ fontSize: "17px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>Bulk CSV Upload</h2>
                   <p style={{ fontSize: "12.5px", color: "#64748B", margin: "2px 0 0" }}>Import multiple readings at once using a structured CSV file</p>
                 </div>
               </div>
@@ -262,7 +263,7 @@ export default function AdminWaterUsagePage({ auth, setPage }) {
                   <span style={{ fontSize: "12.5px", fontWeight: 700, color: "#38BDF8", textTransform: "uppercase", letterSpacing: "0.05em" }}>CSV Format Guide</span>
                 </div>
                 <p style={{ fontSize: "13px", color: "#94A3B8", margin: 0, lineHeight: 1.6 }}>
-                  Required columns: <strong style={{ color: "#FFFFFF" }}>flatNumber, readingDate (YYYY-MM-DD), readingValue</strong><br />
+                  Required columns: <strong style={{ color: "var(--admin-text-white)" }}>flatNumber, readingDate (YYYY-MM-DD), readingValue</strong><br />
                   Duplicate entries for the same flat on the same date will be automatically skipped.
                 </p>
               </div>

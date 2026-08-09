@@ -13,8 +13,8 @@ import {
 } from "../api/billingApi.js";
 
 const inputBase = {
-  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.14)",
-  color: "#FFFFFF", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+  width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
   fontFamily: "inherit", outline: "none", boxSizing: "border-box",
   transition: "all 0.2s ease",
 };
@@ -22,8 +22,8 @@ const inputBase = {
 function SaasInput({ type = "text", ...props }) {
   return (
     <input type={type} style={inputBase} {...props}
-      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
-      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+      onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+      onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
     />
   );
 }
@@ -31,8 +31,8 @@ function SaasInput({ type = "text", ...props }) {
 function SaasSelect({ children, ...props }) {
   return (
     <select style={inputBase} {...props}
-      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
-      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+      onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+      onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
     >
       {children}
     </select>
@@ -62,10 +62,11 @@ function CycleStatusBadge({ status }) {
 }
 
 const cardStyle = {
-  background: "rgba(17,26,42,0.9)",
-  border: "1px solid rgba(255,255,255,0.12)",
+  background: "var(--admin-card-bg)",
+  border: "1px solid var(--admin-card-border)",
   borderRadius: "20px",
   backdropFilter: "blur(20px)",
+  boxShadow: "var(--admin-card-shadow)",
 };
 
 export default function AdminBillingPage({ auth, setPage }) {
@@ -255,8 +256,8 @@ export default function AdminBillingPage({ auth, setPage }) {
             <Receipt size={24} color="#FBBF24" />
           </div>
           <div>
-            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("billing.title")}</h1>
-            <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("billing.subheading")}</p>
+            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0, letterSpacing: "-0.02em" }}>{t("billing.title")}</h1>
+            <p style={{ fontSize: "13.5px", color: "var(--admin-text-muted)", margin: "2px 0 0" }}>{t("billing.subheading")}</p>
           </div>
         </div>
       </div>
@@ -285,7 +286,7 @@ export default function AdminBillingPage({ auth, setPage }) {
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {/* Apartment Selector */}
             <div style={{ ...cardStyle, padding: "20px" }}>
-              <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#94A3B8", marginBottom: "10px" }}>{t("billing.apartment")}</label>
+              <label style={{ display: "block", fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--admin-text-muted)", marginBottom: "10px" }}>{t("billing.apartment")}</label>
               <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)}>
                 {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
               </SaasSelect>
@@ -297,13 +298,13 @@ export default function AdminBillingPage({ auth, setPage }) {
                 <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(56,189,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Plus size={15} color="#38BDF8" />
                 </div>
-                <h2 style={{ fontSize: "14px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>{t("billing.openCycle")}</h2>
+                <h2 style={{ fontSize: "14px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>{t("billing.openCycle")}</h2>
               </div>
 
-              <div style={{ display: "flex", background: "rgba(0,0,0,0.25)", borderRadius: "10px", padding: "3px", marginBottom: "16px" }}>
+              <div style={{ display: "flex", background: "var(--admin-subcard-bg)", border: "1px solid var(--admin-subcard-border)", borderRadius: "10px", padding: "3px", marginBottom: "16px" }}>
                 {[["By Month", true], ["Custom Dates", false]].map(([label, val]) => (
                   <button key={label} type="button" onClick={() => setUseMonthSelect(val)}
-                    style={{ flex: 1, background: useMonthSelect === val ? "rgba(56,189,248,0.15)" : "transparent", border: useMonthSelect === val ? "1px solid rgba(56,189,248,0.35)" : "1px solid transparent", color: useMonthSelect === val ? "#38BDF8" : "#64748B", fontSize: "12px", fontWeight: 700, padding: "7px 8px", borderRadius: "8px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.18s" }}>
+                    style={{ flex: 1, background: useMonthSelect === val ? "rgba(56,189,248,0.15)" : "transparent", border: useMonthSelect === val ? "1px solid rgba(56,189,248,0.35)" : "1px solid transparent", color: useMonthSelect === val ? "#38BDF8" : "var(--admin-text-muted)", fontSize: "12px", fontWeight: 700, padding: "7px 8px", borderRadius: "8px", cursor: "pointer", fontFamily: "inherit", transition: "all 0.18s" }}>
                     {label}
                   </button>
                 ))}
@@ -312,17 +313,17 @@ export default function AdminBillingPage({ auth, setPage }) {
               <form onSubmit={handleCreateCycle} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {useMonthSelect ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label style={{ fontSize: "11px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>Billing Month</label>
+                    <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--admin-text-muted)", textTransform: "uppercase" }}>Billing Month</label>
                     <SaasInput type="month" required value={billingMonth} onChange={e => setBillingMonth(e.target.value)} />
                   </div>
                 ) : (
                   <>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>Start Date</label>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--admin-text-muted)", textTransform: "uppercase" }}>Start Date</label>
                       <SaasInput type="date" required value={startDate} onChange={e => setStartDate(e.target.value)} />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <label style={{ fontSize: "11px", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>End Date</label>
+                      <label style={{ fontSize: "11px", fontWeight: 700, color: "var(--admin-text-muted)", textTransform: "uppercase" }}>End Date</label>
                       <SaasInput type="date" required value={endDate} onChange={e => setEndDate(e.target.value)} />
                     </div>
                   </>
@@ -341,19 +342,19 @@ export default function AdminBillingPage({ auth, setPage }) {
 
             {/* Cycle History */}
             <div style={{ ...cardStyle, padding: "20px" }}>
-              <h2 style={{ fontSize: "14px", fontWeight: 800, color: "#FFFFFF", margin: "0 0 16px" }}>Billing History</h2>
-              {loadingCycles && <p style={{ fontSize: "13px", color: "#64748B" }}>Loading cycles…</p>}
-              {cyclesError && <p style={{ color: "#F87171", fontSize: "12px" }}>{cyclesError}</p>}
-              {!loadingCycles && cycles.length === 0 && <p style={{ fontSize: "13px", color: "#475569" }}>No cycles opened yet.</p>}
+              <h2 style={{ fontSize: "14px", fontWeight: 800, color: "var(--admin-text-white)", margin: "0 0 16px" }}>Billing History</h2>
+              {loadingCycles && <p style={{ fontSize: "13px", color: "var(--admin-text-muted)" }}>Loading cycles…</p>}
+              {cyclesError && <p style={{ color: "var(--admin-error-text)", fontSize: "12px" }}>{cyclesError}</p>}
+              {!loadingCycles && cycles.length === 0 && <p style={{ fontSize: "13px", color: "var(--admin-text-muted)" }}>No cycles opened yet.</p>}
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 {cycles.map(c => {
                   const isActive = selectedCycleId === c.id;
                   return (
                     <button key={c.id} onClick={() => setSelectedCycleId(c.id)}
-                      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", padding: "11px 14px", borderRadius: "10px", border: isActive ? "1px solid rgba(56,189,248,0.45)" : "1px solid rgba(255,255,255,0.06)", background: isActive ? "rgba(56,189,248,0.1)" : "rgba(255,255,255,0.02)", cursor: "pointer", fontFamily: "inherit", transition: "all 0.18s" }}>
+                      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", padding: "11px 14px", borderRadius: "10px", border: isActive ? "1px solid rgba(56,189,248,0.45)" : "1px solid var(--admin-card-border)", background: isActive ? "rgba(56,189,248,0.1)" : "var(--admin-subcard-bg)", cursor: "pointer", fontFamily: "inherit", transition: "all 0.18s" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <Calendar size={13} color={isActive ? "#38BDF8" : "#64748B"} />
-                        <span style={{ fontSize: "13px", fontWeight: 700, color: isActive ? "#FFF" : "#94A3B8" }}>
+                        <Calendar size={13} color={isActive ? "#38BDF8" : "var(--admin-text-muted)"} />
+                        <span style={{ fontSize: "13px", fontWeight: 700, color: isActive ? "var(--admin-text-white)" : "var(--admin-text-muted)" }}>
                           {c.startDate ? formatBillingMonth(c.startDate) : `Cycle #${c.id}`}
                         </span>
                       </div>
@@ -369,13 +370,13 @@ export default function AdminBillingPage({ auth, setPage }) {
           <div>
             {!selectedCycleId && (
               <div style={{ ...cardStyle, padding: "60px", textAlign: "center" }}>
-                <Receipt size={44} color="#334155" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
-                <p style={{ color: "#64748B", fontSize: "14px" }}>Select or open a billing cycle to view details.</p>
+                <Receipt size={44} color="var(--admin-text-muted)" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
+                <p style={{ color: "var(--admin-text-muted)", fontSize: "14px" }}>Select or open a billing cycle to view details.</p>
               </div>
             )}
 
             {selectedCycleId && loadingDetails && (
-              <div style={{ ...cardStyle, padding: "40px", textAlign: "center", color: "#64748B", fontSize: "14px" }}>Loading cycle details…</div>
+              <div style={{ ...cardStyle, padding: "40px", textAlign: "center", color: "var(--admin-text-muted)", fontSize: "14px" }}>Loading cycle details…</div>
             )}
 
             {selectedCycleId && !loadingDetails && detailsError && (
@@ -390,11 +391,11 @@ export default function AdminBillingPage({ auth, setPage }) {
                 <div style={{ ...cardStyle, padding: "28px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
                     <div>
-                      <p style={{ fontSize: "12px", color: "#64748B", margin: "0 0 4px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Billing Period</p>
-                      <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>
+                      <p style={{ fontSize: "12px", color: "var(--admin-text-muted)", margin: "0 0 4px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em" }}>Billing Period</p>
+                      <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0, letterSpacing: "-0.02em" }}>
                         {cycleDetails.startDate ? formatBillingMonth(cycleDetails.startDate) : `Cycle #${cycleDetails.id}`}
                       </h2>
-                      <p style={{ fontSize: "13px", color: "#64748B", margin: "6px 0 0", display: "flex", alignItems: "center", gap: "5px" }}>
+                      <p style={{ fontSize: "13px", color: "var(--admin-text-muted)", margin: "6px 0 0", display: "flex", alignItems: "center", gap: "5px" }}>
                         <Building2 size={13} /> {cycleDetails.apartment?.name || "Unknown Apartment"}
                       </p>
                     </div>
@@ -410,7 +411,7 @@ export default function AdminBillingPage({ auth, setPage }) {
                     )}
                     {cycleDetails.status === "FINALIZED" && (
                       <button onClick={handleArchive}
-                        style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(100,116,139,0.15)", border: "1px solid rgba(100,116,139,0.35)", color: "#94A3B8", fontWeight: 700, fontSize: "13px", padding: "12px 20px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>
+                        style={{ display: "flex", alignItems: "center", gap: "8px", background: "var(--admin-subcard-bg)", border: "1px solid var(--admin-subcard-border)", color: "var(--admin-text-muted)", fontWeight: 700, fontSize: "13px", padding: "12px 20px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>
                         <Archive size={15} /> Archive & Lock
                       </button>
                     )}
@@ -429,19 +430,19 @@ export default function AdminBillingPage({ auth, setPage }) {
                       <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "rgba(56,189,248,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <Droplets size={16} color="#38BDF8" />
                       </div>
-                      <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Household Water Usage Readings</h3>
+                      <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>Household Water Usage Readings</h3>
                     </div>
-                    <p style={{ fontSize: "13px", color: "#64748B", marginBottom: "20px", lineHeight: 1.6 }}>
+                    <p style={{ fontSize: "13px", color: "var(--admin-text-muted)", marginBottom: "20px", lineHeight: 1.6 }}>
                       Enter water usage (in liters) for each household. Pre-filled from recorded logs.
                     </p>
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                       {householdReadings.map((reading, index) => (
-                        <div key={reading.householdId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}>
+                        <div key={reading.householdId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "var(--admin-subcard-bg)", border: "1px solid var(--admin-subcard-border)", borderRadius: "12px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                             <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(56,189,248,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                               <Droplets size={14} color="#38BDF8" />
                             </div>
-                            <span style={{ fontWeight: 700, fontSize: "14px", color: "#FFFFFF" }}>Flat {reading.flatNumber}</span>
+                            <span style={{ fontWeight: 700, fontSize: "14px", color: "var(--admin-text-white)" }}>Flat {reading.flatNumber}</span>
                           </div>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <input type="number" step="0.001"
@@ -453,14 +454,14 @@ export default function AdminBillingPage({ auth, setPage }) {
                                 setHouseholdReadings(updated);
                               }}
                               onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
-                              onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+                              onBlur={e => { e.target.style.borderColor = "var(--admin-subcard-border)"; e.target.style.boxShadow = "none"; }}
                             />
-                            <span style={{ fontSize: "12px", color: "#64748B", fontWeight: 600 }}>liters</span>
+                            <span style={{ fontSize: "12px", color: "var(--admin-text-muted)", fontWeight: 600 }}>liters</span>
                           </div>
                         </div>
                       ))}
                       {householdReadings.length === 0 && (
-                        <p style={{ color: "#475569", fontSize: "13px" }}>No households found for this cycle.</p>
+                        <p style={{ color: "var(--admin-text-muted)", fontSize: "13px" }}>No households found for this cycle.</p>
                       )}
                     </div>
                   </div>
@@ -469,19 +470,19 @@ export default function AdminBillingPage({ auth, setPage }) {
                 {/* Invoices Table (non-OPEN) */}
                 {cycleDetails.status !== "OPEN" && (
                   <div style={{ ...cardStyle, overflow: "hidden" }}>
-                    <div style={{ padding: "22px 26px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ padding: "22px 26px", borderBottom: "1px solid var(--admin-card-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <Receipt size={16} color="#FBBF24" />
-                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF" }}>Resident Invoices</span>
+                        <span style={{ fontSize: "16px", fontWeight: 800, color: "var(--admin-text-white)" }}>Resident Invoices</span>
                       </div>
-                      <span style={{ fontSize: "12px", color: "#94A3B8", background: "rgba(255,255,255,0.07)", padding: "4px 12px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.1)" }}>
+                      <span style={{ fontSize: "12px", color: "var(--admin-text-muted)", background: "var(--admin-subcard-bg)", padding: "4px 12px", borderRadius: "20px", border: "1px solid var(--admin-subcard-border)" }}>
                         {cycleDetails.invoices?.length || 0} invoices
                       </span>
                     </div>
                     <div style={{ overflowX: "auto" }}>
                       <table style={{ width: "100%", borderCollapse: "collapse" }}>
                         <thead>
-                          <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                          <tr style={{ borderBottom: "1px solid var(--admin-card-border)", color: "var(--admin-text-muted)", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                             {["Flat", "Usage (L)", "Base Charge", "Adjustments", "Total", "Status", ...(cycleDetails.status === "FINALIZED" ? ["Action"] : [])].map(h => (
                               <th key={h} style={{ padding: "14px 18px", textAlign: "left", whiteSpace: "nowrap" }}>{h}</th>
                             ))}
@@ -489,18 +490,18 @@ export default function AdminBillingPage({ auth, setPage }) {
                         </thead>
                         <tbody>
                           {!cycleDetails.invoices || cycleDetails.invoices.length === 0 ? (
-                            <tr><td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "#475569", fontSize: "13px" }}>No invoices found.</td></tr>
+                            <tr><td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "var(--admin-text-muted)", fontSize: "13px" }}>No invoices found.</td></tr>
                           ) : (
                             cycleDetails.invoices.map(inv => {
                               const isEditing = editingInvoiceId === inv.id;
                               return (
-                                <tr key={inv.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.18s" }}
-                                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
+                                <tr key={inv.id} style={{ borderBottom: "1px solid var(--admin-border-muted)", transition: "background 0.18s" }}
+                                  onMouseEnter={e => e.currentTarget.style.background = "var(--admin-table-hover)"}
                                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                                 >
-                                  <td style={{ padding: "16px 18px", fontWeight: 700, color: "#FFFFFF", fontSize: "14px" }}>Flat {inv.household?.flatNumber || "—"}</td>
-                                  <td style={{ padding: "16px 18px", color: "#94A3B8", fontSize: "13.5px" }}>{inv.waterUsage ?? "0.000"} L</td>
-                                  <td style={{ padding: "16px 18px", color: "#FFFFFF", fontSize: "13.5px", fontWeight: 600 }}>₹{inv.baseCharge}</td>
+                                  <td style={{ padding: "16px 18px", fontWeight: 700, color: "var(--admin-text-white)", fontSize: "14px" }}>Flat {inv.household?.flatNumber || "—"}</td>
+                                  <td style={{ padding: "16px 18px", color: "var(--admin-text-muted)", fontSize: "13.5px" }}>{inv.waterUsage ?? "0.000"} L</td>
+                                  <td style={{ padding: "16px 18px", color: "var(--admin-text-white)", fontSize: "13.5px", fontWeight: 600 }}>₹{inv.baseCharge}</td>
                                   <td style={{ padding: "16px 18px" }}>
                                     {isEditing ? (
                                       <input type="number" step="0.01"
@@ -533,7 +534,7 @@ export default function AdminBillingPage({ auth, setPage }) {
                                             <Check size={12} /> Save
                                           </button>
                                           <button onClick={() => setEditingInvoiceId(null)}
-                                            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#94A3B8", fontSize: "12px", fontWeight: 600, padding: "5px 10px", borderRadius: "7px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: "4px" }}>
+                                            style={{ background: "var(--admin-subcard-bg)", border: "1px solid var(--admin-card-border)", color: "var(--admin-text-muted)", fontSize: "12px", fontWeight: 600, padding: "5px 10px", borderRadius: "7px", cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: "4px" }}>
                                             <X size={12} /> Cancel
                                           </button>
                                         </div>

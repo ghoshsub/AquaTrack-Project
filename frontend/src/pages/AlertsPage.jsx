@@ -6,8 +6,8 @@ import { listApartments } from "../api/apartmentApi.js";
 import { listAlerts, markAlertAsRead, triggerAlertScan } from "../api/alertApi.js";
 
 const inputBase = {
-  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.1)",
-  color: "#FFFFFF", padding: "9px 12px", borderRadius: "10px", fontSize: "13px",
+  width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)", padding: "9px 12px", borderRadius: "10px", fontSize: "13px",
   fontFamily: "inherit", outline: "none", boxSizing: "border-box",
   transition: "border-color 0.18s ease, box-shadow 0.18s ease",
 };
@@ -15,8 +15,8 @@ const inputBase = {
 function SaasInput({ type = "text", ...props }) {
   return (
     <input type={type} style={inputBase} {...props}
-      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
-      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
+      onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+      onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
     />
   );
 }
@@ -24,8 +24,8 @@ function SaasInput({ type = "text", ...props }) {
 function SaasSelect({ children, ...props }) {
   return (
     <select style={inputBase} {...props}
-      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
-      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
+      onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+      onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
     >
       {children}
     </select>
@@ -108,7 +108,7 @@ export default function AlertsPage({ auth, setPage }) {
   }
 
   const filteredAlerts = alerts.filter(a => (filterRead === "UNREAD_ONLY" ? !a.isRead : true));
-  const cardStyle = { background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", backdropFilter: "blur(16px)" };
+  const cardStyle = { background: "var(--admin-card-bg)", border: "1px solid var(--admin-card-border)", borderRadius: "16px", backdropFilter: "blur(16px)", boxShadow: "var(--admin-card-shadow)" };
 
   return (
     <div style={{ maxWidth: "1050px", margin: "40px auto 80px", padding: "0 24px", display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -120,8 +120,8 @@ export default function AlertsPage({ auth, setPage }) {
             <Bell size={22} color="#F43F5E" />
           </div>
           <div>
-            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("alerts.title")}</h1>
-            <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "var(--admin-text-white)", margin: 0, letterSpacing: "-0.02em" }}>{t("alerts.title")}</h1>
+            <p style={{ fontSize: "13px", color: "var(--admin-text-muted)", margin: "2px 0 0" }}>
               {isAdmin ? "Monitor potential water leaks, threshold spikes, and daily limit violations across all flats" : "Stay informed about water leaks and daily threshold alerts for your flat"}
             </p>
           </div>
@@ -145,7 +145,7 @@ export default function AlertsPage({ auth, setPage }) {
           <div style={{ ...cardStyle, padding: "20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
               <RefreshCw size={14} color="#38BDF8" />
-              <h2 style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>Manual Usage Scan</h2>
+              <h2 style={{ fontSize: "14px", fontWeight: 700, color: "var(--admin-text-white)", margin: 0 }}>Manual Usage Scan</h2>
             </div>
             <form onSubmit={handleTriggerScan} style={{ display: "flex", gap: "10px", alignItems: "flex-end" }}>
               <div style={{ flex: 1 }}>
@@ -158,20 +158,22 @@ export default function AlertsPage({ auth, setPage }) {
             </form>
             {scanSuccess && <p style={{ fontSize: "12px", color: "#34D399", marginTop: "8px" }}>{scanSuccess}</p>}
             {scanError && <p style={{ color: "#F87171", fontSize: "12px", marginTop: "8px" }}>{scanError}</p>}
+            {scanSuccess && <p style={{ fontSize: "12px", color: "var(--admin-success-text)", marginTop: "8px" }}>{scanSuccess}</p>}
+            {scanError && <p style={{ color: "var(--admin-error-text)", fontSize: "12px", marginTop: "8px" }}>{scanError}</p>}
           </div>
         </div>
       )}
 
       {/* Alert Feed */}
       <div style={{ ...cardStyle, padding: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: "14px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid var(--admin-border-muted)", paddingBottom: "14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "15px", fontWeight: 700, color: "#FFFFFF" }}>{t("alerts.title")}</span>
+            <span style={{ fontSize: "15px", fontWeight: 700, color: "var(--admin-text-white)" }}>{t("alerts.title")}</span>
             <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "12px", background: "rgba(244,63,94,0.15)", color: "#F43F5E" }}>{filteredAlerts.length}</span>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Filter size={13} color="#64748B" />
+            <Filter size={13} color="var(--admin-text-muted)" />
             <SaasSelect value={filterRead} onChange={e => setFilterRead(e.target.value)} style={{ width: "130px", padding: "6px 10px", fontSize: "12px" }}>
               <option value="UNREAD_ONLY">{t("alerts.unread")}</option>
               <option value="ALL">All alerts</option>
@@ -179,13 +181,13 @@ export default function AlertsPage({ auth, setPage }) {
           </div>
         </div>
 
-        {loadingAlerts && <p style={{ color: "#64748B", fontSize: "14px", textAlign: "center", padding: "30px 0" }}>{t("common.loading")}</p>}
-        {alertsError && <p style={{ color: "#F87171", fontSize: "13px" }}>{alertsError}</p>}
+        {loadingAlerts && <p style={{ color: "var(--admin-text-muted)", fontSize: "14px", textAlign: "center", padding: "30px 0" }}>{t("common.loading")}</p>}
+        {alertsError && <p style={{ color: "var(--admin-error-text)", fontSize: "13px" }}>{alertsError}</p>}
 
         {!loadingAlerts && !alertsError && filteredAlerts.length === 0 && (
-          <div style={{ padding: "48px 20px", textAlign: "center", color: "#475569" }}>
+          <div style={{ padding: "48px 20px", textAlign: "center", color: "var(--admin-text-muted)" }}>
             <CheckCircle2 size={40} color="#10B981" style={{ display: "block", margin: "0 auto 12px" }} />
-            <p style={{ fontSize: "14px", color: "#94A3B8", margin: 0 }}>{t("alerts.allClear")}</p>
+            <p style={{ fontSize: "14px", color: "var(--admin-text-muted)", margin: 0 }}>{t("alerts.allClear")}</p>
           </div>
         )}
 
@@ -200,13 +202,13 @@ export default function AlertsPage({ auth, setPage }) {
 
             return (
               <div key={a.id} style={{ display: "flex", gap: "16px", padding: "16px", borderRadius: "12px", background: cardBg, border: `1px solid ${borderCol}`, opacity: a.isRead ? 0.6 : 1, transition: "all 0.15s ease" }}>
-                <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "rgba(0,0,0,0.3)", border: `1px solid ${borderCol}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "var(--admin-subcard-bg)", border: `1px solid ${borderCol}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <AlertIcon size={18} color={iconCol} />
                 </div>
 
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
-                    <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>
+                    <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--admin-text-white)", margin: 0 }}>
                       {isBill ? "Monthly Bill Generated" : isLeak ? t("alerts.leak") : t("alerts.threshold")}
                       {isAdmin && a.household && (
                         <span style={{ fontSize: "12px", color: "#38BDF8", fontWeight: 500, marginLeft: "8px" }}>
@@ -214,18 +216,18 @@ export default function AlertsPage({ auth, setPage }) {
                         </span>
                       )}
                     </h3>
-                    <span style={{ fontSize: "11px", color: "#64748B" }}>{a.readingDate}</span>
+                    <span style={{ fontSize: "11px", color: "var(--admin-text-muted)" }}>{a.readingDate}</span>
                   </div>
-                  <p style={{ fontSize: "13px", color: "#94A3B8", marginTop: "6px", lineHeight: 1.5, margin: "6px 0 0" }}>{a.message}</p>
+                  <p style={{ fontSize: "13px", color: "var(--admin-text-muted)", marginTop: "6px", lineHeight: 1.5, margin: "6px 0 0" }}>{a.message}</p>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", borderTop: "1px dashed rgba(255,255,255,0.08)", paddingTop: "10px" }}>
-                    <span style={{ fontSize: "12px", color: "#64748B" }}>
-                      {isBill ? <>Amount: <strong style={{ color: "#FFFFFF" }}>₹{a.readingValue}</strong></> : <>{t("alerts.reading")}: <strong style={{ color: "#FFFFFF" }}>{a.readingValue} L</strong></>}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", borderTop: "1px dashed var(--admin-border-muted)", paddingTop: "10px" }}>
+                    <span style={{ fontSize: "12px", color: "var(--admin-text-muted)" }}>
+                      {isBill ? <>Amount: <strong style={{ color: "var(--admin-text-white)" }}>₹{a.readingValue}</strong></> : <>{t("alerts.reading")}: <strong style={{ color: "var(--admin-text-white)" }}>{a.readingValue} L</strong></>}
                     </span>
 
                     {!a.isRead && (
                       <button onClick={() => handleMarkAsRead(a.id)}
-                        style={{ fontSize: "12px", fontWeight: 600, color: "#34D399", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "6px", padding: "4px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", fontFamily: "inherit" }}>
+                        style={{ fontSize: "12px", fontWeight: 600, color: "var(--admin-success-text)", background: "var(--admin-success-bg)", border: "1px solid var(--admin-success-border)", borderRadius: "6px", padding: "4px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", fontFamily: "inherit" }}>
                         <CheckCircle size={12} /> {t("alerts.markRead")}
                       </button>
                     )}

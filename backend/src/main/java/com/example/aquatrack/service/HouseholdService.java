@@ -39,6 +39,7 @@ public class HouseholdService {
         household.setFlatSize(request.getFlatSize());
         household.setOccupancy(request.getOccupancy());
         household.setResidentEmail(request.getResidentEmail());
+        household.setResidentPhone(request.getResidentPhone());
         if (request.getHasWorkingMeter() != null) {
             household.setHasWorkingMeter(request.getHasWorkingMeter());
         }
@@ -65,6 +66,7 @@ public class HouseholdService {
         household.setFlatSize(request.getFlatSize());
         household.setOccupancy(request.getOccupancy());
         household.setResidentEmail(request.getResidentEmail());
+        household.setResidentPhone(request.getResidentPhone());
         if (request.getHasWorkingMeter() != null) {
             household.setHasWorkingMeter(request.getHasWorkingMeter());
         }

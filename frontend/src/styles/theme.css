@@ -33,12 +33,23 @@
   --admin-color: #E2E8F0;
   --admin-card-bg: rgba(17, 26, 42, 0.75);
   --admin-card-border: rgba(255, 255, 255, 0.09);
+  --admin-card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
   --admin-input-bg: rgba(13, 22, 36, 0.9);
   --admin-input-border: rgba(255, 255, 255, 0.12);
   --admin-text-white: #FFFFFF;
   --admin-text-muted: #94A3B8;
   --admin-border-muted: rgba(255, 255, 255, 0.08);
   --admin-table-hover: rgba(255, 255, 255, 0.03);
+  --admin-table-header-bg: rgba(7, 12, 22, 0.6);
+  --admin-modal-bg: #0F172A;
+  --admin-modal-border: rgba(255, 255, 255, 0.15);
+  --admin-modal-backdrop: rgba(0, 0, 0, 0.75);
+  --admin-tooltip-bg: rgba(8, 15, 28, 0.97);
+  --admin-tooltip-border: rgba(56, 189, 248, 0.35);
+  --admin-tooltip-color: #FFFFFF;
+  --admin-logo-gradient: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 100%);
+  --admin-subcard-bg: rgba(255, 255, 255, 0.03);
+  --admin-subcard-border: rgba(255, 255, 255, 0.06);
 
   /* Legacy compatibility maps */
   --at-limestone: #090E17;
@@ -61,25 +72,49 @@
   --at-border-light: rgba(255, 255, 255, 0.08);
   --at-bg-hover: rgba(255, 255, 255, 0.04);
   --at-hero-desc: rgba(226, 232, 240, 0.8);
+  --at-btn-secondary-bg: rgba(255, 255, 255, 0.05);
+  --at-btn-secondary-border: rgba(255, 255, 255, 0.12);
+  --at-btn-secondary-hover-bg: rgba(255, 255, 255, 0.1);
+
+  /* Semantic Color Tokens */
+  --admin-accent: #38BDF8;
+  --admin-error-bg: rgba(244, 63, 94, 0.12);
+  --admin-error-border: rgba(244, 63, 94, 0.3);
+  --admin-error-text: #F87171;
+  --admin-success-bg: rgba(16, 185, 129, 0.12);
+  --admin-success-border: rgba(16, 185, 129, 0.3);
+  --admin-success-text: #34D399;
+  --admin-warning-text: #FBBF24;
 }
 
 /* Light Theme Mode */
-.admin-light, .light-theme {
-  --admin-bg: #F8FAFC;
-  --admin-sidebar-bg: rgba(255, 255, 255, 0.9);
-  --admin-sidebar-border: rgba(0, 0, 0, 0.08);
-  --admin-header-bg: rgba(255, 255, 255, 0.85);
+.admin-light, .light-theme, [data-theme="light"] {
+  --admin-bg: #F1F5F9;
+  --admin-sidebar-bg: rgba(255, 255, 255, 0.95);
+  --admin-sidebar-border: #E2E8F0;
+  --admin-header-bg: rgba(255, 255, 255, 0.9);
   --admin-color: #334155;
-  --admin-card-bg: rgba(255, 255, 255, 0.85);
-  --admin-card-border: rgba(0, 0, 0, 0.08);
-  --admin-input-bg: #F1F5F9;
-  --admin-input-border: rgba(0, 0, 0, 0.12);
+  --admin-card-bg: #FFFFFF;
+  --admin-card-border: #E2E8F0;
+  --admin-card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --admin-input-bg: #F8FAFC;
+  --admin-input-border: #CBD5E1;
   --admin-text-white: #0F172A;
   --admin-text-muted: #64748B;
-  --admin-border-muted: rgba(0, 0, 0, 0.08);
-  --admin-table-hover: rgba(0, 0, 0, 0.025);
+  --admin-border-muted: #E2E8F0;
+  --admin-table-hover: #F8FAFC;
+  --admin-table-header-bg: #F8FAFC;
+  --admin-modal-bg: #FFFFFF;
+  --admin-modal-border: #E2E8F0;
+  --admin-modal-backdrop: rgba(15, 23, 42, 0.4);
+  --admin-tooltip-bg: #FFFFFF;
+  --admin-tooltip-border: #CBD5E1;
+  --admin-tooltip-color: #0F172A;
+  --admin-logo-gradient: linear-gradient(135deg, #0F172A 0%, #0284C7 100%);
+  --admin-subcard-bg: #F8FAFC;
+  --admin-subcard-border: #E2E8F0;
 
-  --at-limestone: #F8FAFC;
+  --at-limestone: #F1F5F9;
   --at-limestone-deep: #FFFFFF;
   --at-ink: #0F172A;
   --at-ink-deep: #020617;
@@ -88,15 +123,29 @@
   --at-brass: #D97706;
   --at-white: #FFFFFF;
 
-  --at-nav-bg: rgba(255, 255, 255, 0.9);
+  --at-nav-bg: rgba(255, 255, 255, 0.92);
   --at-nav-text: #334155;
   --at-stat-bg: #FFFFFF;
   --at-stat-text: #64748B;
   --at-text-muted: #64748B;
   --at-text-muted-deep: #475569;
   --at-text-body: #1E293B;
-  --at-border-light: rgba(0, 0, 0, 0.08);
-  --at-bg-hover: rgba(0, 0, 0, 0.03);
+  --at-border-light: #E2E8F0;
+  --at-bg-hover: #F1F5F9;
+
+  --at-btn-secondary-bg: #F1F5F9;
+  --at-btn-secondary-border: #CBD5E1;
+  --at-btn-secondary-hover-bg: #E2E8F0;
+
+  /* Semantic Color Tokens - Light */
+  --admin-accent: #0284C7;
+  --admin-error-bg: rgba(239, 68, 68, 0.08);
+  --admin-error-border: rgba(239, 68, 68, 0.25);
+  --admin-error-text: #DC2626;
+  --admin-success-bg: rgba(16, 185, 129, 0.08);
+  --admin-success-border: rgba(16, 185, 129, 0.25);
+  --admin-success-text: #059669;
+  --admin-warning-text: #D97706;
 }
 
 /* =========================================================
@@ -175,6 +224,23 @@ body {
   left: 35%;
   background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(56, 189, 248, 0.1) 70%, transparent 100%);
   animation-delay: -12s;
+}
+
+/* Light Mode Soft Glow Adjustments */
+.admin-light .glow-blob, .light-theme .glow-blob, [data-theme="light"] .glow-blob {
+  opacity: 0.25;
+}
+
+.admin-light .glow-blob-1, .light-theme .glow-blob-1, [data-theme="light"] .glow-blob-1 {
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(99, 102, 241, 0.1) 70%, transparent 100%);
+}
+
+.admin-light .glow-blob-2, .light-theme .glow-blob-2, [data-theme="light"] .glow-blob-2 {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.1) 70%, transparent 100%);
+}
+
+.admin-light .glow-blob-3, .light-theme .glow-blob-3, [data-theme="light"] .glow-blob-3 {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(56, 189, 248, 0.08) 70%, transparent 100%);
 }
 
 @keyframes floatGlow {
@@ -281,7 +347,7 @@ body {
 }
 
 .admin-sidebar-logo:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--admin-table-hover);
 }
 
 .admin-sidebar-logo-text {
@@ -289,7 +355,7 @@ body {
   font-weight: 800;
   color: var(--admin-text-white);
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 100%);
+  background: var(--admin-logo-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -564,8 +630,8 @@ body {
 }
 
 .saas-btn-secondary, .at-btn-outline {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--at-btn-secondary-bg);
+  border: 1px solid var(--at-btn-secondary-border);
   color: var(--admin-text-white);
   font-weight: 500;
   font-size: 14px;
@@ -580,8 +646,8 @@ body {
 }
 
 .saas-btn-secondary:hover, .at-btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: var(--at-btn-secondary-hover-bg);
+  border-color: var(--at-btn-secondary-border);
   transform: translateY(-1px);
 }
 
@@ -598,8 +664,8 @@ body {
 }
 
 .saas-input:focus, input:focus, select:focus, textarea:focus {
-  border-color: #38BDF8;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+  border-color: var(--admin-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-accent) 20%, transparent);
 }
 
 /* Status Badges */
@@ -676,7 +742,7 @@ table {
 }
 
 thead tr {
-  background: rgba(7, 12, 22, 0.6);
+  background: var(--admin-table-header-bg);
   border-bottom: 1px solid var(--admin-card-border);
   color: var(--admin-text-muted);
   font-size: 12px;
@@ -691,7 +757,8 @@ th {
 
 td {
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--admin-border-muted);
+  color: var(--admin-color);
 }
 
 tbody tr {
@@ -706,7 +773,7 @@ tbody tr:hover {
 .saas-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: var(--admin-modal-backdrop);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
@@ -717,14 +784,14 @@ tbody tr:hover {
 }
 
 .saas-modal-content {
-  background: #0F172A;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--admin-modal-bg);
+  border: 1px solid var(--admin-modal-border);
   border-radius: 20px;
   padding: 32px;
   width: 90%;
   max-width: 520px;
-  color: #FFFFFF;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  color: var(--admin-text-white);
+  box-shadow: var(--admin-card-shadow);
 }
 
 /* =========================================================
@@ -747,4 +814,110 @@ tbody tr:hover {
   .admin-header {
     padding: 0 16px;
   }
+}
+
+/* =========================================================
+   Comprehensive Light Mode Overrides
+   Fixes any remaining dark backgrounds / invisible text
+   ========================================================= */
+
+/* Notification / Theme toggle button in light mode */
+.admin-light .admin-notification-btn,
+[data-theme="light"] .admin-notification-btn,
+.light-theme .admin-notification-btn {
+  background: #F1F5F9;
+  border-color: #E2E8F0;
+  color: #64748B;
+}
+
+.admin-light .admin-notification-btn:hover,
+[data-theme="light"] .admin-notification-btn:hover,
+.light-theme .admin-notification-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+/* Sidebar profile card in light mode */
+.admin-light .admin-sidebar-profile,
+[data-theme="light"] .admin-sidebar-profile,
+.light-theme .admin-sidebar-profile {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+/* Sidebar item hover in light mode */
+.admin-light .admin-sidebar-item:hover,
+[data-theme="light"] .admin-sidebar-item:hover,
+.light-theme .admin-sidebar-item:hover {
+  background: #F1F5F9;
+  border-color: #E2E8F0;
+}
+
+/* Override Tailwind text-white classes in light mode so hero text is dark */
+.admin-light .text-white\/85,
+[data-theme="light"] .text-white\/85,
+.light-theme .text-white\/85 {
+  color: rgba(15, 23, 42, 0.85) !important;
+}
+
+/* Scrollbar styling for light mode */
+.admin-light ::-webkit-scrollbar-track,
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+.admin-light ::-webkit-scrollbar-thumb,
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+}
+
+.admin-light ::-webkit-scrollbar-thumb:hover,
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Dashboard KPI and chart card containers that still have dark inline backgrounds */
+.admin-light .admin-content,
+[data-theme="light"] .admin-content {
+  background: var(--admin-bg);
+}
+
+/* Fix placeholder text color in light mode inputs */
+.admin-light input::placeholder,
+[data-theme="light"] input::placeholder,
+.light-theme input::placeholder {
+  color: #94A3B8;
+}
+
+/* Fix select dropdown option colors in light mode */
+.admin-light select option,
+[data-theme="light"] select option,
+.light-theme select option {
+  background: #FFFFFF;
+  color: #0F172A;
+}
+
+/* Fix the admin-select-month dropdown in light mode */
+.admin-light .admin-select-month,
+[data-theme="light"] .admin-select-month {
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+/* Fix BackToDashboard button and similar ghost buttons */
+.admin-light a,
+[data-theme="light"] a {
+  color: var(--admin-accent);
+}
+
+/* Ensure thead rows get correct light background */
+.admin-light thead tr,
+[data-theme="light"] thead tr {
+  background: var(--admin-table-header-bg);
+}
+
+/* Fix table border colors */
+.admin-light td,
+[data-theme="light"] td {
+  border-bottom-color: var(--admin-border-muted);
 }

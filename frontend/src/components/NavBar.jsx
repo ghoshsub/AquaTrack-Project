@@ -90,9 +90,9 @@ export default function NavBar({ page, setPage, auth, theme, toggleTheme }) {
                 fontSize: "22px",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
-                background: "linear-gradient(135deg, #FFFFFF 0%, #38BDF8 100%)",
+                background: "var(--admin-logo-gradient)",
                 WebkitBackgroundClip: "text",
-                WebkitTextFillColor: isDark ? "transparent" : "#0F172A",
+                WebkitTextFillColor: "transparent",
                 lineHeight: 1.1,
               }}
             >

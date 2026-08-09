@@ -49,7 +49,7 @@ export default function FormShell({ title, subtitle, children }) {
               fontSize: "22px",
               fontWeight: 800,
               letterSpacing: "-0.02em",
-              background: "linear-gradient(135deg, #FFFFFF 0%, #38BDF8 100%)",
+              background: "var(--admin-logo-gradient)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -61,13 +61,13 @@ export default function FormShell({ title, subtitle, children }) {
         {/* Card */}
         <div
           style={{
-            background: "rgba(17, 26, 42, 0.85)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "var(--admin-card-bg)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "20px",
             padding: "36px 32px",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5), 0 0 60px -20px rgba(56,189,248,0.1)",
+            boxShadow: "var(--admin-card-shadow)",
           }}
         >
           {/* Title */}
@@ -76,7 +76,7 @@ export default function FormShell({ title, subtitle, children }) {
               style={{
                 fontSize: "26px",
                 fontWeight: 700,
-                color: "#FFFFFF",
+                color: "var(--admin-text-white)",
                 letterSpacing: "-0.02em",
                 margin: "0 0 8px 0",
               }}
@@ -86,7 +86,7 @@ export default function FormShell({ title, subtitle, children }) {
             <p
               style={{
                 fontSize: "14px",
-                color: "#94A3B8",
+                color: "var(--admin-text-muted)",
                 margin: 0,
                 lineHeight: 1.5,
               }}
@@ -107,7 +107,7 @@ export default function FormShell({ title, subtitle, children }) {
             gap: "6px",
             marginTop: "20px",
             fontSize: "12px",
-            color: "#64748B",
+            color: "var(--admin-text-muted)",
           }}
         >
           <Lock size={12} />

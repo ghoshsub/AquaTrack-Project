@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import "./styles/theme.css";
 
@@ -46,11 +46,29 @@ export default function App() {
   const { t } = useTranslation();
   const [page, setPage] = useState("home");
   const [auth, setAuth] = useState(null); // { token, username, role } | null
-  const [dashboardMonth, setDashboardMonth] = useState("2026-07"); // Sync month globally
+  const [dashboardMonth, setDashboardMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  }); // Sync month globally — defaults to current month
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("at-theme") || "dark";
   });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    if (theme === "light") {
+      document.documentElement.classList.add("light-theme", "admin-light");
+      document.documentElement.classList.remove("dark-theme");
+      document.body.classList.add("light-theme", "admin-light");
+      document.body.classList.remove("dark-theme");
+    } else {
+      document.documentElement.classList.add("dark-theme");
+      document.documentElement.classList.remove("light-theme", "admin-light");
+      document.body.classList.add("dark-theme");
+      document.body.classList.remove("light-theme", "admin-light");
+    }
+  }, [theme]);
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
@@ -162,7 +180,7 @@ export default function App() {
                   fontSize: "20px",
                   fontWeight: 800,
                   letterSpacing: "-0.03em",
-                  background: "linear-gradient(135deg, #FFFFFF 0%, #38BDF8 100%)",
+                  background: "var(--admin-logo-gradient)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   lineHeight: 1.1,
@@ -243,17 +261,6 @@ export default function App() {
               {t("sidebar.tariffs")}
             </button>
 
-            {/* Reports: View-only toast placeholder or dashboard indicator */}
-            <button
-              onClick={() => {
-                alert(t("common.reportsComing"));
-              }}
-              className="admin-sidebar-item"
-            >
-              <BarChart3 size={18} />
-              {t("sidebar.reports")}
-            </button>
-
             <button
               onClick={() => handlePageChange("profile")}
               className={`admin-sidebar-item ${activePage === "profile" ? "active" : ""}`}
@@ -285,14 +292,6 @@ export default function App() {
           {/* Header */}
           <header className="admin-header">
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <button
-                className="admin-notification-btn"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                style={{ padding: "4px" }}
-                title={t("adminHeader.toggleNav")}
-              >
-                <Menu size={20} />
-              </button>
               <div className="admin-header-title-container">
                 <span className="admin-header-title">{headerMeta.title}</span>
                 <span className="admin-header-subtitle">{headerMeta.subtitle}</span>
@@ -313,26 +312,25 @@ export default function App() {
                 {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
               </button>
 
-              {/* Month Selector synchronised globally */}
+              {/* Month Selector — dynamically generates last 12 months so any billing cycle month is selectable */}
               <select
                 className="admin-select-month"
                 value={dashboardMonth}
                 onChange={(e) => setDashboardMonth(e.target.value)}
               >
-                <option value="2026-07">July 2026</option>
-                <option value="2026-06">June 2026</option>
-                <option value="2026-05">May 2026</option>
-                <option value="2026-04">April 2026</option>
+                {(() => {
+                  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+                  const options = [];
+                  const now = new Date();
+                  for (let i = 0; i < 12; i++) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+                    const label = `${months[d.getMonth()]} ${d.getFullYear()}`;
+                    options.push(<option key={val} value={val}>{label}</option>);
+                  }
+                  return options;
+                })()}
               </select>
-
-              <button className="admin-notification-btn">
-                <Bell size={18} />
-                <span className="admin-notification-badge">3</span>
-              </button>
-
-              <div className="admin-header-avatar">
-                {auth.username ? auth.username.charAt(0).toUpperCase() : "A"}
-              </div>
             </div>
           </header>
 

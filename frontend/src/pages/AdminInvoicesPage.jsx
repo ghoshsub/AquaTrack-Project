@@ -14,17 +14,18 @@ function formatLiters(value) {
 }
 
 const inputBase = {
-  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.14)",
-  color: "#FFFFFF", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+  width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
   fontFamily: "inherit", outline: "none", boxSizing: "border-box",
   transition: "all 0.2s ease",
 };
 
 const cardStyle = {
-  background: "rgba(17,26,42,0.9)",
-  border: "1px solid rgba(255,255,255,0.12)",
+  background: "var(--admin-card-bg)",
+  border: "1px solid var(--admin-card-border)",
   borderRadius: "20px",
   backdropFilter: "blur(20px)",
+  boxShadow: "var(--admin-card-shadow)",
 };
 
 function StatCard({ title, label, value, sub, color, icon: Icon }) {
@@ -32,15 +33,15 @@ function StatCard({ title, label, value, sub, color, icon: Icon }) {
   return (
     <div style={{ ...cardStyle, padding: "20px", flex: 1, minWidth: "180px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-        <span style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#94A3B8" }}>{displayTitle}</span>
+        <span style={{ fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)" }}>{displayTitle}</span>
         {Icon && (
           <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: `${color}18`, border: `1px solid ${color}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Icon size={18} color={color} />
           </div>
         )}
       </div>
-      <div style={{ fontSize: "24px", fontWeight: 800, color: color || "#FFFFFF", letterSpacing: "-0.02em" }}>{value}</div>
-      <div style={{ fontSize: "12px", color: "#64748B", marginTop: "4px" }}>{sub}</div>
+      <div style={{ fontSize: "24px", fontWeight: 800, color: color || "var(--admin-text-white)", letterSpacing: "-0.02em" }}>{value}</div>
+      <div style={{ fontSize: "12px", color: "var(--admin-text-muted)", marginTop: "4px" }}>{sub}</div>
     </div>
   );
 }
@@ -175,7 +176,7 @@ export default function AdminInvoicesPage({ auth, setPage }) {
               <Coins size={24} color="#A78BFA" />
             </div>
             <div>
-              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("invoices.title")}</h1>
+              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0, letterSpacing: "-0.02em" }}>{t("invoices.title")}</h1>
               <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("invoices.subheading")}</p>
             </div>
           </div>

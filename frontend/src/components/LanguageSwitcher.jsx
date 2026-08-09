@@ -49,7 +49,7 @@ export default function LanguageSwitcher({ compact = false }) {
           background: "rgba(56, 189, 248, 0.10)",
           border: "1px solid rgba(56, 189, 248, 0.30)",
           borderRadius: "8px",
-          color: "var(--at-text, #e2e8f0)",
+          color: "var(--admin-text-white)",
           cursor: "pointer",
           fontSize: "13px",
           fontWeight: 600,
@@ -88,10 +88,10 @@ export default function LanguageSwitcher({ compact = false }) {
             top: "calc(100% + 6px)",
             right: 0,
             minWidth: "140px",
-            background: "rgba(15, 23, 42, 0.96)",
-            border: "1px solid rgba(56, 189, 248, 0.22)",
+            background: "var(--admin-card-bg)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "10px",
-            boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
+            boxShadow: "var(--admin-card-shadow)",
             padding: "6px",
             zIndex: 9999,
             listStyle: "none",
@@ -120,7 +120,7 @@ export default function LanguageSwitcher({ compact = false }) {
                   border: "none",
                   borderRadius: "7px",
                   color:
-                    i18n.language === lang.code ? "#38BDF8" : "#e2e8f0",
+                    i18n.language === lang.code ? "#38BDF8" : "var(--admin-text-white)",
                   cursor: "pointer",
                   fontSize: "13px",
                   fontWeight: i18n.language === lang.code ? 700 : 500,
@@ -129,7 +129,7 @@ export default function LanguageSwitcher({ compact = false }) {
                 }}
                 onMouseEnter={(e) => {
                   if (i18n.language !== lang.code) {
-                    e.currentTarget.style.background = "rgba(56,189,248,0.07)";
+                    e.currentTarget.style.background = "var(--admin-subcard-bg)";
                   }
                 }}
                 onMouseLeave={(e) => {

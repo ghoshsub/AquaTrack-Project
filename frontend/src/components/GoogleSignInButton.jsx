@@ -52,7 +52,7 @@ export default function GoogleSignInButton({ onAuthed, onError }) {
 
         const containerWidth = buttonRef.current.parentElement?.clientWidth || 360;
         window.google.accounts.id.renderButton(buttonRef.current, {
-          theme: "filled_black",
+          theme: "outline",
           size: "large",
           width: containerWidth,
           text: "continue_with",
@@ -97,7 +97,8 @@ export default function GoogleSignInButton({ onAuthed, onError }) {
           display: googleLoaded ? "block" : "none",
           borderRadius: "12px",
           overflow: "hidden",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+          boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08)",
+          background: "#FFFFFF",
         }}
       />
 
@@ -108,11 +109,11 @@ export default function GoogleSignInButton({ onAuthed, onError }) {
           onClick={handleCustomClick}
           style={{
             width: "100%",
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.16)",
+            background: "#FFFFFF",
+            border: "1px solid #CBD5E1",
             borderRadius: "12px",
             padding: "12px 16px",
-            color: "#FFFFFF",
+            color: "#0F172A",
             fontWeight: 600,
             fontSize: "14px",
             fontFamily: "inherit",
@@ -121,17 +122,17 @@ export default function GoogleSignInButton({ onAuthed, onError }) {
             alignItems: "center",
             justifyContent: "center",
             gap: "12px",
-            boxShadow: "0 4px 14px rgba(0, 0, 0, 0.25)",
+            boxShadow: "0 2px 8px rgba(15, 23, 42, 0.08)",
             transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-            e.currentTarget.style.borderColor = "rgba(56, 189, 248, 0.4)";
+            e.currentTarget.style.background = "#F8FAFC";
+            e.currentTarget.style.borderColor = "#94A3B8";
             e.currentTarget.style.transform = "translateY(-1px)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
-            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.16)";
+            e.currentTarget.style.background = "#FFFFFF";
+            e.currentTarget.style.borderColor = "#CBD5E1";
             e.currentTarget.style.transform = "translateY(0)";
           }}
         >

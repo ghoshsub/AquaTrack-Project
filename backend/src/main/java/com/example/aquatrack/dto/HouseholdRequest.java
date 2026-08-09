@@ -26,7 +26,14 @@ public class HouseholdRequest {
     @Positive
     private Integer occupancy;
 
+    @jakarta.validation.constraints.Email(message = "Resident email must be a valid email address.")
     private String residentEmail;
+
+    @jakarta.validation.constraints.Pattern(
+        regexp = "^$|^[0-9]{10}$",
+        message = "Phone number must be exactly 10 digits."
+    )
+    private String residentPhone;
 
     private Boolean hasWorkingMeter = true;
 

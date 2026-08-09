@@ -5,6 +5,7 @@ import com.example.aquatrack.model.Apartment;
 import com.example.aquatrack.model.TariffPlan;
 import com.example.aquatrack.model.User;
 import com.example.aquatrack.repository.ApartmentRepository;
+import com.example.aquatrack.repository.BillingCycleRepository;
 import com.example.aquatrack.repository.TariffPlanRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +17,16 @@ public class ApartmentService {
 
     private final ApartmentRepository apartmentRepository;
     private final TariffPlanRepository tariffPlanRepository;
+    private final BillingCycleRepository billingCycleRepository;
     private final AdminResolver adminResolver;
 
     public ApartmentService(ApartmentRepository apartmentRepository,
                             TariffPlanRepository tariffPlanRepository,
+                            BillingCycleRepository billingCycleRepository,
                             AdminResolver adminResolver) {
         this.apartmentRepository = apartmentRepository;
         this.tariffPlanRepository = tariffPlanRepository;
+        this.billingCycleRepository = billingCycleRepository;
         this.adminResolver = adminResolver;
     }
 
@@ -104,11 +108,26 @@ public class ApartmentService {
         return findById(id);
     }
 
+    @Transactional
     public void deleteById(Long id) {
         adminResolver.requireAdmin();
-        if (!apartmentRepository.existsById(id)) {
-            throw new IllegalArgumentException("Apartment not found: " + id);
+        Apartment apartment = apartmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Apartment not found: " + id));
+
+        // 1. Delete billing cycles (invoices are cascade-deleted via BillingCycle.invoices)
+        billingCycleRepository.deleteByApartmentId(id);
+
+        // 2. Clear the tariff_plan_id FK on the apartment so TariffPlan can be deleted
+        TariffPlan tariff = apartment.getTariffPlan();
+        apartment.setTariffPlan(null);
+        apartmentRepository.save(apartment);
+
+        // 3. Delete the tariff plan
+        if (tariff != null) {
+            tariffPlanRepository.delete(tariff);
         }
+
+        // 4. Finally delete the apartment (households cascade via Apartment.households)
         apartmentRepository.deleteById(id);
     }
 }

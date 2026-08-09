@@ -9,9 +9,9 @@ import {
 
 const inputStyle = {
   width: "100%",
-  background: "rgba(13, 22, 36, 0.85)",
-  border: "1px solid rgba(255, 255, 255, 0.14)",
-  color: "#FFFFFF",
+  background: "var(--admin-input-bg)",
+  border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)",
   padding: "12px 14px 12px 44px",
   borderRadius: "12px",
   fontSize: "14px",
@@ -125,7 +125,7 @@ export default function LoginPage({ setPage, onAuthed }) {
         padding: "40px 20px 50px",
         position: "relative",
         zIndex: 1,
-        background: "#0B1120",
+        background: "var(--admin-bg)",
         fontFamily: "Inter, sans-serif",
         boxSizing: "border-box",
       }}
@@ -166,8 +166,8 @@ export default function LoginPage({ setPage, onAuthed }) {
           gridTemplateColumns: "1.1fr 1fr",
           borderRadius: "24px",
           overflow: "hidden",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
-          boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 50px -15px rgba(56, 189, 248, 0.15)",
+          border: "1px solid var(--admin-card-border)",
+          boxShadow: "var(--admin-card-shadow)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           position: "relative",
@@ -177,12 +177,12 @@ export default function LoginPage({ setPage, onAuthed }) {
         {/* LEFT COLUMN: Branding & Feature Section */}
         <div
           style={{
-            background: "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(17, 26, 46, 0.9) 100%)",
+            background: "var(--admin-card-bg)",
             padding: "40px 37px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRight: "1px solid var(--admin-card-border)",
             position: "relative",
           }}
         >
@@ -247,7 +247,7 @@ export default function LoginPage({ setPage, onAuthed }) {
               style={{
                 fontSize: "32px",
                 fontWeight: 800,
-                color: "#FFFFFF",
+                color: "var(--admin-text-white)",
                 letterSpacing: "-0.02em",
                 lineHeight: 1.2,
                 margin: "0 0 16px 0",
@@ -256,7 +256,7 @@ export default function LoginPage({ setPage, onAuthed }) {
               {t("hero.loginHeading")}
             </h2>
 
-            <p style={{ fontSize: "15px", color: "#94A3B8", lineHeight: 1.65, margin: "0 0 32px 0" }}>
+            <p style={{ fontSize: "15px", color: "var(--admin-text-muted)", lineHeight: 1.65, margin: "0 0 32px 0" }}>
               {t("hero.subtext")}
             </p>
 
@@ -273,8 +273,8 @@ export default function LoginPage({ setPage, onAuthed }) {
                     display: "flex",
                     alignItems: "center",
                     gap: "14px",
-                    background: "rgba(255, 255, 255, 0.03)",
-                    border: "1px solid rgba(255, 255, 255, 0.07)",
+                    background: "var(--admin-subcard-bg)",
+                    border: "1px solid var(--admin-subcard-border)",
                     borderRadius: "14px",
                     padding: "12px 16px",
                   }}
@@ -295,8 +295,8 @@ export default function LoginPage({ setPage, onAuthed }) {
                     <Icon size={18} color={color} />
                   </div>
                   <div>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF" }}>{title}</div>
-                    <div style={{ fontSize: "12px", color: "#64748B" }}>{desc}</div>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--admin-text-white)" }}>{title}</div>
+                    <div style={{ fontSize: "12px", color: "var(--admin-text-muted)" }}>{desc}</div>
                   </div>
                 </div>
               ))}
@@ -328,7 +328,7 @@ export default function LoginPage({ setPage, onAuthed }) {
         {/* RIGHT COLUMN: Modern Glassmorphism Login Form Card */}
         <div
           style={{
-            background: "rgba(11, 17, 32, 0.9)",
+            background: "var(--admin-card-bg)",
             padding: "40px 39px",
             display: "flex",
             flexDirection: "column",
@@ -340,14 +340,14 @@ export default function LoginPage({ setPage, onAuthed }) {
               style={{
                 fontSize: "26px",
                 fontWeight: 800,
-                color: "#FFFFFF",
+                color: "var(--admin-text-white)",
                 letterSpacing: "-0.02em",
                 margin: "0 0 8px 0",
               }}
             >
               {t("auth.loginTitle")}
             </h1>
-            <p style={{ fontSize: "14px", color: "#94A3B8", margin: 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: "14px", color: "var(--admin-text-muted)", margin: 0, lineHeight: 1.5 }}>
               {t("auth.loginSubtitle")}
             </p>
           </div>
@@ -360,7 +360,7 @@ export default function LoginPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "12px",
                   fontWeight: 600,
-                  color: emailError ? "#F87171" : "#94A3B8",
+                  color: emailError ? "#F87171" : "var(--admin-text-muted)",
                   marginBottom: "8px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
@@ -423,7 +423,7 @@ export default function LoginPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "12px",
                   fontWeight: 600,
-                  color: passwordError ? "#F87171" : "#94A3B8",
+                  color: passwordError ? "#F87171" : "var(--admin-text-muted)",
                   marginBottom: "8px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
@@ -585,7 +585,7 @@ export default function LoginPage({ setPage, onAuthed }) {
           />
 
           {/* Create Account Link */}
-          <p style={{ fontSize: "14px", textAlign: "center", color: "#94A3B8", marginTop: "24px", margin: "24px 0 0 0" }}>
+          <p style={{ fontSize: "14px", textAlign: "center", color: "var(--admin-text-muted)", marginTop: "24px", margin: "24px 0 0 0" }}>
             {t("auth.noAccount")}{" "}
             <button
               onClick={() => setPage("register")}

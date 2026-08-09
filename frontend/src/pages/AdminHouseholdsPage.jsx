@@ -6,12 +6,12 @@ import { listApartments } from "../api/apartmentApi.js";
 import { createHousehold, listHouseholdsByApartment, deleteHousehold, updateHousehold } from "../api/householdApi.js";
 
 const fieldStyle = { display: "flex", flexDirection: "column", gap: "6px" };
-const labelStyle = { fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#94A3B8" };
+const labelStyle = { fontSize: "11.5px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)" };
 const inputBase = {
   width: "100%",
-  background: "rgba(13, 22, 36, 0.9)",
-  border: "1px solid rgba(255, 255, 255, 0.14)",
-  color: "#FFFFFF",
+  background: "var(--admin-input-bg)",
+  border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)",
   padding: "10px 14px",
   borderRadius: "10px",
   fontSize: "14px",
@@ -21,11 +21,19 @@ const inputBase = {
   transition: "all 0.2s ease",
 };
 
-function SaasInput({ type = "text", ...props }) {
+function SaasInput({ type = "text", style: customStyle, onFocus: customFocus, onBlur: customBlur, ...props }) {
   return (
-    <input type={type} style={inputBase} {...props}
-      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
-      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+    <input type={type} style={{ ...inputBase, ...customStyle }} {...props}
+      onFocus={e => {
+        e.target.style.borderColor = customStyle?.borderColor || "var(--admin-accent)";
+        e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)";
+        if (customFocus) customFocus(e);
+      }}
+      onBlur={e => {
+        e.target.style.borderColor = customStyle?.borderColor || "var(--admin-input-border)";
+        e.target.style.boxShadow = "none";
+        if (customBlur) customBlur(e);
+      }}
     />
   );
 }
@@ -33,8 +41,8 @@ function SaasInput({ type = "text", ...props }) {
 function SaasSelect({ children, ...props }) {
   return (
     <select style={inputBase} {...props}
-      onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.18)"; }}
-      onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.14)"; e.target.style.boxShadow = "none"; }}
+      onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+      onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
     >
       {children}
     </select>
@@ -54,12 +62,33 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
   const [flatSize, setFlatSize] = useState("");
   const [occupancy, setOccupancy] = useState("");
   const [residentEmail, setResidentEmail] = useState("");
+  const [residentPhone, setResidentPhone] = useState("");
   const [hasWorkingMeter, setHasWorkingMeter] = useState(true);
   const [dailyUsageThreshold, setDailyUsageThreshold] = useState("500.00");
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingHouseholdId, setEditingHouseholdId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+
+  // Inline validation
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
+  function validateEmail(val) {
+    if (!val || !val.trim()) return "";
+    const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!EMAIL_RE.test(val.trim())) return "Enter a valid email address (e.g. resident@example.com).";
+    return "";
+  }
+
+  function validatePhone(val) {
+    if (!val || !val.trim()) return "";
+    const clean = val.replace(/[^0-9]/g, "");
+    if (clean.length !== 10) {
+      return "Phone number must be exactly 10 digits.";
+    }
+    return "";
+  }
 
   useEffect(() => {
     async function loadApartments() {
@@ -102,20 +131,25 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
 
   function resetForm() {
     setEditingHouseholdId(null);
-    setFlatNumber(""); setFlatSize(""); setOccupancy(""); setResidentEmail("");
+    setFlatNumber(""); setFlatSize(""); setOccupancy(""); setResidentEmail(""); setResidentPhone("");
     setHasWorkingMeter(true); setDailyUsageThreshold("500.00");
-    setShowForm(false); setFormError("");
+    setShowForm(false); setFormError(""); setEmailError(""); setPhoneError("");
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
+    const eErr = validateEmail(residentEmail);
+    const pErr = validatePhone(residentPhone);
+    setEmailError(eErr);
+    setPhoneError(pErr);
+    if (eErr || pErr) return;
     setFormError("");
     setSubmitting(true);
     try {
       const payload = {
         apartmentId: Number(selectedApartmentId),
         flatNumber, flatSize: Number(flatSize) || 2, occupancy: Number(occupancy) || 3,
-        residentEmail, hasWorkingMeter, dailyUsageThreshold: Number(dailyUsageThreshold) || 500,
+        residentEmail, residentPhone, hasWorkingMeter, dailyUsageThreshold: Number(dailyUsageThreshold) || 500,
         occupantName: residentEmail ? residentEmail.split("@")[0] : `Resident ${flatNumber}`,
         status: "ACTIVE",
       };
@@ -136,8 +170,9 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
   function handleEdit(h) {
     setEditingHouseholdId(h.id);
     setFlatNumber(h.flatNumber); setFlatSize(String(h.flatSize || "")); setOccupancy(String(h.occupancy || ""));
-    setResidentEmail(h.residentEmail || ""); setHasWorkingMeter(h.hasWorkingMeter !== false);
+    setResidentEmail(h.residentEmail || ""); setResidentPhone(h.residentPhone || ""); setHasWorkingMeter(h.hasWorkingMeter !== false);
     setDailyUsageThreshold(String(h.dailyUsageThreshold ?? "500.00"));
+    setEmailError(""); setPhoneError("");
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -168,8 +203,8 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
               <Home size={24} color="#34D399" />
             </div>
             <div>
-              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("households.title")}</h1>
-              <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("households.subheading")}</p>
+              <h1 style={{ fontSize: "26px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0, letterSpacing: "-0.02em" }}>{t("households.title")}</h1>
+              <p style={{ fontSize: "13.5px", color: "var(--admin-text-muted)", margin: "2px 0 0" }}>{t("households.subheading")}</p>
             </div>
           </div>
         </div>
@@ -177,7 +212,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
           {apartments.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ fontSize: "13px", color: "#94A3B8", fontWeight: 600 }}>{t("households.apartment")}:</span>
+              <span style={{ fontSize: "13px", color: "var(--admin-text-muted)", fontWeight: 600 }}>{t("households.apartment")}:</span>
               <SaasSelect value={selectedApartmentId} onChange={e => setSelectedApartmentId(e.target.value)} style={{ minWidth: "200px" }}>
                 {apartments.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
               </SaasSelect>
@@ -208,9 +243,9 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
       )}
 
       {!apartmentsError && apartments.length === 0 && !loadingHouseholds && (
-        <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "48px", textAlign: "center" }}>
-          <Building2 size={44} color="#334155" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
-          <p style={{ color: "#94A3B8", fontSize: "15px" }}>
+        <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-card-border)", borderRadius: "20px", padding: "48px", textAlign: "center" }}>
+          <Building2 size={44} color="var(--admin-text-muted)" style={{ marginBottom: "12px", display: "block", margin: "0 auto 12px" }} />
+          <p style={{ color: "var(--admin-text-muted)", fontSize: "15px" }}>
             {t("households.noHouseholds")}{" "}
             <button onClick={() => setPage("admin-apartments")} style={{ background: "none", border: "none", color: "#38BDF8", fontWeight: 700, cursor: "pointer", fontSize: "15px", textDecoration: "underline" }}>
               {t("apartments.addApartment")}
@@ -221,12 +256,12 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
 
       {/* Form Drawer */}
       {showForm && apartments.length > 0 && (
-        <div style={{ background: "rgba(17,26,42,0.9)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "20px", padding: "32px", backdropFilter: "blur(20px)", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
+        <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-card-border)", borderRadius: "20px", padding: "32px", backdropFilter: "blur(20px)", boxShadow: "var(--admin-card-shadow)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
-            <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
+            <h2 style={{ fontSize: "18px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>
               {editingHouseholdId ? t("households.editHousehold") : t("households.addHousehold")}
             </h2>
-            <button onClick={resetForm} style={{ background: "rgba(255,255,255,0.06)", border: "none", color: "#94A3B8", borderRadius: "8px", padding: "6px", cursor: "pointer", display: "flex" }}><X size={18} /></button>
+            <button onClick={resetForm} style={{ background: "var(--admin-subcard-bg)", border: "1px solid var(--admin-card-border)", color: "var(--admin-text-muted)", borderRadius: "8px", padding: "6px", cursor: "pointer", display: "flex" }}><X size={18} /></button>
           </div>
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div>
@@ -252,7 +287,32 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                 </div>
                 <div style={fieldStyle}>
                   <label style={labelStyle}>{t("households.residentEmail")}</label>
-                  <SaasInput type="email" value={residentEmail} onChange={e => setResidentEmail(e.target.value)} placeholder="resident@example.com" />
+                  <SaasInput
+                    type="text"
+                    value={residentEmail}
+                    onChange={e => { setResidentEmail(e.target.value); if (emailError) setEmailError(validateEmail(e.target.value)); }}
+                    onBlur={e => setEmailError(validateEmail(e.target.value))}
+                    placeholder="resident@example.com"
+                    style={emailError ? { borderColor: "#F87171" } : undefined}
+                  />
+                  {emailError && <span style={{ fontSize: "12px", color: "#F87171", marginTop: "2px" }}>⚠ {emailError}</span>}
+                </div>
+                <div style={fieldStyle}>
+                  <label style={labelStyle}>Resident Phone</label>
+                  <SaasInput
+                    type="text"
+                    maxLength={10}
+                    value={residentPhone}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                      setResidentPhone(val);
+                      setPhoneError(validatePhone(val));
+                    }}
+                    onBlur={e => setPhoneError(validatePhone(e.target.value))}
+                    placeholder="e.g. 9876543210"
+                    style={phoneError ? { borderColor: "#F87171" } : undefined}
+                  />
+                  {phoneError && <span style={{ fontSize: "12px", color: "#F87171", marginTop: "2px" }}>⚠ {phoneError}</span>}
                 </div>
                 <div style={fieldStyle}>
                   <label style={labelStyle}>{t("households.hasMeter")}</label>
@@ -273,10 +333,10 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
               </div>
             )}
             <div style={{ display: "flex", gap: "12px" }}>
-              <button type="submit" disabled={submitting} style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", border: "none", color: "#FFFFFF", fontWeight: 700, fontSize: "14px", padding: "12px 26px", borderRadius: "10px", cursor: submitting ? "not-allowed" : "pointer", boxShadow: "0 4px 14px rgba(16,185,129,0.35)", fontFamily: "inherit" }}>
+              <button type="submit" disabled={submitting || !!emailError || !!phoneError} style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", border: "none", color: "#FFFFFF", fontWeight: 700, fontSize: "14px", padding: "12px 26px", borderRadius: "10px", cursor: (submitting || emailError || phoneError) ? "not-allowed" : "pointer", boxShadow: "0 4px 14px rgba(16,185,129,0.35)", fontFamily: "inherit", transition: "all 0.18s", opacity: (emailError || phoneError) ? 0.6 : 1 }}>
                 {submitting ? t("common.loading") : (editingHouseholdId ? t("households.save") : t("households.addHousehold"))}
               </button>
-              <button type="button" onClick={resetForm} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#94A3B8", fontWeight: 600, fontSize: "14px", padding: "12px 20px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>
+              <button type="button" onClick={resetForm} style={{ background: "var(--admin-subcard-bg)", border: "1px solid var(--admin-card-border)", color: "var(--admin-text-muted)", fontWeight: 600, fontSize: "14px", padding: "12px 20px", borderRadius: "10px", cursor: "pointer", fontFamily: "inherit" }}>
                 {t("households.cancel")}
               </button>
             </div>
@@ -286,10 +346,10 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
 
       {/* Table Container */}
       {apartments.length > 0 && (
-        <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)" }}>
+        <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-card-border)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)", boxShadow: "var(--admin-card-shadow)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>{t("households.title")}</h2>
+              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>{t("households.title")}</h2>
               {selectedApartmentId && apartments.find(a => String(a.id) === selectedApartmentId) && (
                 <span style={{ fontSize: "12px", color: "#34D399", background: "rgba(16,185,129,0.15)", padding: "4px 12px", borderRadius: "16px", border: "1px solid rgba(16,185,129,0.3)", fontWeight: 700 }}>
                   {apartments.find(a => String(a.id) === selectedApartmentId)?.name}
@@ -298,19 +358,20 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
             </div>
 
             <div style={{ position: "relative", width: "100%", maxWidth: "300px" }}>
-              <Search size={16} color="#64748B" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
+              <Search size={16} color="var(--admin-text-muted)" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
               <input
                 type="text"
                 placeholder={t("common.search")}
                 style={{
                   width: "100%",
-                  background: "rgba(13, 22, 36, 0.9)",
-                  border: "1px solid rgba(255, 255, 255, 0.12)",
-                  color: "#FFFFFF",
+                  background: "var(--admin-input-bg)",
+                  border: "1px solid var(--admin-input-border)",
+                  color: "var(--admin-text-white)",
                   padding: "8px 12px 8px 38px",
                   borderRadius: "10px",
                   fontSize: "13px",
                   outline: "none",
+                  fontFamily: "inherit",
                 }}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -329,7 +390,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                 <thead>
-                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  <tr style={{ borderBottom: "1px solid var(--admin-card-border)", color: "var(--admin-text-muted)", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     <th style={{ padding: "14px 16px" }}>ID</th>
                     <th style={{ padding: "14px 16px" }}>{t("households.flatNumber")}</th>
                     <th style={{ padding: "14px 16px" }}>{t("households.flatSize")}</th>
@@ -350,8 +411,8 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                     </tr>
                   ) : (
                     filteredHouseholds.map(h => (
-                      <tr key={h.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", transition: "background 0.18s ease" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.02)"}
+                      <tr key={h.id} style={{ borderBottom: "1px solid var(--admin-border-muted)", transition: "background 0.18s ease" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "var(--admin-table-hover)"}
                         onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                       >
                         <td style={{ padding: "16px" }}>
@@ -362,12 +423,12 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                             <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "rgba(16,185,129,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                               <Home size={15} color="#34D399" />
                             </div>
-                            <span style={{ fontWeight: 700, color: "#FFFFFF", fontSize: "14px" }}>{h.flatNumber}</span>
+                            <span style={{ fontWeight: 700, color: "var(--admin-text-white)", fontSize: "14px" }}>{h.flatNumber}</span>
                           </div>
                         </td>
-                        <td style={{ padding: "16px", color: "#94A3B8", fontSize: "13.5px" }}>{h.flatSize} sq ft</td>
+                        <td style={{ padding: "16px", color: "var(--admin-text-muted)", fontSize: "13.5px" }}>{h.flatSize} sq ft</td>
                         <td style={{ padding: "16px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "#FFFFFF", fontSize: "13.5px", fontWeight: 600 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "5px", color: "var(--admin-text-white)", fontSize: "13.5px", fontWeight: 600 }}>
                             <Users size={14} color="#38BDF8" />
                             {h.occupancy} People
                           </div>
@@ -377,7 +438,7 @@ export default function AdminHouseholdsPage({ auth, setPage }) {
                             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#94A3B8", fontSize: "13px" }}>
                               <Mail size={13} color="#64748B" /> {h.residentEmail}
                             </div>
-                          ) : <span style={{ color: "#475569", fontSize: "13px" }}>{t("common.noResults")}</span>}
+                          ) : <span style={{ color: "var(--admin-text-muted)", fontSize: "13px" }}>{t("common.noResults")}</span>}
                         </td>
                         <td style={{ padding: "16px" }}>
                           {h.hasWorkingMeter !== false ? (

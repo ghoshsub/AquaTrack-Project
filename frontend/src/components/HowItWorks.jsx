@@ -23,13 +23,13 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(13,22,36,0.6)", padding: "80px 0" }}>
+    <section style={{ borderTop: "1px solid var(--admin-card-border)", background: "var(--admin-subcard-bg)", padding: "80px 0" }}>
       <div className="at-container">
         <div style={{ textAlign: "center", maxWidth: "600px", margin: "0 auto 48px" }}>
-          <h2 style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+          <h2 style={{ fontSize: "32px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em" }}>
             {t("howItWorks.heading")}
           </h2>
-          <p style={{ fontSize: "15px", color: "#64748B", marginTop: "10px", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "15px", color: "var(--admin-text-muted)", marginTop: "10px", lineHeight: 1.6 }}>
             {t("howItWorks.subheading")}
           </p>
         </div>
@@ -39,18 +39,19 @@ export default function HowItWorks() {
             <div
               key={s.n}
               style={{
-                background: "rgba(17,26,42,0.6)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
+                boxShadow: "var(--admin-card-shadow)",
                 borderRadius: "16px",
                 padding: "32px 24px",
                 position: "relative",
               }}
             >
-              <div style={{ fontSize: "14px", fontWeight: 800, color: "#38BDF8", background: "rgba(56,189,248,0.1)", padding: "4px 10px", borderRadius: "8px", display: "inline-block", marginBottom: "16px" }}>
+              <div style={{ fontSize: "14px", fontWeight: 800, color: "#0284C7", background: "rgba(56,189,248,0.12)", padding: "4px 10px", borderRadius: "8px", display: "inline-block", marginBottom: "16px" }}>
                 {s.n}
               </div>
-              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#FFFFFF", margin: "0 0 10px" }}>{s.title}</h3>
-              <p style={{ fontSize: "14px", lineHeight: 1.65, color: "#94A3B8", margin: 0 }}>{s.body}</p>
+              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--admin-text-white)", margin: "0 0 10px" }}>{s.title}</h3>
+              <p style={{ fontSize: "14px", lineHeight: 1.65, color: "var(--admin-text-muted)", margin: 0 }}>{s.body}</p>
             </div>
           ))}
         </div>

@@ -19,10 +19,10 @@ export default function CTA({ setPage }) {
             boxShadow: "0 0 80px -20px rgba(56,189,248,0.2)",
           }}
         >
-          <h2 style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", margin: 0 }}>
+          <h2 style={{ fontSize: "32px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em", margin: 0 }}>
             {t("cta.heading")}
           </h2>
-          <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "12px", maxWidth: "500px", margin: "12px auto 0", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "16px", color: "var(--admin-text-muted)", marginTop: "12px", maxWidth: "500px", margin: "12px auto 0", lineHeight: 1.6 }}>
             {t("cta.subheading")}
           </p>
           <button

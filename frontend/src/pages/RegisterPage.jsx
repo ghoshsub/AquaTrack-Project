@@ -9,9 +9,9 @@ import {
 
 const inputStyle = {
   width: "100%",
-  background: "rgba(13, 22, 36, 0.85)",
-  border: "1px solid rgba(255, 255, 255, 0.14)",
-  color: "#FFFFFF",
+  background: "var(--admin-input-bg)",
+  border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)",
   padding: "9px 12px 9px 40px",
   borderRadius: "10px",
   fontSize: "13.5px",
@@ -167,7 +167,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
         padding: "30px 20px 40px",
         position: "relative",
         zIndex: 1,
-        background: "#0B1120",
+        background: "var(--admin-bg)",
         fontFamily: "Inter, sans-serif",
         boxSizing: "border-box",
       }}
@@ -208,8 +208,8 @@ export default function RegisterPage({ setPage, onAuthed }) {
           gridTemplateColumns: "1fr 1fr",
           borderRadius: "22px",
           overflow: "hidden",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
-          boxShadow: "0 20px 50px -15px rgba(0, 0, 0, 0.7), 0 0 40px -15px rgba(56, 189, 248, 0.15)",
+          border: "1px solid var(--admin-card-border)",
+          boxShadow: "var(--admin-card-shadow)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
           position: "relative",
@@ -219,12 +219,12 @@ export default function RegisterPage({ setPage, onAuthed }) {
         {/* LEFT COLUMN: AquaTrack Branding & Information Section */}
         <div
           style={{
-            background: "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(17, 26, 46, 0.9) 100%)",
+            background: "var(--admin-card-bg)",
             padding: "36px 32px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRight: "1px solid var(--admin-card-border)",
           }}
         >
           <div>
@@ -288,7 +288,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
               style={{
                 fontSize: "25px",
                 fontWeight: 800,
-                color: "#FFFFFF",
+                color: "var(--admin-text-white)",
                 letterSpacing: "-0.02em",
                 lineHeight: 1.25,
                 margin: "0 0 12px 0",
@@ -297,7 +297,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
               {t("hero.subheading")}
             </h2>
 
-            <p style={{ fontSize: "13.5px", color: "#94A3B8", lineHeight: 1.6, margin: "0 0 22px 0" }}>
+            <p style={{ fontSize: "13.5px", color: "var(--admin-text-muted)", lineHeight: 1.6, margin: "0 0 22px 0" }}>
               {t("hero.subtext")}
             </p>
 
@@ -309,7 +309,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
                 t("features.f3Desc"),
                 t("features.f4Desc"),
               ].map((benefit, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "#E2E8F0" }}>
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "var(--admin-text-white)" }}>
                   <div
                     style={{
                       width: "20px",
@@ -351,7 +351,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
         {/* RIGHT COLUMN: Compact Glass Signup Form Card */}
         <div
           style={{
-            background: "rgba(11, 17, 32, 0.9)",
+            background: "var(--admin-card-bg)",
             padding: "32px 34px",
             display: "flex",
             flexDirection: "column",
@@ -363,14 +363,14 @@ export default function RegisterPage({ setPage, onAuthed }) {
               style={{
                 fontSize: "23px",
                 fontWeight: 800,
-                color: "#FFFFFF",
+                color: "var(--admin-text-white)",
                 letterSpacing: "-0.02em",
                 margin: "0 0 4px 0",
               }}
             >
               {t("auth.registerTitle")}
             </h1>
-            <p style={{ fontSize: "13px", color: "#94A3B8", margin: 0 }}>
+            <p style={{ fontSize: "13px", color: "var(--admin-text-muted)", margin: 0 }}>
               {t("auth.registerSubtitle")}
             </p>
           </div>
@@ -400,8 +400,8 @@ export default function RegisterPage({ setPage, onAuthed }) {
                       type="button"
                       onClick={() => setRole(value)}
                       style={{
-                        background: selected ? glow : "rgba(255,255,255,0.03)",
-                        border: `1px solid ${selected ? color : "rgba(255,255,255,0.1)"}`,
+                        background: selected ? glow : "var(--admin-subcard-bg)",
+                        border: `1px solid ${selected ? color : "var(--admin-subcard-border)"}`,
                         borderRadius: "10px",
                         padding: "9px 10px",
                         cursor: "pointer",
@@ -412,10 +412,10 @@ export default function RegisterPage({ setPage, onAuthed }) {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
-                        <Icon size={14} color={selected ? color : "#64748B"} />
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: selected ? "#FFF" : "#94A3B8" }}>{label}</span>
+                        <Icon size={14} color={selected ? color : "var(--admin-text-muted)"} />
+                        <span style={{ fontSize: "12px", fontWeight: 700, color: selected ? color : "var(--admin-text-white)" }}>{label}</span>
                       </div>
-                      <div style={{ fontSize: "10.5px", color: "#64748B", lineHeight: 1.3 }}>{desc}</div>
+                      <div style={{ fontSize: "10.5px", color: "var(--admin-text-muted)", lineHeight: 1.3 }}>{desc}</div>
                     </button>
                   );
                 })}
@@ -429,7 +429,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: usernameError ? "#F87171" : "#94A3B8",
+                  color: usernameError ? "#F87171" : "var(--admin-text-muted)",
                   marginBottom: "4px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
@@ -492,7 +492,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: emailError ? "#F87171" : "#94A3B8",
+                  color: emailError ? "#F87171" : "var(--admin-text-muted)",
                   marginBottom: "4px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
@@ -555,7 +555,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
                   display: "block",
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: passwordError ? "#F87171" : "#94A3B8",
+                  color: passwordError ? "#F87171" : "var(--admin-text-muted)",
                   marginBottom: "4px",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
@@ -717,7 +717,7 @@ export default function RegisterPage({ setPage, onAuthed }) {
           />
 
           {/* Login Link */}
-          <p style={{ fontSize: "13px", textAlign: "center", color: "#94A3B8", marginTop: "16px", margin: "16px 0 0 0" }}>
+          <p style={{ fontSize: "13px", textAlign: "center", color: "var(--admin-text-muted)", marginTop: "16px", margin: "16px 0 0 0" }}>
             {t("auth.hasAccount")}{" "}
             <button
               onClick={() => setPage("login")}

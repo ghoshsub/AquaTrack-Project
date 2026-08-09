@@ -4,10 +4,10 @@ import { Mail, MessageSquare, Send, CheckCircle2 } from "lucide-react";
 import BackToDashboard from "../components/BackToDashboard.jsx";
 
 const fieldStyle = { display: "flex", flexDirection: "column", gap: "6px" };
-const labelStyle = { fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#64748B" };
+const labelStyle = { fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--admin-text-muted)" };
 const inputBase = {
-  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.1)",
-  color: "#FFFFFF", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+  width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)", padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
   fontFamily: "inherit", outline: "none", boxSizing: "border-box",
   transition: "border-color 0.18s ease, box-shadow 0.18s ease",
 };
@@ -30,7 +30,7 @@ export default function ContactPage({ setPage }) {
     setName("");
   }
 
-  const cardStyle = { background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "16px", backdropFilter: "blur(16px)" };
+  const cardStyle = { background: "var(--admin-card-bg)", border: "1px solid var(--admin-card-border)", borderRadius: "16px", backdropFilter: "blur(16px)", boxShadow: "var(--admin-card-shadow)" };
 
   return (
     <div style={{ maxWidth: "550px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px", padding: "40px" }}>
@@ -41,8 +41,8 @@ export default function ContactPage({ setPage }) {
             <MessageSquare size={22} color="#38BDF8" />
           </div>
           <div>
-            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("contact.title")}</h1>
-            <p style={{ fontSize: "13px", color: "#64748B", margin: "2px 0 0" }}>{t("contact.subtitle")}</p>
+            <h1 style={{ fontSize: "22px", fontWeight: 700, color: "var(--admin-text-white)", margin: 0, letterSpacing: "-0.02em" }}>{t("contact.title")}</h1>
+            <p style={{ fontSize: "13px", color: "var(--admin-text-muted)", margin: "2px 0 0" }}>{t("contact.subtitle")}</p>
           </div>
         </div>
       </div>
@@ -53,8 +53,8 @@ export default function ContactPage({ setPage }) {
           <Mail size={18} color="#38BDF8" />
         </div>
         <div>
-          <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>{t("contact.email")}</span>
-          <p style={{ fontSize: "14px", fontWeight: 600, color: "#FFFFFF", margin: "2px 0 0" }}>support@aquatrack.com</p>
+          <span style={{ fontSize: "11px", color: "var(--admin-text-muted)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>{t("contact.email")}</span>
+          <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--admin-text-white)", margin: "2px 0 0" }}>support@aquatrack.com</p>
         </div>
       </div>
 
@@ -63,9 +63,9 @@ export default function ContactPage({ setPage }) {
         {sent ? (
           <div style={{ textAlign: "center", padding: "24px 0" }}>
             <CheckCircle2 size={44} color="#34D399" style={{ display: "block", margin: "0 auto 14px" }} />
-            <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>{t("contact.success")}</h3>
-            <p style={{ fontSize: "13px", color: "#94A3B8", marginTop: "6px" }}>{t("contact.subtitle")}</p>
-            <button onClick={() => setSent(false)} style={{ background: "none", border: "none", color: "#38BDF8", fontWeight: 600, cursor: "pointer", fontSize: "13px", fontFamily: "inherit", marginTop: "16px" }}>
+            <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--admin-text-white)", margin: 0 }}>{t("contact.success")}</h3>
+            <p style={{ fontSize: "13px", color: "var(--admin-text-muted)", marginTop: "6px" }}>{t("contact.subtitle")}</p>
+            <button onClick={() => setSent(false)} style={{ background: "none", border: "none", color: "var(--admin-accent)", fontWeight: 600, cursor: "pointer", fontSize: "13px", fontFamily: "inherit", marginTop: "16px" }}>
               {t("contact.send")}
             </button>
           </div>
@@ -74,15 +74,15 @@ export default function ContactPage({ setPage }) {
             <div style={fieldStyle}>
               <label style={labelStyle}>{t("contact.name")}</label>
               <input style={inputBase} value={name} onChange={e => setName(e.target.value)} placeholder={t("contact.namePlaceholder")}
-                onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
-                onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
+                onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+                onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             <div style={fieldStyle}>
               <label style={labelStyle}>{t("contact.message")} *</label>
               <textarea style={{ ...inputBase, minHeight: "120px", resize: "vertical", lineHeight: 1.5 }} value={feedback} onChange={e => setFeedback(e.target.value)} placeholder={t("contact.messagePlaceholder")} required
-                onFocus={e => { e.target.style.borderColor = "#38BDF8"; e.target.style.boxShadow = "0 0 0 3px rgba(56,189,248,0.12)"; }}
-                onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.1)"; e.target.style.boxShadow = "none"; }}
+                onFocus={e => { e.target.style.borderColor = "var(--admin-accent)"; e.target.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--admin-accent) 15%, transparent)"; }}
+                onBlur={e => { e.target.style.borderColor = "var(--admin-input-border)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
             <button type="submit" disabled={sending || !feedback.trim()}

@@ -14,17 +14,18 @@ function formatLiters(value) {
 }
 
 const inputBase = {
-  width: "100%", background: "rgba(13,22,36,0.9)", border: "1px solid rgba(255,255,255,0.14)",
-  color: "#FFFFFF", padding: "12px 14px", borderRadius: "10px", fontSize: "14px",
+  width: "100%", background: "var(--admin-input-bg)", border: "1px solid var(--admin-input-border)",
+  color: "var(--admin-text-white)", padding: "12px 14px", borderRadius: "10px", fontSize: "14px",
   fontFamily: "inherit", outline: "none", boxSizing: "border-box",
   transition: "all 0.2s ease",
 };
 
 const cardStyle = {
-  background: "rgba(17,26,42,0.9)",
-  border: "1px solid rgba(255,255,255,0.12)",
+  background: "var(--admin-card-bg)",
+  border: "1px solid var(--admin-card-border)",
   borderRadius: "20px",
   backdropFilter: "blur(20px)",
+  boxShadow: "var(--admin-card-shadow)",
 };
 
 export default function AdminTariffPlansPage({ auth, setPage }) {
@@ -137,7 +138,7 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
             <FileText size={24} color="#FBBF24" />
           </div>
           <div>
-            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#FFFFFF", margin: 0, letterSpacing: "-0.02em" }}>{t("tariffs.title")}</h1>
+            <h1 style={{ fontSize: "26px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0, letterSpacing: "-0.02em" }}>{t("tariffs.title")}</h1>
             <p style={{ fontSize: "13.5px", color: "#94A3B8", margin: "2px 0 0" }}>{t("tariffs.subheading")}</p>
           </div>
         </div>
@@ -179,7 +180,7 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
               <Layers size={17} color="#FBBF24" />
             </div>
             <div>
-              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#FFF", margin: 0 }}>{t("tariffs.title")}</h2>
+              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>{t("tariffs.title")}</h2>
               <p style={{ fontSize: "12px", color: "#64748B", margin: "2px 0 0" }}>Configure billing rates for this building</p>
             </div>
           </div>
@@ -244,7 +245,7 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
               <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "rgba(56,189,248,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Info size={17} color="#38BDF8" />
               </div>
-              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFF", margin: 0 }}>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>
                 Active Structure — {selectedApartment?.name || "Select a building"}
               </h3>
             </div>
@@ -252,17 +253,17 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
               <div style={{ background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", padding: "16px", borderRadius: "12px" }}>
                 <div style={{ fontSize: "11.5px", color: "#38BDF8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Base Rate</div>
-                <div style={{ fontSize: "20px", fontWeight: 800, color: "#FFFFFF" }}>{formatRupees(bRate)}</div>
+                <div style={{ fontSize: "20px", fontWeight: 800, color: "var(--admin-text-white)" }}>{formatRupees(bRate)}</div>
               </div>
               <div style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", padding: "16px", borderRadius: "12px" }}>
                 <div style={{ fontSize: "11.5px", color: "#34D399", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Included Volume</div>
-                <div style={{ fontSize: "20px", fontWeight: 800, color: "#FFFFFF" }}>{formatLiters(bLimit)}</div>
+                <div style={{ fontSize: "20px", fontWeight: 800, color: "var(--admin-text-white)" }}>{formatLiters(bLimit)}</div>
               </div>
             </div>
 
             <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", padding: "16px", borderRadius: "12px" }}>
               <div style={{ fontSize: "11.5px", color: "#FBBF24", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Excess Surcharge</div>
-              <div style={{ fontSize: "20px", fontWeight: 800, color: "#FFFFFF" }}>
+              <div style={{ fontSize: "20px", fontWeight: 800, color: "var(--admin-text-white)" }}>
                 {formatRupees(eRate)} <span style={{ fontSize: "13px", fontWeight: 500, color: "#94A3B8" }}>/ Liter</span>
               </div>
               <div style={{ fontSize: "12px", color: "#94A3B8", marginTop: "4px" }}>= {formatRupees(eRate * 1000)} per 1,000 L</div>
@@ -276,7 +277,7 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
                 <Calculator size={17} color="#A78BFA" />
               </div>
               <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFF", margin: 0 }}>Live Bill Simulator</h3>
+                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>Live Bill Simulator</h3>
                 <p style={{ fontSize: "12px", color: "#64748B", margin: "2px 0 0" }}>Preview invoice total for any consumption volume</p>
               </div>
             </div>
@@ -293,7 +294,7 @@ export default function AdminTariffPlansPage({ auth, setPage }) {
             <div style={{ background: "rgba(0,0,0,0.35)", borderRadius: "12px", padding: "18px", fontSize: "13.5px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", alignItems: "center" }}>
                 <span style={{ color: "#94A3B8" }}>Base Charge:</span>
-                <span style={{ color: "#FFF", fontWeight: 700 }}>{formatRupees(bRate)}</span>
+                <span style={{ color: "var(--admin-text-white)", fontWeight: 700 }}>{formatRupees(bRate)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", alignItems: "center" }}>
                 <span style={{ color: "#94A3B8" }}>Excess ({formatLiters(excessUsage)} @ {formatRupees(eRate)}/L):</span>

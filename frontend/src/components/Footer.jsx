@@ -39,15 +39,15 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: "rgba(11, 17, 32, 0.85)",
-        borderTop: "1px solid rgba(255, 255, 255, 0.12)",
+        background: "var(--admin-sidebar-bg)",
+        borderTop: "1px solid var(--admin-card-border)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         padding: "60px 24px 30px",
         marginTop: "auto",
         position: "relative",
         zIndex: 10,
-        color: "#FFFFFF",
+        color: "var(--admin-color)",
       }}
     >
       {/* Background Ambient Glow Bar */}
@@ -76,7 +76,7 @@ export default function Footer() {
             gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
             gap: "40px",
             paddingBottom: "48px",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+            borderBottom: "1px solid var(--admin-card-border)",
           }}
         >
           {/* Brand Column */}
@@ -101,7 +101,7 @@ export default function Footer() {
                   fontSize: "20px",
                   fontWeight: 800,
                   letterSpacing: "-0.02em",
-                  background: "linear-gradient(135deg, #FFFFFF 0%, #38BDF8 100%)",
+                  background: "var(--admin-logo-gradient)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -110,7 +110,7 @@ export default function Footer() {
               </span>
             </div>
 
-            <p style={{ fontSize: "13.5px", color: "#94A3B8", lineHeight: 1.65, margin: 0 }}>
+            <p style={{ fontSize: "13.5px", color: "var(--admin-text-muted)", lineHeight: 1.65, margin: 0 }}>
               {t("footer.tagline")}
             </p>
 
@@ -124,7 +124,7 @@ export default function Footer() {
                 padding: "6px 12px",
                 borderRadius: "8px",
                 fontSize: "12px",
-                color: "#34D399",
+                color: "#10B981",
                 width: "fit-content",
               }}
             >
@@ -135,13 +135,13 @@ export default function Footer() {
 
           {/* Quick Links Column */}
           <div>
-            <div style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--admin-text-white)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
               {t("footer.platform")}
             </div>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px", fontSize: "13.5px", color: "#94A3B8" }}>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px", fontSize: "13.5px", color: "var(--admin-text-muted)" }}>
               {[t("footer.dashboard"), t("footer.billing"), t("footer.reports"), t("footer.analytics")].map((link, idx) => (
                 <li key={idx}>
-                  <span style={{ cursor: "pointer", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#38BDF8")} onMouseLeave={(e) => (e.target.style.color = "#94A3B8")}>
+                  <span style={{ cursor: "pointer", transition: "color 0.2s ease" }} onMouseEnter={(e) => (e.target.style.color = "#38BDF8")} onMouseLeave={(e) => (e.target.style.color = "var(--admin-text-muted)")}>
                     {link}
                   </span>
                 </li>
@@ -151,20 +151,20 @@ export default function Footer() {
 
           {/* Contact Info Column */}
           <div>
-            <div style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--admin-text-white)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
               {t("footer.contact")}
             </div>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px", fontSize: "13.5px", color: "#94A3B8" }}>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px", fontSize: "13.5px", color: "var(--admin-text-muted)" }}>
               <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <Mail size={15} color="#38BDF8" />
+                <Mail size={15} color="#0284C7" />
                 <span>support@aquatrack.io</span>
               </li>
               <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <Phone size={15} color="#38BDF8" />
+                <Phone size={15} color="#0284C7" />
                 <span>+1 (800) 555-AQUA</span>
               </li>
               <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <MapPin size={15} color="#38BDF8" />
+                <MapPin size={15} color="#0284C7" />
                 <span>Silicon Valley, CA</span>
               </li>
             </ul>
@@ -172,7 +172,7 @@ export default function Footer() {
 
           {/* Social Icons & Status */}
           <div>
-            <div style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
+            <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--admin-text-white)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>
               {t("footer.company")}
             </div>
 
@@ -193,25 +193,25 @@ export default function Footer() {
                     width: "36px",
                     height: "36px",
                     borderRadius: "10px",
-                    background: "rgba(255, 255, 255, 0.05)",
-                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                    background: "var(--at-btn-secondary-bg)",
+                    border: "1px solid var(--at-btn-secondary-border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#94A3B8",
+                    color: "var(--admin-text-muted)",
                     transition: "all 0.2s ease",
                     textDecoration: "none",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = "rgba(56, 189, 248, 0.2)";
                     e.currentTarget.style.borderColor = "rgba(56, 189, 248, 0.4)";
-                    e.currentTarget.style.color = "#38BDF8";
+                    e.currentTarget.style.color = "#0284C7";
                     e.currentTarget.style.transform = "translateY(-2px)";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
-                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                    e.currentTarget.style.color = "#94A3B8";
+                    e.currentTarget.style.background = "var(--at-btn-secondary-bg)";
+                    e.currentTarget.style.borderColor = "var(--at-btn-secondary-border)";
+                    e.currentTarget.style.color = "var(--admin-text-muted)";
                     e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
@@ -220,7 +220,7 @@ export default function Footer() {
               ))}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#34D399" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#10B981" }}>
               <CheckCircle2 size={16} />
               <span>All Systems Operational (99.99%)</span>
             </div>
@@ -237,7 +237,7 @@ export default function Footer() {
             flexWrap: "wrap",
             gap: "16px",
             fontSize: "12.5px",
-            color: "#64748B",
+            color: "var(--admin-text-muted)",
           }}
         >
           <div>{t("footer.copyright")}</div>

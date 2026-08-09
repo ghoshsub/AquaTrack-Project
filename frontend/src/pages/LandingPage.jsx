@@ -12,20 +12,48 @@ export default function LandingPage({ setPage }) {
   const [activeTab, setActiveTab] = useState("telemetry");
 
   const cardGlassStyle = {
-    background: "rgba(17, 26, 42, 0.85)",
-    border: "1px solid rgba(255, 255, 255, 0.1)",
+    background: "var(--admin-card-bg)",
+    border: "1px solid var(--admin-card-border)",
     borderRadius: "20px",
     backdropFilter: "blur(20px)",
     WebkitBackdropFilter: "blur(20px)",
-    boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 50px -20px rgba(56, 189, 248, 0.1)",
+    boxShadow: "var(--admin-card-shadow)",
+  };
+
+  // Floating pill badges adapt to theme
+  const pillStyle = {
+    background: "var(--admin-subcard-bg)",
+    border: "1px solid var(--admin-card-border)",
+    borderRadius: "12px",
+    padding: "8px 14px",
+    backdropFilter: "blur(12px)",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  };
+
+  // Mock dashboard inner panel style
+  const mockPanelStyle = {
+    background: "var(--admin-subcard-bg)",
+    border: "1px solid var(--admin-subcard-border)",
+    borderRadius: "16px",
+    padding: "24px",
+  };
+
+  // Mock mini-card style
+  const mockCardStyle = {
+    background: "var(--admin-input-bg)",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "1px solid var(--admin-card-border)",
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0B1120", color: "#FFFFFF", fontFamily: "Inter, sans-serif", position: "relative", overflowX: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "var(--admin-bg)", color: "var(--admin-text-white)", fontFamily: "Inter, sans-serif", position: "relative", overflowX: "hidden" }}>
       {/* Background Ambient Glowing Orbs */}
-      <div style={{ position: "absolute", top: "-100px", left: "15%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(0, 0, 0, 0) 70%)", pointerEvents: "none", zIndex: 0 }} />
-      <div style={{ position: "absolute", top: "600px", right: "5%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(0, 0, 0, 0) 70%)", pointerEvents: "none", zIndex: 0 }} />
-      <div style={{ position: "absolute", top: "1600px", left: "10%", width: "650px", height: "650px", background: "radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(0, 0, 0, 0) 70%)", pointerEvents: "none", zIndex: 0 }} />
+      <div style={{ position: "absolute", top: "-100px", left: "15%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 }} />
+      <div style={{ position: "absolute", top: "600px", right: "5%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 }} />
+      <div style={{ position: "absolute", top: "1600px", left: "10%", width: "650px", height: "650px", background: "radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 }} />
 
       {/* Main Container */}
       <main style={{ maxWidth: "1140px", margin: "0 auto", padding: "0 16px" }}>
@@ -57,7 +85,7 @@ export default function LandingPage({ setPage }) {
               </div>
 
               <h1 className="font-extrabold leading-tight tracking-tight">
-                <span className="text-white/85 text-3xl md:text-4xl lg:text-5xl">
+                <span style={{ color: "var(--admin-text-white)", opacity: 0.85, fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 800, letterSpacing: "-0.02em" }}>
                   {t("hero.mainHeading")}
                 </span>
 
@@ -84,7 +112,7 @@ export default function LandingPage({ setPage }) {
                   marginTop: "20px",
                   fontSize: "17px",
                   lineHeight: 1.65,
-                  color: "#94A3B8",
+                  color: "var(--admin-text-muted)",
                   maxWidth: "500px",
                 }}
               >
@@ -114,21 +142,19 @@ export default function LandingPage({ setPage }) {
                 >
                   {t("hero.cta1")} <ArrowRight size={16} />
                 </button>
-
-
               </div>
 
               {/* Trust Badges */}
-              <div style={{ display: "flex", alignItems: "center", gap: "20px", marginTop: "40px", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "24px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#64748B" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "20px", marginTop: "40px", borderTop: "1px solid var(--admin-border-muted)", paddingTop: "24px", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--admin-text-muted)" }}>
                   <ShieldCheck size={16} color="#34D399" />
                   <span>{t("features.f6Title")}</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#64748B" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--admin-text-muted)" }}>
                   <Zap size={16} color="#38BDF8" />
                   <span>{t("hero.stat2Label")}</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#64748B" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--admin-text-muted)" }}>
                   <Database size={16} color="#818CF8" />
                   <span>{t("features.f5Title")}</span>
                 </div>
@@ -141,12 +167,12 @@ export default function LandingPage({ setPage }) {
                 <Water3DCanvas />
 
                 {/* Floating Telemetry Pill Badges */}
-                <div style={{ position: "absolute", top: "20px", left: "20px", background: "rgba(15, 23, 42, 0.85)", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "12px", padding: "8px 14px", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{ position: "absolute", top: "20px", left: "20px", ...pillStyle }}>
                   <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#34D399" }} />
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: "#FFFFFF" }}>{t("hero.stat1Label")}: 94.2%</span>
+                  <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--admin-text-white)" }}>{t("hero.stat1Label")}: 94.2%</span>
                 </div>
 
-                <div style={{ position: "absolute", bottom: "20px", right: "20px", background: "rgba(15, 23, 42, 0.85)", border: "1px solid rgba(255, 255, 255, 0.15)", borderRadius: "12px", padding: "8px 14px", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{ position: "absolute", bottom: "20px", right: "20px", ...pillStyle }}>
                   <Activity size={14} color="#38BDF8" />
                   <span style={{ fontSize: "12px", fontWeight: 600, color: "#38BDF8" }}>{t("dashboard.consumption")}: 4.8 L/s</span>
                 </div>
@@ -167,8 +193,8 @@ export default function LandingPage({ setPage }) {
             ].map((st, idx) => (
               <div key={idx} style={{ ...cardGlassStyle, padding: "28px 24px", textAlign: "center" }}>
                 <div style={{ fontSize: "36px", fontWeight: 800, color: st.color, letterSpacing: "-0.02em" }}>{st.val}</div>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF", marginTop: "6px" }}>{st.label}</div>
-                <div style={{ fontSize: "12px", color: "#64748B", marginTop: "4px" }}>{st.sub}</div>
+                <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--admin-text-white)", marginTop: "6px" }}>{st.label}</div>
+                <div style={{ fontSize: "12px", color: "var(--admin-text-muted)", marginTop: "4px" }}>{st.sub}</div>
               </div>
             ))}
           </div>
@@ -177,10 +203,10 @@ export default function LandingPage({ setPage }) {
         {/* FEATURES GRID */}
         <section style={{ marginBottom: "120px" }}>
           <div style={{ textAlign: "center", maxWidth: "600px", margin: "0 auto 56px" }}>
-            <h2 style={{ fontSize: "36px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+            <h2 style={{ fontSize: "36px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em" }}>
               {t("features.heading")}
             </h2>
-            <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "12px", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "16px", color: "var(--admin-text-muted)", marginTop: "12px", lineHeight: 1.6 }}>
               {t("features.subheading")}
             </p>
           </div>
@@ -200,14 +226,14 @@ export default function LandingPage({ setPage }) {
                   transition: "transform 0.18s ease, border-color 0.18s ease",
                   cursor: "pointer",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = `${f.color}50`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)"; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = `${f.color}60`; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "var(--admin-card-border)"; }}
               >
-                <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: `${f.color}15`, border: `1px solid ${f.color}30`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: `${f.color}18`, border: `1px solid ${f.color}30`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
                   <f.icon size={22} color={f.color} />
                 </div>
-                <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#FFFFFF", margin: "0 0 10px" }}>{f.title}</h3>
-                <p style={{ fontSize: "14px", color: "#94A3B8", lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+                <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--admin-text-white)", margin: "0 0 10px" }}>{f.title}</h3>
+                <p style={{ fontSize: "14px", color: "var(--admin-text-muted)", lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -218,15 +244,25 @@ export default function LandingPage({ setPage }) {
           <div style={{ ...cardGlassStyle, padding: "36px", position: "relative", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "28px" }}>
               <div>
-                <h3 style={{ fontSize: "22px", fontWeight: 700, color: "#FFFFFF", margin: 0 }}>{t("sidebar.adminConsole")}</h3>
-                <p style={{ fontSize: "13px", color: "#64748B", margin: "4px 0 0" }}>{t("adminHeader.dashboardSub")}</p>
+                <h3 style={{ fontSize: "22px", fontWeight: 700, color: "var(--admin-text-white)", margin: 0 }}>{t("sidebar.adminConsole")}</h3>
+                <p style={{ fontSize: "13px", color: "var(--admin-text-muted)", margin: "4px 0 0" }}>{t("adminHeader.dashboardSub")}</p>
               </div>
-              <div style={{ display: "flex", background: "rgba(255,255,255,0.05)", borderRadius: "10px", padding: "4px" }}>
+              <div style={{ display: "flex", background: "var(--admin-subcard-bg)", borderRadius: "10px", padding: "4px", border: "1px solid var(--admin-subcard-border)" }}>
                 {[["telemetry", t("sidebar.dashboard")], ["breakdown", t("sidebar.invoices")], ["history", t("sidebar.waterUsage")]].map(([tab, label]) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    style={{ background: activeTab === tab ? "rgba(56,189,248,0.15)" : "transparent", border: activeTab === tab ? "1px solid rgba(56,189,248,0.3)" : "1px solid transparent", color: activeTab === tab ? "#38BDF8" : "#64748B", fontSize: "13px", fontWeight: 600, padding: "8px 16px", borderRadius: "8px", cursor: "pointer", fontFamily: "inherit" }}
+                    style={{
+                      background: activeTab === tab ? "rgba(56,189,248,0.15)" : "transparent",
+                      border: activeTab === tab ? "1px solid rgba(56,189,248,0.3)" : "1px solid transparent",
+                      color: activeTab === tab ? "#38BDF8" : "var(--admin-text-muted)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
                   >
                     {label}
                   </button>
@@ -235,18 +271,18 @@ export default function LandingPage({ setPage }) {
             </div>
 
             {/* Dashboard Content Mock */}
-            <div style={{ background: "rgba(11, 17, 32, 0.9)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "24px" }}>
+            <div style={mockPanelStyle}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "24px" }}>
-                <div style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>{t("apartments.title")}</span>
-                  <div style={{ fontSize: "24px", fontWeight: 800, color: "#FFFFFF", marginTop: "4px" }}>12 {t("apartments.title")}</div>
+                <div style={mockCardStyle}>
+                  <span style={{ fontSize: "11px", color: "var(--admin-text-muted)", textTransform: "uppercase", fontWeight: 700 }}>{t("apartments.title")}</span>
+                  <div style={{ fontSize: "24px", fontWeight: 800, color: "var(--admin-text-white)", marginTop: "4px" }}>12 {t("apartments.title")}</div>
                 </div>
-                <div style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>{t("dashboard.totalConsumption")}</span>
+                <div style={mockCardStyle}>
+                  <span style={{ fontSize: "11px", color: "var(--admin-text-muted)", textTransform: "uppercase", fontWeight: 700 }}>{t("dashboard.totalConsumption")}</span>
                   <div style={{ fontSize: "24px", fontWeight: 800, color: "#38BDF8", marginTop: "4px" }}>156,800 L</div>
                 </div>
-                <div style={{ background: "rgba(255,255,255,0.03)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <span style={{ fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 700 }}>{t("billing.status")}</span>
+                <div style={mockCardStyle}>
+                  <span style={{ fontSize: "11px", color: "var(--admin-text-muted)", textTransform: "uppercase", fontWeight: 700 }}>{t("billing.status")}</span>
                   <div style={{ fontSize: "13px", fontWeight: 700, color: "#34D399", background: "rgba(16,185,129,0.15)", padding: "4px 10px", borderRadius: "20px", display: "inline-block", marginTop: "8px" }}>
                     {t("billing.open")}
                   </div>
@@ -257,7 +293,7 @@ export default function LandingPage({ setPage }) {
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                   <thead>
-                    <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", color: "#64748B", fontSize: "11px", textTransform: "uppercase" }}>
+                    <tr style={{ borderBottom: "1px solid var(--admin-card-border)", color: "var(--admin-text-muted)", fontSize: "11px", textTransform: "uppercase" }}>
                       <th style={{ padding: "12px" }}>{t("apartments.name")}</th>
                       <th style={{ padding: "12px" }}>{t("households.title")}</th>
                       <th style={{ padding: "12px" }}>{t("waterUsage.reading")}</th>
@@ -271,13 +307,13 @@ export default function LandingPage({ setPage }) {
                       { name: "Sunrise Residency", flats: 36, usage: "98,400 L", amount: "₹98,400", status: t("billing.open"), color: "#34D399" },
                       { name: "Lake View Heights", flats: 52, usage: "156,800 L", amount: "₹1,56,800", status: t("billing.finalized"), color: "#F87171" },
                     ].map((row, idx) => (
-                      <tr key={idx} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", fontSize: "13px" }}>
-                        <td style={{ padding: "14px 12px", fontWeight: 600, color: "#FFFFFF" }}>{row.name}</td>
-                        <td style={{ padding: "14px 12px", color: "#94A3B8" }}>{row.flats} {t("households.title")}</td>
+                      <tr key={idx} style={{ borderBottom: "1px solid var(--admin-border-muted)", fontSize: "13px" }}>
+                        <td style={{ padding: "14px 12px", fontWeight: 600, color: "var(--admin-text-white)" }}>{row.name}</td>
+                        <td style={{ padding: "14px 12px", color: "var(--admin-text-muted)" }}>{row.flats} {t("households.title")}</td>
                         <td style={{ padding: "14px 12px", color: "#38BDF8", fontWeight: 600 }}>{row.usage}</td>
-                        <td style={{ padding: "14px 12px", color: "#FFFFFF", fontWeight: 600 }}>{row.amount}</td>
+                        <td style={{ padding: "14px 12px", color: "var(--admin-text-white)", fontWeight: 600 }}>{row.amount}</td>
                         <td style={{ padding: "14px 12px" }}>
-                          <span style={{ fontSize: "11px", fontWeight: 700, padding: "3px 8px", borderRadius: "12px", background: `${row.color}15`, color: row.color }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, padding: "3px 8px", borderRadius: "12px", background: `${row.color}18`, color: row.color }}>
                             {row.status}
                           </span>
                         </td>
@@ -294,19 +330,19 @@ export default function LandingPage({ setPage }) {
         <section style={{ marginBottom: "100px" }}>
           <div
             style={{
-              background: "linear-gradient(135deg, rgba(56,189,248,0.2) 0%, rgba(99,102,241,0.2) 100%)",
+              background: "linear-gradient(135deg, rgba(56,189,248,0.15) 0%, rgba(99,102,241,0.15) 100%)",
               border: "1px solid rgba(56,189,248,0.3)",
               borderRadius: "24px",
               padding: "56px 32px",
               textAlign: "center",
               backdropFilter: "blur(20px)",
-              boxShadow: "0 0 80px -20px rgba(56, 189, 248, 0.25)",
+              boxShadow: "0 0 80px -20px rgba(56, 189, 248, 0.2)",
             }}
           >
-            <h2 style={{ fontSize: "36px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", margin: 0 }}>
+            <h2 style={{ fontSize: "36px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em", margin: 0 }}>
               {t("cta.heading")}
             </h2>
-            <p style={{ fontSize: "16px", color: "#94A3B8", marginTop: "14px", maxWidth: "520px", margin: "14px auto 0", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "16px", color: "var(--admin-text-muted)", marginTop: "14px", maxWidth: "520px", margin: "14px auto 0", lineHeight: 1.6 }}>
               {t("cta.subheading")}
             </p>
             <button

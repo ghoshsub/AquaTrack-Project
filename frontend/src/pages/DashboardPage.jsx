@@ -25,8 +25,9 @@ function QuickLinkCard({ icon: Icon, title, body, onClick }) {
         padding: "22px",
         textAlign: "left",
         cursor: "pointer",
-        background: "rgba(17, 26, 42, 0.8)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
+        background: "var(--admin-card-bg)",
+        border: "1px solid var(--admin-card-border)",
+        boxShadow: "var(--admin-card-shadow)",
         borderRadius: "16px",
         display: "flex",
         flexDirection: "column",
@@ -40,7 +41,7 @@ function QuickLinkCard({ icon: Icon, title, body, onClick }) {
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.1)";
+        e.currentTarget.style.borderColor = "var(--admin-card-border)";
       }}
     >
       <div
@@ -55,10 +56,10 @@ function QuickLinkCard({ icon: Icon, title, body, onClick }) {
           justifyContent: "center",
         }}
       >
-        <Icon size={20} color="#38BDF8" />
+        <Icon size={20} color="#0284C7" />
       </div>
-      <div style={{ fontWeight: 700, fontSize: "16px", color: "#FFFFFF" }}>{title}</div>
-      <div style={{ fontSize: "13px", color: "#94A3B8", lineHeight: 1.5 }}>{body}</div>
+      <div style={{ fontWeight: 700, fontSize: "16px", color: "var(--admin-text-white)" }}>{title}</div>
+      <div style={{ fontSize: "13px", color: "var(--admin-text-muted)", lineHeight: 1.5 }}>{body}</div>
       <div
         style={{
           fontSize: "13px",
@@ -145,7 +146,8 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  const selectedMonth = globalMonth || "2026-07";
+  const currentMonthDefault = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}`; })();
+  const selectedMonth = globalMonth || currentMonthDefault;
 
   // --- RESIDENT EFFECT ---
   useEffect(() => {
@@ -226,7 +228,14 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               })
             );
 
-            const monthCycle = (detailedCycles || []).find((c) => c.startDate && c.startDate.startsWith(selectedMonth)) || detailedCycles[0] || null;
+            // Match cycle by selected month — no fallback so stats are month-accurate
+            const monthCycle = (detailedCycles || []).find((c) => {
+              if (!c.startDate) return false;
+              const cycleMonth = typeof c.startDate === "string"
+                ? c.startDate.substring(0, 7)
+                : String(c.startDate).substring(0, 7);
+              return cycleMonth === selectedMonth;
+            }) || null;
 
             tempAptData[apt.id] = {
               households: hList || [],
@@ -411,7 +420,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               </span>
               <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#34D399" }} />
             </div>
-            <h1 style={{ fontSize: "28px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", margin: "4px 0 0 0" }}>
+            <h1 style={{ fontSize: "28px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em", margin: "4px 0 0 0" }}>
               {t("dashboard.welcomeAdmin", { name: auth?.username || "Admin" })}
             </h1>
           </div>
@@ -423,9 +432,9 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.12)",
-              color: "#FFFFFF",
+              background: "var(--admin-subcard-bg)",
+              border: "1px solid var(--admin-card-border)",
+              color: "var(--admin-text-white)",
               fontWeight: 600,
               fontSize: "13px",
               padding: "10px 18px",
@@ -455,12 +464,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               {/* KPI 1 */}
               <div
                 style={{
-                  background: "rgba(17, 26, 42, 0.85)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  background: "var(--admin-card-bg)",
+                  border: "1px solid var(--admin-card-border)",
                   borderRadius: "20px",
                   padding: "24px",
                   backdropFilter: "blur(20px)",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                  boxShadow: "var(--admin-card-shadow)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -468,13 +477,13 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#94A3B8" }}>{t("apartments.title")}</span>
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-text-muted)" }}>{t("apartments.title")}</span>
                   <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "rgba(56, 189, 248, 0.15)", border: "1px solid rgba(56, 189, 248, 0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Building2 size={20} color="#38BDF8" />
+                    <Building2 size={20} color="#0284C7" />
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>{stats.totalApts}</div>
+                  <div style={{ fontSize: "32px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em" }}>{stats.totalApts}</div>
                   <div style={{ marginTop: "8px" }}>
                     <Trend value="+12% this month" up={true} />
                   </div>
@@ -484,12 +493,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               {/* KPI 2 */}
               <div
                 style={{
-                  background: "rgba(17, 26, 42, 0.85)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  background: "var(--admin-card-bg)",
+                  border: "1px solid var(--admin-card-border)",
                   borderRadius: "20px",
                   padding: "24px",
                   backdropFilter: "blur(20px)",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                  boxShadow: "var(--admin-card-shadow)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -497,13 +506,13 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#94A3B8" }}>{t("dashboard.activeHouseholds")}</span>
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-text-muted)" }}>{t("dashboard.activeHouseholds")}</span>
                   <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(16, 185, 129, 0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Users size={20} color="#34D399" />
+                    <Users size={20} color="#10B981" />
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>{stats.totalHouseholds}</div>
+                  <div style={{ fontSize: "32px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em" }}>{stats.totalHouseholds}</div>
                   <div style={{ marginTop: "8px" }}>
                     <Trend value="+8% occupancy" up={true} />
                   </div>
@@ -513,12 +522,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               {/* KPI 3 */}
               <div
                 style={{
-                  background: "rgba(17, 26, 42, 0.85)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  background: "var(--admin-card-bg)",
+                  border: "1px solid var(--admin-card-border)",
                   borderRadius: "20px",
                   padding: "24px",
                   backdropFilter: "blur(20px)",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                  boxShadow: "var(--admin-card-shadow)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -526,13 +535,13 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#94A3B8" }}>{t("dashboard.totalConsumption")}</span>
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-text-muted)" }}>{t("dashboard.totalConsumption")}</span>
                   <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "rgba(139, 92, 246, 0.15)", border: "1px solid rgba(139, 92, 246, 0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Droplets size={20} color="#A78BFA" />
+                    <Droplets size={20} color="#8B5CF6" />
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "28px", fontWeight: 800, color: "#38BDF8", letterSpacing: "-0.02em" }}>{formatLiters(stats.totalUsage)}</div>
+                  <div style={{ fontSize: "28px", fontWeight: 800, color: "#0284C7", letterSpacing: "-0.02em" }}>{formatLiters(stats.totalUsage)}</div>
                   <div style={{ marginTop: "8px" }}>
                     <Trend value="Optimal Telemetry" up={true} />
                   </div>
@@ -542,12 +551,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               {/* KPI 4 */}
               <div
                 style={{
-                  background: "rgba(17, 26, 42, 0.85)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  background: "var(--admin-card-bg)",
+                  border: "1px solid var(--admin-card-border)",
                   borderRadius: "20px",
                   padding: "24px",
                   backdropFilter: "blur(20px)",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                  boxShadow: "var(--admin-card-shadow)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -555,13 +564,13 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#94A3B8" }}>{t("dashboard.totalBilled")}</span>
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-text-muted)" }}>{t("dashboard.totalBilled")}</span>
                   <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "rgba(245, 158, 11, 0.15)", border: "1px solid rgba(245, 158, 11, 0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Coins size={20} color="#FBBF24" />
+                    <Coins size={20} color="#D97706" />
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "28px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>{formatRupees(stats.totalAmount)}</div>
+                  <div style={{ fontSize: "28px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em" }}>{formatRupees(stats.totalAmount)}</div>
                   <div style={{ marginTop: "8px" }}>
                     <Trend value="Tiered Auto-applied" up={true} />
                   </div>
@@ -571,12 +580,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               {/* KPI 5 */}
               <div
                 style={{
-                  background: "rgba(17, 26, 42, 0.85)",
-                  border: "1px solid rgba(244, 63, 94, 0.25)",
+                  background: "var(--admin-card-bg)",
+                  border: "1px solid var(--admin-error-border)",
                   borderRadius: "20px",
                   padding: "24px",
                   backdropFilter: "blur(20px)",
-                  boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                  boxShadow: "var(--admin-card-shadow)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -584,14 +593,14 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#F87171" }}>{t("dashboard.pendingAlerts")}</span>
-                  <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "rgba(244, 63, 94, 0.15)", border: "1px solid rgba(244, 63, 94, 0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Receipt size={20} color="#F87171" />
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-error-text)" }}>{t("dashboard.pendingAlerts")}</span>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "var(--admin-error-bg)", border: "1px solid var(--admin-error-border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Receipt size={20} color="var(--admin-error-text)" />
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "28px", fontWeight: 800, color: "#F87171", letterSpacing: "-0.02em" }}>{stats.unpaidInvoices} Unpaid</div>
-                  <div style={{ fontSize: "12px", color: "#94A3B8", marginTop: "6px", fontWeight: 600 }}>
+                  <div style={{ fontSize: "28px", fontWeight: 800, color: "var(--admin-error-text)", letterSpacing: "-0.02em" }}>{stats.unpaidInvoices} Unpaid</div>
+                  <div style={{ fontSize: "12px", color: "var(--admin-text-muted)", marginTop: "6px", fontWeight: 600 }}>
                     {formatRupees(stats.unpaidAmount)} pending collection
                   </div>
                 </div>
@@ -605,19 +614,19 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: "20px" }}>
                 
                 {/* GRAPH 1: Apartment Water Usage & Billing Comparison (Bar Chart) */}
-                <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)", boxShadow: "0 10px 30px -10px rgba(0,0,0,0.4)", minWidth: 0 }}>
+                <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-card-border)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)", boxShadow: "var(--admin-card-shadow)", minWidth: 0 }}>
                   <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <span style={{ fontSize: "11px", fontWeight: 800, color: "#38BDF8", background: "rgba(56,189,248,0.15)", border: "1px solid rgba(56,189,248,0.3)", padding: "2px 8px", borderRadius: "10px" }}>GRAPH 1 OF 3</span>
-                        <h2 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Apartment Water Consumption vs Billing</h2>
+                        <h2 style={{ fontSize: "16px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>Apartment Water Consumption vs Billing</h2>
                       </div>
-                      <p style={{ fontSize: "12.5px", color: "#64748B", margin: "4px 0 0" }}>
+                      <p style={{ fontSize: "12.5px", color: "var(--admin-text-muted)", margin: "4px 0 0" }}>
                         Comparing water usage (L) &amp; billed amount (₹) across 5 complexes for {getBillingMonthName(selectedMonth)}
                       </p>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "14px", fontSize: "12px", color: "#94A3B8" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px", fontSize: "12px", color: "var(--admin-text-muted)" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#38BDF8", display: "inline-block" }} />
                         Usage (L)
@@ -632,35 +641,35 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                   <div style={{ width: "100%", height: "250px", minWidth: 0 }}>
                     <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                       <BarChart data={barChartData} margin={{ top: 10, right: 10, left: -10, bottom: 4 }} barCategoryGap="22%">
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fill: "#64748B", fontSize: 12, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: "#64748B", fontSize: 11, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--admin-border-muted)" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fill: "var(--admin-text-muted)", fontSize: 12, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: "var(--admin-text-muted)", fontSize: 11, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
                         <Tooltip
-                          contentStyle={{ background: "rgba(8,15,28,0.97)", border: "1px solid rgba(56,189,248,0.35)", borderRadius: "12px", color: "#FFFFFF", fontSize: "13px", padding: "10px 14px", boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}
-                          cursor={{ fill: "rgba(56,189,248,0.06)" }}
+                          contentStyle={{ background: "var(--admin-tooltip-bg)", border: "1px solid var(--admin-tooltip-border)", borderRadius: "12px", color: "var(--admin-tooltip-color)", fontSize: "13px", padding: "10px 14px", boxShadow: "var(--admin-card-shadow)" }}
+                          cursor={{ fill: "rgba(56,189,248,0.08)" }}
                           formatter={(value, name) => [
                             name === "Billed (₹)" ? `₹ ${new Intl.NumberFormat("en-IN").format(value)}` : `${new Intl.NumberFormat("en-IN").format(value)} L`,
                             name
                           ]}
                         />
-                        <Bar dataKey="usage" name="Usage (L)" fill="#38BDF8" radius={[6, 6, 0, 0]} />
-                        <Bar dataKey="billed" name="Billed (₹)" fill="#A78BFA" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="usage" name="Usage (L)" fill="#0284C7" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="billed" name="Billed (₹)" fill="#8B5CF6" radius={[6, 6, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
                 {/* GRAPH 2: Financial Collection Status (Donut Chart) */}
-                <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)", boxShadow: "0 10px 30px -10px rgba(0,0,0,0.4)", display: "flex", flexDirection: "column", minWidth: 0 }}>
+                <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-card-border)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)", boxShadow: "var(--admin-card-shadow)", display: "flex", flexDirection: "column", minWidth: 0 }}>
                   <div style={{ marginBottom: "14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#34D399", background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)", padding: "2px 8px", borderRadius: "10px" }}>GRAPH 2 OF 3</span>
-                        <h2 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Revenue Collection Status</h2>
+                        <span style={{ fontSize: "11px", fontWeight: 800, color: "#10B981", background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)", padding: "2px 8px", borderRadius: "10px" }}>GRAPH 2 OF 3</span>
+                        <h2 style={{ fontSize: "16px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>Revenue Collection Status</h2>
                       </div>
-                      <p style={{ fontSize: "12.5px", color: "#64748B", margin: "4px 0 0" }}>Paid vs Unpaid collection efficiency</p>
+                      <p style={{ fontSize: "12.5px", color: "var(--admin-text-muted)", margin: "4px 0 0" }}>Paid vs Unpaid collection efficiency</p>
                     </div>
-                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#34D399", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "3px 8px", borderRadius: "12px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#10B981", background: "rgba(16, 185, 129, 0.15)", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "3px 8px", borderRadius: "12px" }}>
                       {collectionRate}% Paid
                     </span>
                   </div>
@@ -675,14 +684,14 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                             ))}
                           </Pie>
                           <Tooltip
-                            contentStyle={{ background: "rgba(8,15,28,0.97)", border: "1px solid rgba(56,189,248,0.35)", borderRadius: "12px", color: "#FFFFFF", fontSize: "12px", padding: "8px 12px" }}
+                            contentStyle={{ background: "var(--admin-tooltip-bg)", border: "1px solid var(--admin-tooltip-border)", borderRadius: "12px", color: "var(--admin-tooltip-color)", fontSize: "12px", padding: "8px 12px", boxShadow: "var(--admin-card-shadow)" }}
                             formatter={(value, name) => [`₹ ${new Intl.NumberFormat("en-IN").format(value)}`, name]}
                           />
                         </PieChart>
                       </ResponsiveContainer>
                       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", textAlign: "center", pointerEvents: "none" }}>
-                        <div style={{ fontSize: "10.5px", color: "#64748B", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Billed</div>
-                        <div style={{ fontSize: "15px", fontWeight: 800, color: "#FFFFFF", marginTop: "2px" }}>₹{new Intl.NumberFormat("en-IN").format(Math.round(totalBillingSum))}</div>
+                        <div style={{ fontSize: "10.5px", color: "var(--admin-text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Billed</div>
+                        <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--admin-text-white)", marginTop: "2px" }}>₹{new Intl.NumberFormat("en-IN").format(Math.round(totalBillingSum))}</div>
                       </div>
                     </div>
 
@@ -691,7 +700,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                         <div key={item.name} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
                           <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: item.color }} />
                           <div>
-                            <div style={{ fontSize: "11.5px", color: "#94A3B8", fontWeight: 600 }}>{item.name}</div>
+                            <div style={{ fontSize: "11.5px", color: "var(--admin-text-muted)", fontWeight: 600 }}>{item.name}</div>
                             <div style={{ fontSize: "12.5px", color: item.color, fontWeight: 800 }}>₹{new Intl.NumberFormat("en-IN").format(item.value)}</div>
                           </div>
                         </div>
@@ -702,22 +711,22 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               </div>
 
               {/* ROW 2: GRAPH 3 (Area Chart) - Multi-Month Telemetry & Billing Activity Trend */}
-              <div style={{ background: "rgba(17,26,42,0.85)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)", boxShadow: "0 10px 30px -10px rgba(0,0,0,0.4)", minWidth: 0 }}>
+              <div style={{ background: "var(--admin-card-bg)", border: "1px solid var(--admin-card-border)", borderRadius: "20px", padding: "24px", backdropFilter: "blur(20px)", boxShadow: "var(--admin-card-shadow)", minWidth: 0 }}>
                 <div style={{ marginBottom: "18px", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#A78BFA", background: "rgba(167,139,250,0.15)", border: "1px solid rgba(167,139,250,0.3)", padding: "2px 8px", borderRadius: "10px" }}>GRAPH 3 OF 3</span>
-                      <h2 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>Monthly Telemetry &amp; Revenue Growth Curve</h2>
+                      <span style={{ fontSize: "11px", fontWeight: 800, color: "#8B5CF6", background: "rgba(167,139,250,0.15)", border: "1px solid rgba(167,139,250,0.3)", padding: "2px 8px", borderRadius: "10px" }}>GRAPH 3 OF 3</span>
+                      <h2 style={{ fontSize: "16px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>Monthly Telemetry &amp; Revenue Growth Curve</h2>
                     </div>
-                    <p style={{ fontSize: "12.5px", color: "#64748B", margin: "4px 0 0" }}>Historical billing cycles &amp; revenue trajectory across months</p>
+                    <p style={{ fontSize: "12.5px", color: "var(--admin-text-muted)", margin: "4px 0 0" }}>Historical billing cycles &amp; revenue trajectory across months</p>
                   </div>
 
-                  <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "#94A3B8" }}>
+                  <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--admin-text-muted)" }}>
                     <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                      <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#38BDF8", display: "inline-block" }} /> Cycles
+                      <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#0284C7", display: "inline-block" }} /> Cycles
                     </span>
                     <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                      <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#A78BFA", display: "inline-block" }} /> Billed (₹)
+                      <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#8B5CF6", display: "inline-block" }} /> Billed (₹)
                     </span>
                   </div>
                 </div>
@@ -727,20 +736,20 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                     <AreaChart data={trendData} margin={{ top: 10, right: 16, left: -10, bottom: 4 }}>
                       <defs>
                         <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#38BDF8" stopOpacity={0.35} />
-                          <stop offset="95%" stopColor="#38BDF8" stopOpacity={0.02} />
+                          <stop offset="5%" stopColor="#0284C7" stopOpacity={0.35} />
+                          <stop offset="95%" stopColor="#0284C7" stopOpacity={0.02} />
                         </linearGradient>
                         <linearGradient id="areaGrad2" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#A78BFA" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="#A78BFA" stopOpacity={0.01} />
+                          <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.01} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                      <XAxis dataKey="month" tick={{ fill: "#64748B", fontSize: 12, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: "#64748B", fontSize: 11, fontFamily: "inherit" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--admin-border-muted)" vertical={false} />
+                      <XAxis dataKey="month" tick={{ fill: "var(--admin-text-muted)", fontSize: 12, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "var(--admin-text-muted)", fontSize: 11, fontFamily: "inherit" }} axisLine={false} tickLine={false} allowDecimals={false} />
                       <Tooltip
-                        contentStyle={{ background: "rgba(8,15,28,0.97)", border: "1px solid rgba(56,189,248,0.35)", borderRadius: "12px", color: "#FFFFFF", fontSize: "13px", padding: "10px 14px", boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}
-                        labelStyle={{ color: "#38BDF8", fontWeight: 700 }}
+                        contentStyle={{ background: "var(--admin-tooltip-bg)", border: "1px solid var(--admin-tooltip-border)", borderRadius: "12px", color: "var(--admin-tooltip-color)", fontSize: "13px", padding: "10px 14px", boxShadow: "var(--admin-card-shadow)" }}
+                        labelStyle={{ color: "#0284C7", fontWeight: 700 }}
                         formatter={(value, name) => {
                           if (name === "Billed (₹)") return [`₹ ${new Intl.NumberFormat("en-IN").format(value)}`, name];
                           return [value, name];
@@ -758,11 +767,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             {/* Filter & Search Bar */}
             <div
               style={{
-                background: "rgba(17, 26, 42, 0.85)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "18px",
                 padding: "20px 24px",
                 backdropFilter: "blur(20px)",
+                boxShadow: "var(--admin-card-shadow)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -772,15 +782,15 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             >
               <div style={{ display: "flex", alignItems: "center", gap: "14px", flex: 1, minWidth: "260px" }}>
                 <div style={{ position: "relative", width: "100%", maxWidth: "340px" }}>
-                  <Search size={16} color="#64748B" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)" }} />
+                  <Search size={16} color="var(--admin-text-muted)" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)" }} />
                   <input
                     type="text"
                     placeholder="Search apartment by name..."
                     style={{
                       width: "100%",
-                      background: "rgba(13, 22, 36, 0.9)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      color: "#FFFFFF",
+                      background: "var(--admin-input-bg)",
+                      border: "1px solid var(--admin-input-border)",
+                      color: "var(--admin-text-white)",
                       padding: "10px 14px 10px 42px",
                       borderRadius: "10px",
                       fontSize: "13.5px",
@@ -795,15 +805,15 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
 
               <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Filter size={15} color="#94A3B8" />
-                  <span style={{ fontSize: "13px", color: "#94A3B8", fontWeight: 600 }}>{t("billing.status")}:</span>
+                  <Filter size={15} color="var(--admin-text-muted)" />
+                  <span style={{ fontSize: "13px", color: "var(--admin-text-muted)", fontWeight: 600 }}>{t("billing.status")}:</span>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     style={{
-                      background: "rgba(13, 22, 36, 0.9)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      color: "#FFFFFF",
+                      background: "var(--admin-input-bg)",
+                      border: "1px solid var(--admin-input-border)",
+                      color: "var(--admin-text-white)",
                       padding: "8px 14px",
                       borderRadius: "10px",
                       fontSize: "13px",
@@ -818,14 +828,14 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "13px", color: "#94A3B8", fontWeight: 600 }}>{t("dashboard.selectMonth")}:</span>
+                  <span style={{ fontSize: "13px", color: "var(--admin-text-muted)", fontWeight: 600 }}>{t("dashboard.selectMonth")}:</span>
                   <select
                     value={selectedMonth}
                     onChange={(e) => setGlobalMonth(e.target.value)}
                     style={{
-                      background: "rgba(13, 22, 36, 0.9)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      color: "#FFFFFF",
+                      background: "var(--admin-input-bg)",
+                      border: "1px solid var(--admin-input-border)",
+                      color: "var(--admin-text-white)",
                       padding: "8px 14px",
                       borderRadius: "10px",
                       fontSize: "13px",
@@ -866,19 +876,19 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             {/* Overview Table */}
             <div
               style={{
-                background: "rgba(17, 26, 42, 0.85)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "20px",
                 padding: "24px",
                 backdropFilter: "blur(20px)",
-                boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                boxShadow: "var(--admin-card-shadow)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-                <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
+                <h2 style={{ fontSize: "18px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>
                   Apartment Telemetry Overview
                 </h2>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#38BDF8", background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.25)", padding: "4px 12px", borderRadius: "16px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "#0284C7", background: "rgba(56, 189, 248, 0.1)", border: "1px solid rgba(56, 189, 248, 0.25)", padding: "4px 12px", borderRadius: "16px" }}>
                   {filteredApartments.length} Complexes
                 </span>
               </div>
@@ -886,7 +896,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
                   <thead>
-                    <tr style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.1)", color: "#64748B", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    <tr style={{ borderBottom: "1px solid var(--admin-card-border)", color: "var(--admin-text-muted)", fontSize: "11.5px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                       <th style={{ padding: "14px 16px" }}>Apartment Name</th>
                       <th style={{ padding: "14px 16px" }}>Households</th>
                       <th style={{ padding: "14px 16px" }}>Current Usage</th>
@@ -921,23 +931,23 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                           <tr
                             key={apt.id}
                             style={{
-                              borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+                              borderBottom: "1px solid var(--admin-border-muted)",
                               transition: "background 0.18s ease",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.02)")}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--admin-subcard-bg)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                           >
                             <td style={{ padding: "16px" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                 <div style={{ width: "32px", height: "32px", borderRadius: "10px", background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                  <Building2 size={16} color="#38BDF8" />
+                                  <Building2 size={16} color="#0284C7" />
                                 </div>
-                                <span style={{ fontWeight: 700, color: "#FFFFFF", fontSize: "14px" }}>{apt.name}</span>
+                                <span style={{ fontWeight: 700, color: "var(--admin-text-white)", fontSize: "14px" }}>{apt.name}</span>
                               </div>
                             </td>
-                            <td style={{ padding: "16px", color: "#94A3B8", fontSize: "13.5px" }}>{houseCount} Flats</td>
-                            <td style={{ padding: "16px", color: "#38BDF8", fontWeight: 700, fontSize: "14px" }}>{formatLiters(cycleUsage)}</td>
-                            <td style={{ padding: "16px", color: "#FFFFFF", fontWeight: 700, fontSize: "14px" }}>{formatRupees(cycleAmount)}</td>
+                            <td style={{ padding: "16px", color: "var(--admin-text-muted)", fontSize: "13.5px" }}>{houseCount} Flats</td>
+                            <td style={{ padding: "16px", color: "#0284C7", fontWeight: 700, fontSize: "14px" }}>{formatLiters(cycleUsage)}</td>
+                            <td style={{ padding: "16px", color: "var(--admin-text-white)", fontWeight: 700, fontSize: "14px" }}>{formatRupees(cycleAmount)}</td>
                             <td style={{ padding: "16px" }}>
                               <span
                                 style={{
@@ -1057,13 +1067,13 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
       {/* Top Banner Header */}
       <div
         style={{
-          background: "linear-gradient(135deg, rgba(17, 26, 42, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%)",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
+          background: "var(--admin-card-bg)",
+          border: "1px solid var(--admin-card-border)",
           borderRadius: "24px",
           padding: "32px 36px",
           backdropFilter: "blur(24px)",
           marginBottom: "28px",
-          boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.5)",
+          boxShadow: "var(--admin-card-shadow)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -1093,7 +1103,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               style={{
                 fontSize: "11px",
                 fontWeight: 800,
-                color: "#38BDF8",
+                color: "#0284C7",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 background: "rgba(56, 189, 248, 0.12)",
@@ -1109,7 +1119,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 style={{
                   fontSize: "11px",
                   fontWeight: 700,
-                  color: "#34D399",
+                  color: "#10B981",
                   background: "rgba(16, 185, 129, 0.12)",
                   border: "1px solid rgba(16, 185, 129, 0.25)",
                   padding: "4px 12px",
@@ -1123,10 +1133,10 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               </span>
             )}
           </div>
-          <h1 style={{ fontSize: "30px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", margin: 0 }}>
+          <h1 style={{ fontSize: "30px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em", margin: 0 }}>
             {t("dashboard.welcomeResident", { name: auth?.username || "Resident" })}
           </h1>
-          <p style={{ fontSize: "14px", color: "#94A3B8", margin: "6px 0 0 0" }}>
+          <p style={{ fontSize: "14px", color: "var(--admin-text-muted)", margin: "6px 0 0 0" }}>
             {residentData?.linked
               ? `${residentData.apartmentName} • ${t("households.flatNumber")} ${residentData.flatNumber}`
               : t("dashboard.residentSubtitle")}
@@ -1166,14 +1176,14 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
       {!loadingResident && residentData && !residentData.linked && (
         <div
           style={{
-            background: "rgba(17, 26, 42, 0.9)",
-            border: "1px solid rgba(255, 255, 255, 0.12)",
+            background: "var(--admin-card-bg)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "24px",
             padding: "40px",
             backdropFilter: "blur(20px)",
             maxWidth: "640px",
             margin: "0 auto",
-            boxShadow: "0 20px 40px -15px rgba(0,0,0,0.5)",
+            boxShadow: "var(--admin-card-shadow)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
@@ -1190,11 +1200,11 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 flexShrink: 0,
               }}
             >
-              <Home size={24} color="#38BDF8" />
+              <Home size={24} color="#0284C7" />
             </div>
             <div>
-              <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>{t("dashboard.linkHousehold")}</h2>
-              <p style={{ fontSize: "14px", color: "#94A3B8", margin: "4px 0 0 0" }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>{t("dashboard.linkHousehold")}</h2>
+              <p style={{ fontSize: "14px", color: "var(--admin-text-muted)", margin: "4px 0 0 0" }}>
                 {t("dashboard.residentSubtitle")}
               </p>
             </div>
@@ -1202,7 +1212,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
 
           <form onSubmit={handleLinkSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <div>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "#94A3B8", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--admin-text-muted)", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 {t("dashboard.selectApartment")}
               </label>
               <select
@@ -1211,9 +1221,9 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 required
                 style={{
                   width: "100%",
-                  background: "rgba(13, 22, 36, 0.95)",
-                  border: "1px solid rgba(255, 255, 255, 0.15)",
-                  color: "#FFFFFF",
+                  background: "var(--admin-input-bg)",
+                  border: "1px solid var(--admin-input-border)",
+                  color: "var(--admin-text-white)",
                   padding: "14px 16px",
                   borderRadius: "12px",
                   fontSize: "14.5px",
@@ -1230,7 +1240,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             </div>
 
             <div>
-              <label style={{ fontSize: "12px", fontWeight: 700, color: "#94A3B8", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <label style={{ fontSize: "12px", fontWeight: 700, color: "var(--admin-text-muted)", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 Flat Number
               </label>
               <input
@@ -1240,9 +1250,9 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 required
                 style={{
                   width: "100%",
-                  background: "rgba(13, 22, 36, 0.95)",
-                  border: "1px solid rgba(255, 255, 255, 0.15)",
-                  color: "#FFFFFF",
+                  background: "var(--admin-input-bg)",
+                  border: "1px solid var(--admin-input-border)",
+                  color: "var(--admin-text-white)",
                   padding: "14px 16px",
                   borderRadius: "12px",
                   fontSize: "14.5px",
@@ -1284,12 +1294,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             {/* KPI 1: Current Month Usage */}
             <div
               style={{
-                background: "rgba(17, 26, 42, 0.85)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "20px",
                 padding: "24px",
                 backdropFilter: "blur(20px)",
-                boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                boxShadow: "var(--admin-card-shadow)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
@@ -1297,7 +1307,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#94A3B8" }}>{t("dashboard.totalConsumption")}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-text-muted)" }}>{t("dashboard.totalConsumption")}</span>
                 <div
                   style={{
                     width: "40px",
@@ -1310,11 +1320,11 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                     justifyContent: "center",
                   }}
                 >
-                  <Droplets size={20} color="#38BDF8" />
+                  <Droplets size={20} color="#0284C7" />
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                <div style={{ fontSize: "32px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em" }}>
                   {formatLiters(currentMonthTotal)}
                 </div>
                 <div style={{ marginTop: "8px" }}>
@@ -1326,12 +1336,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             {/* KPI 2: Daily Average */}
             <div
               style={{
-                background: "rgba(17, 26, 42, 0.85)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "20px",
                 padding: "24px",
                 backdropFilter: "blur(20px)",
-                boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                boxShadow: "var(--admin-card-shadow)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
@@ -1339,7 +1349,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#94A3B8" }}>{t("waterUsage.reading")}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-text-muted)" }}>{t("waterUsage.reading")}</span>
                 <div
                   style={{
                     width: "40px",
@@ -1356,11 +1366,11 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
-                  {avgDaily} <span style={{ fontSize: "16px", color: "#94A3B8", fontWeight: 600 }}>L/day</span>
+                <div style={{ fontSize: "32px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em" }}>
+                  {avgDaily} <span style={{ fontSize: "16px", color: "var(--admin-text-muted)", fontWeight: 600 }}>L/day</span>
                 </div>
                 <div style={{ marginTop: "8px" }}>
-                  <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#34D399", background: "rgba(16, 185, 129, 0.12)", padding: "3px 8px", borderRadius: "12px" }}>
+                  <span style={{ fontSize: "11.5px", fontWeight: 700, color: "#10B981", background: "rgba(16, 185, 129, 0.12)", padding: "3px 8px", borderRadius: "12px" }}>
                     ✓ {t("alerts.allClear")}
                   </span>
                 </div>
@@ -1370,12 +1380,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             {/* KPI 3: Estimated Cost */}
             <div
               style={{
-                background: "rgba(17, 26, 42, 0.85)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "20px",
                 padding: "24px",
                 backdropFilter: "blur(20px)",
-                boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                boxShadow: "var(--admin-card-shadow)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
@@ -1383,7 +1393,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#94A3B8" }}>{t("dashboard.myBill")}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-text-muted)" }}>{t("dashboard.myBill")}</span>
                 <div
                   style={{
                     width: "40px",
@@ -1396,15 +1406,15 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                     justifyContent: "center",
                   }}
                 >
-                  <Coins size={20} color="#A78BFA" />
+                  <Coins size={20} color="#8B5CF6" />
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                <div style={{ fontSize: "32px", fontWeight: 800, color: "var(--admin-text-white)", letterSpacing: "-0.02em" }}>
                   {formatRupees(estimatedCost)}
                 </div>
-                <div style={{ marginTop: "8px", fontSize: "12px", color: "#94A3B8" }}>
-                  {t("billing.status")}: <strong style={{ color: "#38BDF8" }}>{t("billing.open")}</strong>
+                <div style={{ marginTop: "8px", fontSize: "12px", color: "var(--admin-text-muted)" }}>
+                  {t("billing.status")}: <strong style={{ color: "#0284C7" }}>{t("billing.open")}</strong>
                 </div>
               </div>
             </div>
@@ -1412,12 +1422,12 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             {/* KPI 4: Leak & Anomaly Status */}
             <div
               style={{
-                background: "rgba(17, 26, 42, 0.85)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "20px",
                 padding: "24px",
                 backdropFilter: "blur(20px)",
-                boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                boxShadow: "var(--admin-card-shadow)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
@@ -1425,7 +1435,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#94A3B8" }}>{t("alerts.title")}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--admin-text-muted)" }}>{t("alerts.title")}</span>
                 <div
                   style={{
                     width: "40px",
@@ -1438,14 +1448,14 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                     justifyContent: "center",
                   }}
                 >
-                  <ShieldCheck size={20} color="#34D399" />
+                  <ShieldCheck size={20} color="#10B981" />
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: "18px", fontWeight: 800, color: "#34D399", letterSpacing: "-0.01em" }}>
+                <div style={{ fontSize: "18px", fontWeight: 800, color: "#10B981", letterSpacing: "-0.01em" }}>
                   All Systems Normal
                 </div>
-                <div style={{ marginTop: "6px", fontSize: "12px", color: "#64748B" }}>
+                <div style={{ marginTop: "6px", fontSize: "12px", color: "var(--admin-text-muted)" }}>
                   No continuous leaks or abnormal pressure detected.
                 </div>
               </div>
@@ -1457,22 +1467,22 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             {/* Daily Consumption Area Chart */}
             <div
               style={{
-                background: "rgba(17, 26, 42, 0.85)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "24px",
                 padding: "26px",
                 backdropFilter: "blur(20px)",
-                boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                boxShadow: "var(--admin-card-shadow)",
                 display: "flex",
                 flexDirection: "column",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
                 <div>
-                  <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-                    <Activity size={18} color="#38BDF8" /> Daily Water Usage Trend
+                  <h2 style={{ fontSize: "18px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Activity size={18} color="#0284C7" /> Daily Water Usage Trend
                   </h2>
-                  <p style={{ fontSize: "12.5px", color: "#64748B", margin: "4px 0 0" }}>
+                  <p style={{ fontSize: "12.5px", color: "var(--admin-text-muted)", margin: "4px 0 0" }}>
                     Metered consumption in Liters (L) per day
                   </p>
                 </div>
@@ -1492,31 +1502,31 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                         <stop offset="95%" stopColor="#38BDF8" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                    <XAxis dataKey="date" tick={{ fill: "#64748B", fontSize: 12, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#64748B", fontSize: 11, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--admin-border-muted)" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fill: "var(--admin-text-muted)", fontSize: 12, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "var(--admin-text-muted)", fontSize: 11, fontFamily: "inherit" }} axisLine={false} tickLine={false} />
                     <Tooltip
                       contentStyle={{
-                        background: "rgba(8, 15, 28, 0.97)",
-                        border: "1px solid rgba(56, 189, 248, 0.4)",
+                        background: "var(--admin-tooltip-bg)",
+                        border: "1px solid var(--admin-tooltip-border)",
                         borderRadius: "14px",
-                        color: "#FFFFFF",
+                        color: "var(--admin-tooltip-color)",
                         fontSize: "13px",
                         padding: "10px 14px",
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+                        boxShadow: "var(--admin-card-shadow)",
                       }}
-                      labelStyle={{ color: "#38BDF8", fontWeight: 700, marginBottom: "4px" }}
+                      labelStyle={{ color: "#0284C7", fontWeight: 700, marginBottom: "4px" }}
                       formatter={(val) => [`${val} Liters`, "Water Used"]}
                     />
                     <Area
                       type="monotone"
                       dataKey="usage"
                       name="Water Usage"
-                      stroke="#38BDF8"
+                      stroke="#0284C7"
                       strokeWidth={3}
                       fill="url(#residentAreaGrad)"
-                      dot={{ fill: "#38BDF8", strokeWidth: 0, r: 4 }}
-                      activeDot={{ r: 7, fill: "#38BDF8", stroke: "rgba(56,189,248,0.4)", strokeWidth: 5 }}
+                      dot={{ fill: "#0284C7", strokeWidth: 0, r: 4 }}
+                      activeDot={{ r: 7, fill: "#0284C7", stroke: "rgba(56,189,248,0.4)", strokeWidth: 5 }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -1526,22 +1536,22 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
             {/* Consumption Quota Donut & Fixture Breakdown */}
             <div
               style={{
-                background: "rgba(17, 26, 42, 0.85)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--admin-card-bg)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "24px",
                 padding: "26px",
                 backdropFilter: "blur(20px)",
-                boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.4)",
+                boxShadow: "var(--admin-card-shadow)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
               }}
             >
               <div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>
+                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "var(--admin-text-white)", margin: 0 }}>
                   Usage by Fixture Category
                 </h2>
-                <p style={{ fontSize: "12px", color: "#64748B", margin: "4px 0 0" }}>
+                <p style={{ fontSize: "12px", color: "var(--admin-text-muted)", margin: "4px 0 0" }}>
                   Estimated household breakdown
                 </p>
               </div>
@@ -1556,12 +1566,13 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        background: "rgba(8, 15, 28, 0.97)",
-                        border: "1px solid rgba(56, 189, 248, 0.4)",
+                        background: "var(--admin-tooltip-bg)",
+                        border: "1px solid var(--admin-tooltip-border)",
                         borderRadius: "12px",
-                        color: "#FFFFFF",
+                        color: "var(--admin-tooltip-color)",
                         fontSize: "12px",
                         padding: "8px 12px",
+                        boxShadow: "var(--admin-card-shadow)",
                       }}
                       formatter={(val) => [`${val} L`, "Estimated Usage"]}
                     />
@@ -1578,9 +1589,9 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                   <div key={item.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "12px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <div style={{ width: "8px", height: "8px", borderRadius: "2px", background: item.color }} />
-                      <span style={{ color: "#94A3B8" }}>{item.name}</span>
+                      <span style={{ color: "var(--admin-text-muted)" }}>{item.name}</span>
                     </div>
-                    <span style={{ color: "#FFFFFF", fontWeight: 700 }}>{item.value} L</span>
+                    <span style={{ color: "var(--admin-text-white)", fontWeight: 700 }}>{item.value} L</span>
                   </div>
                 ))}
               </div>
@@ -1614,11 +1625,11 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
                   flexShrink: 0,
                 }}
               >
-                <Sparkles size={22} color="#38BDF8" />
+                <Sparkles size={22} color="#0284C7" />
               </div>
               <div>
-                <div style={{ fontSize: "15px", fontWeight: 800, color: "#FFFFFF" }}>Smart Conservation Tip</div>
-                <div style={{ fontSize: "13px", color: "#94A3B8", marginTop: "2px" }}>
+                <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--admin-text-white)" }}>Smart Conservation Tip</div>
+                <div style={{ fontSize: "13px", color: "var(--admin-text-muted)", marginTop: "2px" }}>
                   Installing low-flow aerators on kitchen faucets can cut daily water consumption by up to 25 Liters without reducing pressure!
                 </div>
               </div>
@@ -1628,7 +1639,7 @@ export default function DashboardPage({ auth, setPage, globalMonth, setGlobalMon
               style={{
                 background: "rgba(56, 189, 248, 0.15)",
                 border: "1px solid rgba(56, 189, 248, 0.3)",
-                color: "#38BDF8",
+                color: "#0284C7",
                 fontWeight: 700,
                 fontSize: "13px",
                 padding: "10px 18px",

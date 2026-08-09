@@ -16,6 +16,8 @@ public interface BillingCycleRepository extends JpaRepository<BillingCycle, Long
 
     Optional<BillingCycle> findByApartmentIdAndStatus(Long apartmentId, BillingCycle.Status status);
 
+    void deleteByApartmentId(Long apartmentId);
+
     @org.springframework.data.jpa.repository.Query(
         "SELECT COUNT(bc) > 0 FROM BillingCycle bc WHERE bc.apartment.id = :apartmentId " +
         "AND :startDate <= bc.endDate AND :endDate >= bc.startDate"
@@ -25,4 +27,4 @@ public interface BillingCycleRepository extends JpaRepository<BillingCycle, Long
             @org.springframework.data.repository.query.Param("startDate") java.time.LocalDate startDate,
             @org.springframework.data.repository.query.Param("endDate") java.time.LocalDate endDate
     );
-}
+}

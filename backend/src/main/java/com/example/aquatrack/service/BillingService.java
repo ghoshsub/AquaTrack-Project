@@ -117,50 +117,82 @@ public class BillingService {
         BigDecimal excessRate = tariff.getExcessRate();
 
         List<Invoice> invoices = new ArrayList<>();
+        List<Household> allHouseholds = householdRepository.findByApartmentId(apartment.getId());
 
-        for (InvoiceGenerationRequest.HouseholdReading reading : request.getReadings()) {
-            Household h = householdRepository.findByIdAndApartmentAdminId(reading.getHouseholdId(), admin.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Household not found or access denied: " + reading.getHouseholdId()));
+        if (request != null && request.getReadings() != null && !request.getReadings().isEmpty()) {
+            for (InvoiceGenerationRequest.HouseholdReading reading : request.getReadings()) {
+                Household h = householdRepository.findById(reading.getHouseholdId())
+                        .orElseThrow(() -> new IllegalArgumentException("Household not found: " + reading.getHouseholdId()));
 
-            BigDecimal consumption = reading.getReadingValue() != null ? reading.getReadingValue() : BigDecimal.ZERO;
+                BigDecimal consumption = reading.getReadingValue() != null ? reading.getReadingValue() : BigDecimal.ZERO;
 
-            // 1. Save or update the WaterUsageLog on cycle's endDate so it is stored in history
-            Optional<WaterUsageLog> existingLogOpt = waterUsageLogRepository.findByHouseholdIdAndReadingDate(
-                    h.getId(), cycle.getEndDate());
-            WaterUsageLog log;
-            if (existingLogOpt.isPresent()) {
-                log = existingLogOpt.get();
-                log.setReadingValue(consumption);
-            } else {
-                log = new WaterUsageLog();
-                log.setHousehold(h);
-                log.setReadingDate(cycle.getEndDate());
-                log.setReadingValue(consumption);
-                log.setSource(WaterUsageLog.Source.MANUAL);
+                // 1. Save or update the WaterUsageLog on cycle's endDate so it is stored in history
+                Optional<WaterUsageLog> existingLogOpt = waterUsageLogRepository.findByHouseholdIdAndReadingDate(
+                        h.getId(), cycle.getEndDate());
+                WaterUsageLog log;
+                if (existingLogOpt.isPresent()) {
+                    log = existingLogOpt.get();
+                    log.setReadingValue(consumption);
+                } else {
+                    log = new WaterUsageLog();
+                    log.setHousehold(h);
+                    log.setReadingDate(cycle.getEndDate());
+                    log.setReadingValue(consumption);
+                    log.setSource(WaterUsageLog.Source.MANUAL);
+                }
+                waterUsageLogRepository.save(log);
+
+                // 2. Calculate Tiered Tariff
+                BigDecimal baseCharge = BigDecimal.ZERO;
+                if (consumption.compareTo(baseTierLimit) <= 0) {
+                    baseCharge = consumption.multiply(baseRate).setScale(2, RoundingMode.HALF_UP);
+                } else {
+                    BigDecimal basePart = baseTierLimit.multiply(baseRate);
+                    BigDecimal excessPart = consumption.subtract(baseTierLimit).multiply(excessRate);
+                    baseCharge = basePart.add(excessPart).setScale(2, RoundingMode.HALF_UP);
+                }
+
+                // 3. Create Invoice
+                Invoice invoice = new Invoice();
+                invoice.setBillingCycle(cycle);
+                invoice.setHousehold(h);
+                invoice.setWaterUsage(consumption);
+                invoice.setBaseCharge(baseCharge);
+                invoice.setAdjustments(BigDecimal.ZERO);
+                invoice.setTotal(baseCharge);
+                invoice.setStatus(Invoice.Status.UNPAID);
+
+                invoices.add(invoice);
             }
-            waterUsageLogRepository.save(log);
+        } else {
+            for (Household h : allHouseholds) {
+                BigDecimal consumption = BigDecimal.ZERO;
+                List<WaterUsageLog> logs = waterUsageLogRepository.findByHouseholdIdAndReadingDateBetween(
+                        h.getId(), cycle.getStartDate(), cycle.getEndDate());
+                if (!logs.isEmpty()) {
+                    consumption = logs.stream().map(WaterUsageLog::getReadingValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+                }
 
-            // 2. Calculate Tiered Tariff
-            BigDecimal baseCharge = BigDecimal.ZERO;
-            if (consumption.compareTo(baseTierLimit) <= 0) {
-                baseCharge = consumption.multiply(baseRate).setScale(2, RoundingMode.HALF_UP);
-            } else {
-                BigDecimal basePart = baseTierLimit.multiply(baseRate);
-                BigDecimal excessPart = consumption.subtract(baseTierLimit).multiply(excessRate);
-                baseCharge = basePart.add(excessPart).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal baseCharge = BigDecimal.ZERO;
+                if (consumption.compareTo(baseTierLimit) <= 0) {
+                    baseCharge = consumption.multiply(baseRate).setScale(2, RoundingMode.HALF_UP);
+                } else {
+                    BigDecimal basePart = baseTierLimit.multiply(baseRate);
+                    BigDecimal excessPart = consumption.subtract(baseTierLimit).multiply(excessRate);
+                    baseCharge = basePart.add(excessPart).setScale(2, RoundingMode.HALF_UP);
+                }
+
+                Invoice invoice = new Invoice();
+                invoice.setBillingCycle(cycle);
+                invoice.setHousehold(h);
+                invoice.setWaterUsage(consumption);
+                invoice.setBaseCharge(baseCharge);
+                invoice.setAdjustments(BigDecimal.ZERO);
+                invoice.setTotal(baseCharge);
+                invoice.setStatus(Invoice.Status.UNPAID);
+
+                invoices.add(invoice);
             }
-
-            // 3. Create Invoice
-            Invoice invoice = new Invoice();
-            invoice.setBillingCycle(cycle);
-            invoice.setHousehold(h);
-            invoice.setWaterUsage(consumption);
-            invoice.setBaseCharge(baseCharge);
-            invoice.setAdjustments(BigDecimal.ZERO);
-            invoice.setTotal(baseCharge);
-            invoice.setStatus(Invoice.Status.UNPAID);
-
-            invoices.add(invoice);
         }
 
         cycle.getInvoices().clear();

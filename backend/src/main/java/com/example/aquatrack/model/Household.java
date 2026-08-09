@@ -48,6 +48,9 @@ public class Household {
     @Column(name = "resident_email", length = 255)
     private String residentEmail;
 
+    @Column(name = "resident_phone", length = 50)
+    private String residentPhone;
+
     @NotNull
     @Column(name = "has_working_meter", nullable = false)
     private Boolean hasWorkingMeter = true;
