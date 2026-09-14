@@ -36,6 +36,11 @@ public class AdminBillingController {
         return ResponseEntity.ok(billingService.openBillingCycle(request));
     }
 
+    @PutMapping("/cycles/{id}")
+    public ResponseEntity<BillingCycle> updateCycle(@PathVariable Long id, @RequestBody BillingCycleRequest request) {
+        return ResponseEntity.ok(billingService.updateBillingCycle(id, request));
+    }
+
     @GetMapping("/cycles/apartment/{apartmentId}")
     public ResponseEntity<List<BillingCycle>> getCycles(@PathVariable Long apartmentId) {
         return ResponseEntity.ok(billingService.getBillingCyclesByApartment(apartmentId));
@@ -63,11 +68,29 @@ public class AdminBillingController {
         return ResponseEntity.ok(billingService.archiveBillingCycle(id));
     }
 
+    @PostMapping("/cycles/{id}/regenerate")
+    public ResponseEntity<BillingCycle> regenerateCycle(@PathVariable Long id) {
+        return ResponseEntity.ok(billingService.regenerateBillingCycle(id));
+    }
+
+    @PutMapping("/invoices/{id}")
+    public ResponseEntity<Invoice> updateInvoice(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Object> payload) {
+        return ResponseEntity.ok(billingService.updateInvoice(id, payload));
+    }
+
     @PutMapping("/invoices/{id}/adjustments")
     public ResponseEntity<Invoice> updateInvoiceAdjustments(
             @PathVariable Long id,
             @RequestParam("adjustments") BigDecimal adjustments) {
         return ResponseEntity.ok(billingService.updateInvoiceAdjustments(id, adjustments));
+    }
+
+    @PostMapping("/invoices/{id}/send-email")
+    public ResponseEntity<?> sendInvoiceEmail(@PathVariable Long id) {
+        String result = billingService.sendInvoiceEmailToResident(id);
+        return ResponseEntity.ok(java.util.Map.of("message", result));
     }
 
     @GetMapping("/cycles/{id}/invoices")

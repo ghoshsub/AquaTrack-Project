@@ -27,4 +27,14 @@ public interface BillingCycleRepository extends JpaRepository<BillingCycle, Long
             @org.springframework.data.repository.query.Param("startDate") java.time.LocalDate startDate,
             @org.springframework.data.repository.query.Param("endDate") java.time.LocalDate endDate
     );
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT bc FROM BillingCycle bc WHERE bc.apartment.id = :apartmentId " +
+        "AND :startDate <= bc.endDate AND :endDate >= bc.startDate"
+    )
+    List<BillingCycle> findOverlappingCycles(
+            @org.springframework.data.repository.query.Param("apartmentId") Long apartmentId,
+            @org.springframework.data.repository.query.Param("startDate") java.time.LocalDate startDate,
+            @org.springframework.data.repository.query.Param("endDate") java.time.LocalDate endDate
+    );
 }

@@ -30,6 +30,7 @@ public class BillingService {
     private final ApartmentRepository apartmentRepository;
     private final WaterUsageLogRepository waterUsageLogRepository;
     private final AlertRepository alertRepository;
+    private final UserRepository userRepository;
     private final EmailService emailService;
     private final AdminResolver adminResolver;
 
@@ -39,6 +40,7 @@ public class BillingService {
                           ApartmentRepository apartmentRepository,
                           WaterUsageLogRepository waterUsageLogRepository,
                           AlertRepository alertRepository,
+                          UserRepository userRepository,
                           EmailService emailService,
                           AdminResolver adminResolver) {
         this.billingCycleRepository = billingCycleRepository;
@@ -47,8 +49,30 @@ public class BillingService {
         this.apartmentRepository = apartmentRepository;
         this.waterUsageLogRepository = waterUsageLogRepository;
         this.alertRepository = alertRepository;
+        this.userRepository = userRepository;
         this.emailService = emailService;
         this.adminResolver = adminResolver;
+    }
+
+    private LocalDate[] resolveDates(BillingCycleRequest request) {
+        LocalDate start = request.getStartDate();
+        LocalDate end = request.getEndDate();
+
+        if ((start == null || end == null) && request.getMonth() != null && !request.getMonth().trim().isEmpty()) {
+            try {
+                java.time.YearMonth ym = java.time.YearMonth.parse(request.getMonth().trim());
+                start = ym.atDay(1);
+                end = ym.atEndOfMonth();
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid month format. Expected YYYY-MM");
+            }
+        }
+
+        if (start == null || end == null) {
+            throw new IllegalArgumentException("Please specify either a valid billing month (YYYY-MM) or start and end dates.");
+        }
+
+        return new LocalDate[]{start, end};
     }
 
     @Transactional
@@ -58,31 +82,77 @@ public class BillingService {
         Apartment apartment = apartmentRepository.findById(request.getApartmentId())
                 .orElseThrow(() -> new IllegalArgumentException("Apartment not found: " + request.getApartmentId()));
 
-        // Check if there is an active OPEN billing cycle
+        LocalDate[] dates = resolveDates(request);
+        LocalDate startDate = dates[0];
+        LocalDate endDate = dates[1];
+
+        // Check if there is an active cycle for this exact period or overlapping — if so, regenerate it!
+        List<BillingCycle> overlapping = billingCycleRepository.findOverlappingCycles(
+                apartment.getId(), startDate, endDate);
+        if (!overlapping.isEmpty()) {
+            BillingCycle existing = overlapping.get(0);
+            logger.info("Overlapping cycle found #{} for apartment {} ({}-{}) - regenerating.",
+                    existing.getId(), apartment.getId(), startDate, endDate);
+            return regenerateBillingCycle(existing.getId());
+        }
+
+        // Check if there is an active OPEN billing cycle for another month - reuse it with updated dates
         Optional<BillingCycle> existingOpen = billingCycleRepository.findByApartmentIdAndStatus(
                 apartment.getId(), BillingCycle.Status.OPEN);
         if (existingOpen.isPresent()) {
-            throw new IllegalStateException("An active OPEN billing cycle already exists for this apartment. " +
-                    "Please generate invoices or finalize it before opening a new one.");
-        }
-
-        // Check for duplicate / overlapping billing cycle period
-        boolean overlaps = billingCycleRepository.existsOverlappingCycle(
-                apartment.getId(), request.getStartDate(), request.getEndDate());
-        if (overlaps) {
-            throw new IllegalStateException("A billing cycle for this period overlaps with an existing cycle. " +
-                    "Please check the start and end dates.");
+            BillingCycle openCycle = existingOpen.get();
+            openCycle.setStartDate(startDate);
+            openCycle.setEndDate(endDate);
+            return billingCycleRepository.save(openCycle);
         }
 
         BillingCycle cycle = new BillingCycle();
         cycle.setApartment(apartment);
-        cycle.setStartDate(request.getStartDate());
-        cycle.setEndDate(request.getEndDate());
+        cycle.setStartDate(startDate);
+        cycle.setEndDate(endDate);
         cycle.setStatus(BillingCycle.Status.OPEN);
         cycle.setTotalPurchasedVolume(BigDecimal.ZERO);
         cycle.setUnitCost(BigDecimal.ZERO);
 
         return billingCycleRepository.save(cycle);
+    }
+
+    @Transactional
+    public BillingCycle updateBillingCycle(Long id, BillingCycleRequest request) {
+        adminResolver.requireAdmin();
+        BillingCycle cycle = billingCycleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Billing cycle not found: " + id));
+
+        if (cycle.getStatus() != BillingCycle.Status.OPEN) {
+            throw new IllegalStateException("Only OPEN billing cycles can be edited.");
+        }
+
+        LocalDate[] dates = resolveDates(request);
+        cycle.setStartDate(dates[0]);
+        cycle.setEndDate(dates[1]);
+
+        return billingCycleRepository.save(cycle);
+    }
+
+    @Transactional
+    public String sendInvoiceEmailToResident(Long invoiceId) {
+        adminResolver.requireAdmin();
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new IllegalArgumentException("Invoice not found: " + invoiceId));
+
+        String recipient = null;
+        if (invoice.getHousehold().getUser() != null && invoice.getHousehold().getUser().getEmail() != null && !invoice.getHousehold().getUser().getEmail().trim().isEmpty()) {
+            recipient = invoice.getHousehold().getUser().getEmail();
+        } else {
+            recipient = invoice.getHousehold().getResidentEmail();
+        }
+
+        if (recipient == null || recipient.trim().isEmpty() || recipient.equals("no-resident-linked@example.com")) {
+            throw new IllegalArgumentException("No valid recipient email address found for Flat " + invoice.getHousehold().getFlatNumber());
+        }
+
+        emailService.sendInvoiceEmail(invoice, recipient);
+        return "Invoice email sent successfully to " + recipient;
     }
 
     public List<BillingCycle> getBillingCyclesByApartment(Long apartmentId) {
@@ -270,6 +340,153 @@ public class BillingService {
 
         return invoiceRepository.save(invoice);
     }
+
+    @Transactional
+    public Invoice updateInvoice(Long invoiceId, java.util.Map<String, Object> payload) {
+        adminResolver.requireAdmin();
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new IllegalArgumentException("Invoice not found: " + invoiceId));
+
+        if (payload.containsKey("waterUsage")) {
+            Object val = payload.get("waterUsage");
+            if (val != null) {
+                invoice.setWaterUsage(new BigDecimal(val.toString()));
+            }
+        }
+
+        if (payload.containsKey("baseCharge")) {
+            Object val = payload.get("baseCharge");
+            if (val != null) {
+                invoice.setBaseCharge(new BigDecimal(val.toString()));
+            }
+        }
+
+        if (payload.containsKey("adjustments")) {
+            Object val = payload.get("adjustments");
+            if (val != null) {
+                invoice.setAdjustments(new BigDecimal(val.toString()));
+            }
+        }
+
+        if (payload.containsKey("total")) {
+            Object val = payload.get("total");
+            if (val != null) {
+                invoice.setTotal(new BigDecimal(val.toString()));
+            } else {
+                invoice.setTotal(invoice.getBaseCharge().add(invoice.getAdjustments()));
+            }
+        } else if (payload.containsKey("baseCharge") || payload.containsKey("adjustments")) {
+            invoice.setTotal(invoice.getBaseCharge().add(invoice.getAdjustments()));
+        }
+
+        if (payload.containsKey("status")) {
+            String statusStr = (String) payload.get("status");
+            if (statusStr != null) {
+                Invoice.Status st = Invoice.Status.valueOf(statusStr.toUpperCase());
+                invoice.setStatus(st);
+                if (st == Invoice.Status.PAID && invoice.getPaymentDate() == null) {
+                    invoice.setPaymentDate(LocalDateTime.now());
+                    if (invoice.getReceiptNumber() == null) {
+                        invoice.setReceiptNumber("REC-" + invoice.getId() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                    }
+                } else if (st == Invoice.Status.UNPAID) {
+                    invoice.setPaymentDate(null);
+                }
+            }
+        }
+
+        if (payload.containsKey("residentEmail")) {
+            String newEmail = (String) payload.get("residentEmail");
+            if (newEmail != null && !newEmail.trim().isEmpty()) {
+                Household h = invoice.getHousehold();
+                if (h != null) {
+                    h.setResidentEmail(newEmail.trim());
+                    if (h.getUser() != null) {
+                        h.getUser().setEmail(newEmail.trim());
+                        userRepository.save(h.getUser());
+                    }
+                    householdRepository.save(h);
+                }
+            }
+        }
+
+        return invoiceRepository.save(invoice);
+    }
+
+    @Transactional
+    public BillingCycle regenerateBillingCycle(Long id) {
+        adminResolver.requireAdmin();
+        BillingCycle cycle = billingCycleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Billing cycle not found: " + id));
+
+        Apartment apartment = cycle.getApartment();
+        TariffPlan tariff = apartment.getTariffPlan();
+        if (tariff == null) {
+            throw new IllegalStateException("Apartment has no active Tariff Plan. Please configure rate tiers first.");
+        }
+
+        BigDecimal baseRate = tariff.getBaseRate();
+        BigDecimal baseTierLimit = tariff.getBaseTierLimit();
+        BigDecimal excessRate = tariff.getExcessRate();
+
+        List<Household> allHouseholds = householdRepository.findByApartmentId(apartment.getId());
+        List<Invoice> existingInvoices = invoiceRepository.findByBillingCycleId(cycle.getId());
+
+        List<Invoice> refreshedInvoices = new ArrayList<>();
+
+        for (Household h : allHouseholds) {
+            Optional<Invoice> prevInvOpt = existingInvoices.stream()
+                    .filter(inv -> inv.getHousehold().getId().equals(h.getId()))
+                    .findFirst();
+
+            BigDecimal consumption = BigDecimal.ZERO;
+            List<WaterUsageLog> logs = waterUsageLogRepository.findByHouseholdIdAndReadingDateBetween(
+                    h.getId(), cycle.getStartDate(), cycle.getEndDate());
+            if (!logs.isEmpty()) {
+                consumption = logs.stream().map(WaterUsageLog::getReadingValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+            } else if (prevInvOpt.isPresent() && prevInvOpt.get().getWaterUsage() != null && prevInvOpt.get().getWaterUsage().compareTo(BigDecimal.ZERO) > 0) {
+                consumption = prevInvOpt.get().getWaterUsage();
+            }
+
+            BigDecimal baseCharge = BigDecimal.ZERO;
+            if (consumption.compareTo(baseTierLimit) <= 0) {
+                baseCharge = consumption.multiply(baseRate).setScale(2, RoundingMode.HALF_UP);
+            } else {
+                BigDecimal basePart = baseTierLimit.multiply(baseRate);
+                BigDecimal excessPart = consumption.subtract(baseTierLimit).multiply(excessRate);
+                baseCharge = basePart.add(excessPart).setScale(2, RoundingMode.HALF_UP);
+            }
+
+            Invoice invoice;
+            if (prevInvOpt.isPresent()) {
+                invoice = prevInvOpt.get();
+            } else {
+                invoice = new Invoice();
+                invoice.setBillingCycle(cycle);
+                invoice.setHousehold(h);
+            }
+
+            invoice.setWaterUsage(consumption);
+            invoice.setBaseCharge(baseCharge);
+            if (invoice.getAdjustments() == null) {
+                invoice.setAdjustments(BigDecimal.ZERO);
+            }
+            invoice.setTotal(baseCharge.add(invoice.getAdjustments()));
+            if (invoice.getStatus() == null) {
+                invoice.setStatus(Invoice.Status.UNPAID);
+            }
+
+            refreshedInvoices.add(invoice);
+        }
+
+        invoiceRepository.saveAll(refreshedInvoices);
+        cycle.getInvoices().clear();
+        cycle.getInvoices().addAll(refreshedInvoices);
+        cycle.setStatus(BillingCycle.Status.FINALIZED);
+
+        return billingCycleRepository.save(cycle);
+    }
+
 
     public List<Invoice> getInvoicesByCycle(Long cycleId) {
         adminResolver.requireAdmin();

@@ -81,3 +81,36 @@ export async function updateProfile(token, payload) {
   });
   return handleResponse(res);
 }
+
+export async function listAdminUsers(token) {
+  const res = await fetch(`${API_BASE}/api/admin/users`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+}
+
+export async function updateAdminUser(token, id, payload) {
+  const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
+export async function deleteAdminUser(token, id) {
+  const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+}
+
+export async function getDemoCredentials() {
+  const res = await fetch(`${API_BASE}/api/auth/demo-credentials`);
+  return handleResponse(res);
+}
+

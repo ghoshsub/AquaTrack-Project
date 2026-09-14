@@ -89,6 +89,7 @@ public class AuthController {
         user.setUsername(request.getUsername().trim());
         user.setEmail(request.getEmail() != null ? request.getEmail().trim() : null);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setPasswordHint(request.getPassword());
         user.setRole(request.getRole());
         user.setAuthProvider(User.AuthProvider.LOCAL);
 
@@ -134,4 +135,71 @@ public class AuthController {
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
         return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole().name()));
     }
-}
+
+    @GetMapping("/demo-credentials")
+    public ResponseEntity<?> getDemoCredentials() {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+
+        // Find primary admin (or first available admin)
+        User admin = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == User.Role.ADMIN)
+                .findFirst()
+                .orElse(null);
+
+        // Find primary resident (or first available resident)
+        User resident = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == User.Role.RESIDENT)
+                .findFirst()
+                .orElse(null);
+
+        if (admin != null) {
+            java.util.Map<String, Object> adminData = new java.util.HashMap<>();
+            adminData.put("id", admin.getId());
+            adminData.put("username", admin.getUsername());
+            adminData.put("displayName", admin.getDisplayName() != null ? admin.getDisplayName() : admin.getUsername());
+            adminData.put("email", admin.getEmail());
+            adminData.put("password", admin.getPasswordHint() != null ? admin.getPasswordHint() : "admin123");
+            adminData.put("role", "ADMIN");
+            result.put("admin", adminData);
+        }
+
+        if (resident != null) {
+            java.util.Map<String, Object> residentData = new java.util.HashMap<>();
+            residentData.put("id", resident.getId());
+            residentData.put("username", resident.getUsername());
+            residentData.put("displayName", resident.getDisplayName() != null ? resident.getDisplayName() : resident.getUsername());
+            residentData.put("email", resident.getEmail());
+            residentData.put("password", resident.getPasswordHint() != null ? resident.getPasswordHint() : "resident123");
+            residentData.put("role", "RESIDENT");
+            if (resident.getHousehold() != null) {
+                residentData.put("flatNumber", resident.getHousehold().getFlatNumber());
+                if (resident.getHousehold().getApartment() != null) {
+                    residentData.put("apartmentName", resident.getHousehold().getApartment().getName());
+                }
+            }
+            result.put("resident", residentData);
+        }
+
+        // Also include a summary of all users for quick inspection / login
+        java.util.List<java.util.Map<String, Object>> allUsers = userRepository.findAll().stream().map(u -> {
+            java.util.Map<String, Object> uMap = new java.util.HashMap<>();
+            uMap.put("id", u.getId());
+            uMap.put("username", u.getUsername());
+            uMap.put("displayName", u.getDisplayName() != null ? u.getDisplayName() : u.getUsername());
+            uMap.put("email", u.getEmail());
+            uMap.put("role", u.getRole().name());
+            uMap.put("password", u.getPasswordHint() != null ? u.getPasswordHint() : (u.getRole() == User.Role.ADMIN ? "admin123" : "resident123"));
+            if (u.getHousehold() != null) {
+                uMap.put("flatNumber", u.getHousehold().getFlatNumber());
+                if (u.getHousehold().getApartment() != null) {
+                    uMap.put("apartmentName", u.getHousehold().getApartment().getName());
+                }
+            }
+            return uMap;
+        }).collect(java.util.stream.Collectors.toList());
+
+        result.put("allUsers", allUsers);
+
+        return ResponseEntity.ok(result);
+    }
+}

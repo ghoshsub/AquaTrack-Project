@@ -19,6 +19,7 @@ import AdminWaterUsagePage from "./pages/AdminWaterUsagePage.jsx";
 import AdminBillingPage from "./pages/AdminBillingPage.jsx";
 import AdminInvoicesPage from "./pages/AdminInvoicesPage.jsx";
 import AdminTariffPlansPage from "./pages/AdminTariffPlansPage.jsx";
+import AdminUsersPage from "./pages/AdminUsersPage.jsx";
 import ResidentBillsPage from "./pages/ResidentBillsPage.jsx";
 import AlertsPage from "./pages/AlertsPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
@@ -38,6 +39,7 @@ import {
   Menu,
   Bell,
   User,
+  Users as UsersIcon,
   Sun,
   Moon
 } from "lucide-react";
@@ -45,7 +47,14 @@ import {
 export default function App() {
   const { t } = useTranslation();
   const [page, setPage] = useState("home");
-  const [auth, setAuth] = useState(null); // { token, username, role } | null
+  const [auth, setAuth] = useState(() => {
+    try {
+      const saved = localStorage.getItem("at-auth");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }); // { token, username, role } | null
   const [dashboardMonth, setDashboardMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -78,13 +87,21 @@ export default function App() {
 
   function handleAuthed(data) {
     setAuth(data);
+    try {
+      if (data) {
+        localStorage.setItem("at-auth", JSON.stringify(data));
+      } else {
+        localStorage.removeItem("at-auth");
+      }
+    } catch (e) {}
   }
 
   function handlePageChange(next) {
     setSidebarOpen(false);
     if (next === "logout") {
       setAuth(null);
-      setPage("home");
+      try { localStorage.removeItem("at-auth"); } catch (e) {}
+      setPage("login");
       return;
     }
     setPage(next);
@@ -95,7 +112,7 @@ export default function App() {
 
   // Guard: admin-only pages require an authenticated ADMIN. Anyone else
   // (not logged in, or a RESIDENT) gets bounced back to the dashboard/home.
-  const isAdminPage = activePage === "admin-apartments" || activePage === "admin-households" || activePage === "admin-water-usage" || activePage === "admin-billing" || activePage === "admin-invoices" || activePage === "admin-tariffs";
+  const isAdminPage = activePage === "admin-apartments" || activePage === "admin-households" || activePage === "admin-water-usage" || activePage === "admin-billing" || activePage === "admin-invoices" || activePage === "admin-tariffs" || activePage === "admin-users";
   if (isAdminPage && (!auth || auth.role !== "ADMIN")) {
     activePage = auth ? "dashboard" : "home";
   }
@@ -130,6 +147,8 @@ export default function App() {
         return { title: t("adminHeader.invoices"), subtitle: t("adminHeader.invoicesSub") };
       case "admin-tariffs":
         return { title: t("adminHeader.tariffs"), subtitle: t("adminHeader.tariffsSub") };
+      case "admin-users":
+        return { title: "User Management", subtitle: "Inspect and edit all user accounts and credentials" };
       case "profile":
         return { title: t("adminHeader.profile"), subtitle: t("adminHeader.profileSub") };
       default:
@@ -261,6 +280,15 @@ export default function App() {
               {t("sidebar.tariffs")}
             </button>
 
+            {/* Users */}
+            <button
+              onClick={() => handlePageChange("admin-users")}
+              className={`admin-sidebar-item ${activePage === "admin-users" ? "active" : ""}`}
+            >
+              <UsersIcon size={18} />
+              Users
+            </button>
+
             <button
               onClick={() => handlePageChange("profile")}
               className={`admin-sidebar-item ${activePage === "profile" ? "active" : ""}`}
@@ -350,6 +378,7 @@ export default function App() {
             {activePage === "admin-billing" && <AdminBillingPage auth={auth} setPage={handlePageChange} />}
             {activePage === "admin-invoices" && <AdminInvoicesPage auth={auth} setPage={handlePageChange} />}
             {activePage === "admin-tariffs" && <AdminTariffPlansPage auth={auth} setPage={handlePageChange} />}
+            {activePage === "admin-users" && <AdminUsersPage auth={auth} onAuthed={handleAuthed} setPage={handlePageChange} />}
             {activePage === "profile" && <ProfilePage auth={auth} onAuthed={handleAuthed} setPage={handlePageChange} />}
           </main>
         </div>

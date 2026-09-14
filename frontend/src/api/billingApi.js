@@ -25,6 +25,26 @@ export async function openBillingCycle(token, payload) {
   return handleResponse(res);
 }
 
+export async function updateBillingCycle(token, id, payload) {
+  const res = await fetch(`${API_BASE}/api/admin/billing/cycles/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
+export async function sendInvoiceEmail(token, invoiceId) {
+  const res = await fetch(`${API_BASE}/api/admin/billing/invoices/${invoiceId}/send-email`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+}
+
 export async function listBillingCycles(token, apartmentId) {
   const res = await fetch(`${API_BASE}/api/admin/billing/cycles/apartment/${apartmentId}`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -69,6 +89,26 @@ export async function archiveBillingCycle(token, id) {
 export async function updateInvoiceAdjustments(token, invoiceId, adjustments) {
   const res = await fetch(`${API_BASE}/api/admin/billing/invoices/${invoiceId}/adjustments?adjustments=${adjustments}`, {
     method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+}
+
+export async function updateAdminInvoice(token, invoiceId, payload) {
+  const res = await fetch(`${API_BASE}/api/admin/billing/invoices/${invoiceId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+}
+
+export async function regenerateBillingCycle(token, cycleId) {
+  const res = await fetch(`${API_BASE}/api/admin/billing/cycles/${cycleId}/regenerate`, {
+    method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
   return handleResponse(res);

@@ -13,9 +13,9 @@ public class BillingCycleRequest {
     @NotNull
     private Long apartmentId;
 
-    @NotNull
     private LocalDate startDate;
 
-    @NotNull
     private LocalDate endDate;
+
+    private String month; // e.g. "2026-09"
 }

@@ -72,7 +72,8 @@ public class UserController {
         user.setDisplayName(request.getDisplayName());
 
         if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword().trim()));
+            user.setPasswordHint(request.getPassword().trim());
         }
 
         userRepository.save(user);
@@ -86,6 +87,7 @@ public class UserController {
         profileResponse.setEmail(user.getEmail());
         profileResponse.setDisplayName(user.getDisplayName());
         profileResponse.setRole(user.getRole().name());
+        profileResponse.setPasswordHint(user.getPasswordHint());
 
         if (user.getHousehold() != null) {
             profileResponse.setApartmentName(user.getHousehold().getApartment().getName());

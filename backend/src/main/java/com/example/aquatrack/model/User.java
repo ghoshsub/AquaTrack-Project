@@ -41,6 +41,9 @@ public class User {
     @Column(name = "password_hash", length = 255)
     private String passwordHash;
 
+    @Column(name = "password_hint", length = 255)
+    private String passwordHint;
+
     @Column(name = "google_id", unique = true, length = 255)
     private String googleId;
 

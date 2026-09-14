@@ -67,7 +67,7 @@ public class WaterUsageLogService {
     }
 
     public BulkUploadResponse uploadBulkCsv(Long apartmentId, MultipartFile file) {
-        adminResolver.requireAdmin();
+        User admin = adminResolver.requireAdmin();
         BulkUploadResponse response = new BulkUploadResponse();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             String line;

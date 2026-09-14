@@ -358,16 +358,7 @@ http://localhost:8080/swagger-ui.html
 
 ---
 
-# Contributors
-
-* **Yuvaraj M**
-* **Theanmalar**
-* **Subhendu Ghosh**
-
-* Infosys Virtual Internship 7.0
 
 ---
 
-# License
 
-This project is developed for educational purposes as part of the **Infosys Virtual Internship 7.0**.

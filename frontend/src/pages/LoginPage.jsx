@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { login } from "../api/authApi.js";
+import { login, getDemoCredentials } from "../api/authApi.js";
 import GoogleSignInButton from "../components/GoogleSignInButton.jsx";
 import {
   Mail, User, Lock, Eye, EyeOff, AlertCircle, ArrowRight,
@@ -25,8 +25,9 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage({ setPage, onAuthed }) {
   const { t } = useTranslation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin");
+  const [password, setPassword] = useState("admin123");
+  const [demoCreds, setDemoCreds] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -34,6 +35,26 @@ export default function LoginPage({ setPage, onAuthed }) {
   const [touchedEmail, setTouchedEmail] = useState(false);
   const [touchedPassword, setTouchedPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDynamicCreds() {
+      try {
+        const creds = await getDemoCredentials();
+        if (isMounted && creds) {
+          setDemoCreds(creds);
+          if (creds.admin) {
+            setEmail(creds.admin.username || "admin");
+            setPassword(creds.admin.password || "admin123");
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load dynamic demo credentials", err);
+      }
+    }
+    loadDynamicCreds();
+    return () => { isMounted = false; };
+  }, []);
 
   const validateEmail = (val) => {
     const trimmed = val.trim();
@@ -335,7 +356,7 @@ export default function LoginPage({ setPage, onAuthed }) {
             justifyContent: "center",
           }}
         >
-          <div style={{ marginBottom: "28px" }}>
+          <div style={{ marginBottom: "24px" }}>
             <h1
               style={{
                 fontSize: "26px",
@@ -350,6 +371,133 @@ export default function LoginPage({ setPage, onAuthed }) {
             <p style={{ fontSize: "14px", color: "var(--admin-text-muted)", margin: 0, lineHeight: 1.5 }}>
               {t("auth.loginSubtitle")}
             </p>
+          </div>
+
+          {/* Prominent Default Credentials Card */}
+          <div
+            style={{
+              background: "linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%)",
+              border: "1px solid rgba(56, 189, 248, 0.3)",
+              borderRadius: "16px",
+              padding: "16px",
+              marginBottom: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: 700, color: "#38BDF8" }}>
+                <ShieldCheck size={16} />
+                <span>DEFAULT DEMO CREDENTIALS</span>
+              </div>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: "#34D399", background: "rgba(52, 211, 153, 0.15)", padding: "2px 8px", borderRadius: "10px" }}>
+                Live & Synced
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              {/* Admin Card */}
+              <div
+                onClick={() => {
+                  const u = demoCreds?.admin?.username || "admin";
+                  const p = demoCreds?.admin?.password || "admin123";
+                  setEmail(u);
+                  setPassword(p);
+                  setEmailError("");
+                  setPasswordError("");
+                }}
+                style={{
+                  background: "var(--admin-subcard-bg)",
+                  border: (demoCreds?.admin?.username ? email === demoCreds.admin.username : email === "admin") ? "1.5px solid #38BDF8" : "1px solid var(--admin-card-border)",
+                  borderRadius: "12px",
+                  padding: "10px 12px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#38BDF8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>
+                  👑 System Admin
+                </div>
+                <div style={{ fontSize: "12.5px", color: "var(--admin-text-white)", fontWeight: 600 }}>
+                  User: <span style={{ color: "#38BDF8" }}>{demoCreds?.admin?.username || "admin"}</span>
+                </div>
+                <div style={{ fontSize: "12.5px", color: "var(--admin-text-white)", fontWeight: 600 }}>
+                  Pass: <span style={{ color: "#38BDF8" }}>{demoCreds?.admin?.password || "admin123"}</span>
+                </div>
+              </div>
+
+              {/* Resident Card */}
+              <div
+                onClick={() => {
+                  const u = demoCreds?.resident?.username || "sarah_johnson";
+                  const p = demoCreds?.resident?.password || "resident123";
+                  setEmail(u);
+                  setPassword(p);
+                  setEmailError("");
+                  setPasswordError("");
+                }}
+                style={{
+                  background: "var(--admin-subcard-bg)",
+                  border: (demoCreds?.resident?.username ? email === demoCreds.resident.username : email === "sarah_johnson") ? "1.5px solid #818CF8" : "1px solid var(--admin-card-border)",
+                  borderRadius: "12px",
+                  padding: "10px 12px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <div style={{ fontSize: "11px", fontWeight: 700, color: "#818CF8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>
+                  🏠 Resident {demoCreds?.resident?.flatNumber ? `(Flat ${demoCreds.resident.flatNumber})` : "(Flat 101)"}
+                </div>
+                <div style={{ fontSize: "12.5px", color: "var(--admin-text-white)", fontWeight: 600 }}>
+                  User: <span style={{ color: "#818CF8" }}>{demoCreds?.resident?.username || "sarah_johnson"}</span>
+                </div>
+                <div style={{ fontSize: "12.5px", color: "var(--admin-text-white)", fontWeight: 600 }}>
+                  Pass: <span style={{ color: "#818CF8" }}>{demoCreds?.resident?.password || "resident123"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Switcher for other users if more than 2 users exist */}
+            {demoCreds?.allUsers && demoCreds.allUsers.length > 2 && (
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap", marginTop: "2px", paddingTop: "8px", borderTop: "1px dashed var(--admin-card-border)" }}>
+                <span style={{ fontSize: "10.5px", fontWeight: 700, color: "var(--admin-text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Quick Fill:
+                </span>
+                {demoCreds.allUsers
+                  .filter(u => u.username !== (demoCreds?.admin?.username || "admin") && u.username !== (demoCreds?.resident?.username || "sarah_johnson"))
+                  .map(u => {
+                    const isSelected = email === u.username;
+                    return (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => {
+                          setEmail(u.username);
+                          setPassword(u.password || "resident123");
+                          setEmailError("");
+                          setPasswordError("");
+                        }}
+                        style={{
+                          background: isSelected ? "rgba(56, 189, 248, 0.2)" : "var(--admin-subcard-bg)",
+                          border: isSelected ? "1px solid #38BDF8" : "1px solid var(--admin-card-border)",
+                          color: isSelected ? "#38BDF8" : "var(--admin-text-muted)",
+                          padding: "3px 8px",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                        title={`Click to fill ${u.displayName || u.username} (${u.role}) - Password: ${u.password}`}
+                      >
+                        {u.role === "ADMIN" ? "👑 " : "🏠 "}
+                        {u.username}
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>

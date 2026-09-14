@@ -15,4 +15,6 @@ public class UserProfileResponse {
     // For residents
     private String apartmentName;
     private String flatNumber;
+    private String token;
+    private String passwordHint;
 }
